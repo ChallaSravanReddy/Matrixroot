@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 
+export const dynamic = "force-dynamic";
+
 interface Course {
   id: string;
   title: string;
