@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function SignupPage() {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -36,7 +37,7 @@ export default function SignupPage() {
           .upsert({ 
             id: data.user.id, 
             has_accepted_terms: true,
-            full_name: email.split('@')[0], // Default name from email
+            full_name: fullName, 
             role: 'student'
           });
 
@@ -73,6 +74,17 @@ export default function SignupPage() {
 
         <form onSubmit={handleSignup} className="space-y-6">
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-zinc-300">Full Name</label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-2.5 text-white bg-zinc-950/50 border border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-zinc-600"
+                placeholder="John Doe"
+              />
+            </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-zinc-300">Email</label>
               <input
