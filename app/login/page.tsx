@@ -24,7 +24,10 @@ export default function LoginPage() {
         password,
       });
 
-      if (signInError) throw signInError;
+      if (signInError) {
+        console.error("Login Error Details:", signInError);
+        throw signInError;
+      }
 
       // Update user profile indicating terms acceptance
       if (data.user) {
@@ -87,7 +90,10 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-300">Password</label>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-medium text-zinc-300">Password</label>
+                <a href="/forgot-password" size="sm" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Forgot Password?</a>
+              </div>
               <input
                 type="password"
                 required

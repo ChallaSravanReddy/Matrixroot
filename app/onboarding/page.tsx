@@ -54,14 +54,17 @@ export default function OnboardingPage() {
           role: 'student'
         }, { onConflict: 'id' });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase update error:", error);
+        throw error;
+      }
 
       // Successfully updated, redirect to dashboard
       window.location.href = "/dashboard";
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error updating department:", err);
       setLoading(false);
-      alert("Failed to update department. Please try again.");
+      alert(`Failed to update department: ${err.message || "Unknown error"}. Please check your database connection.`);
     }
   };
 

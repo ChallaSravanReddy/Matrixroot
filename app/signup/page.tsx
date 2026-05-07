@@ -24,30 +24,37 @@ export default function SignupPage() {
         password,
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        console.error("Signup Error:", signUpError);
+        throw signUpError;
+      }
 
       if (data.user) {
-        // 2. Ensure profile exists and update terms acceptance
+        // 2. Create the profile record
         const { error: profileError } = await supabase
           .from("profiles")
           .upsert({ 
             id: data.user.id, 
-            has_accepted_terms: true 
+            has_accepted_terms: true,
+            full_name: email.split('@')[0], // Default name from email
+            role: 'student'
           });
 
         if (profileError) {
-          console.error("Error creating/updating profile:", profileError);
-          // We won't throw here to avoid blocking them if a trigger already handled it,
-          // but we log it.
+          console.error("Profile sync error:", profileError);
+          // If it's a critical error (like RLS), we might want to know
+          if (profileError.code === '42P17') {
+             throw new Error("Database configuration error (RLS Recursion). Please contact admin.");
+          }
         }
         
         // 3. Redirect to onboarding
         window.location.href = "/onboarding";
       } else {
-        // If email confirmation is required by Supabase settings, data.user might be null or session might be null.
         setError("Signup successful! Please check your email to verify your account.");
       }
     } catch (err: any) {
+      console.error("Caught error in handleSignup:", err);
       setError(err.message || "An error occurred during signup.");
     } finally {
       setLoading(false);
