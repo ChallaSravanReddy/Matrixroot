@@ -111,7 +111,8 @@ export default function AdminPage() {
             .filter(e => e.payment_status === 'completed' && !e.is_certified)
             .map(e => ({
               ...e,
-              courses: allCourses.find(c => String(c.id) === String(e.course_id))
+              courses: allCourses.find(c => String(c.id) === String(e.course_id)),
+              profiles: profiles.find(p => p.id === e.student_id)
             }));
           
           setCertRequests(readyForCert);
@@ -119,6 +120,52 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Fetch Data Error:", err);
+    }
+  };
+
+  const handleApproveAssignment = async (progressId: string, enrollmentId: string, userId: string, courseId: string) => {
+    try {
+      // 1. Approve the individual assignment
+      const { error: progressError } = await supabase
+        .from("user_progress")
+        .update({ status: 'approved' })
+        .eq("id", progressId);
+
+      if (progressError) throw progressError;
+
+      // 2. Check if ALL lessons for this course are now approved for this user
+      const { data: totalLessons } = await supabase
+        .from("lessons")
+        .select("id")
+        .eq("course_id", courseId);
+
+      const { data: approvedProgress } = await supabase
+        .from("user_progress")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("course_id", courseId)
+        .eq("status", "approved");
+
+      if (totalLessons && approvedProgress && approvedProgress.length >= totalLessons.length) {
+        // 3. AUTO-APPROVE CERTIFICATE
+        await supabase
+          .from("enrollments")
+          .update({ 
+            is_certified: true,
+            certification_status: 'approved',
+            final_score: 100 // Default score for perfect completion
+          })
+          .eq("id", enrollmentId);
+        
+        alert("All assignments approved! Certificate has been automatically issued.");
+      } else {
+        alert("Assignment approved! Progress updated.");
+      }
+      
+      fetchData();
+    } catch (err) {
+      console.error("Approval Error:", err);
+      alert("Failed to update status.");
     }
   };
 
@@ -227,7 +274,7 @@ export default function AdminPage() {
                 certRequests.map((req) => (
                   <div key={req.id} className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl flex items-center justify-between shadow-xl transition-all hover:border-zinc-700">
                     <div>
-                      <h3 className="text-xl font-bold">{req.student_id.substring(0,8)}...</h3>
+                      <h3 className="text-xl font-bold">{req.profiles?.full_name || "Unknown Student"}</h3>
                       <p className="text-indigo-400 font-medium">{req.courses?.title}</p>
                       <p className="text-xs text-zinc-500 mt-1 uppercase tracking-widest">Enrollment ID: {req.id}</p>
                     </div>
@@ -277,10 +324,25 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div className="w-full md:w-64 space-y-4 flex flex-col justify-center">
-                      <input type="number" id={`score-${sub.id}`} placeholder="Score (0-100)" className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl font-bold" defaultValue={sub.enrollment?.final_score || 0} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <button onClick={() => handleGrade(sub.enrollment?.id, (document.getElementById(`score-${sub.id}`) as HTMLInputElement).value, "approved")} className="bg-emerald-600 hover:bg-emerald-500 p-3 rounded-xl text-xs font-bold transition-all">Approve</button>
-                        <button onClick={() => handleGrade(sub.enrollment?.id, (document.getElementById(`score-${sub.id}`) as HTMLInputElement).value, "rejected")} className="bg-zinc-800 hover:bg-red-600 p-3 rounded-xl text-xs font-bold transition-all">Reject</button>
+                      <div className="flex flex-col items-center gap-2">
+                        {sub.status === 'approved' ? (
+                          <span className="px-6 py-3 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl font-bold text-sm flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                            </svg>
+                            Approved
+                          </span>
+                        ) : (
+                          <button 
+                            onClick={() => handleApproveAssignment(sub.id, sub.enrollment?.id, sub.user_id, sub.lessons?.course_id)} 
+                            className="w-full bg-indigo-600 hover:bg-indigo-500 p-4 rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20"
+                          >
+                            Approve This Assignment
+                          </button>
+                        )}
+                        <p className="text-[10px] text-zinc-600 text-center uppercase tracking-widest font-bold">
+                          Status: {sub.status || 'Pending'}
+                        </p>
                       </div>
                     </div>
                   </div>

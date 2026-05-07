@@ -203,27 +203,24 @@ export default function ProfilePage() {
                 
                 <div className="space-y-4">
                   <label className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Select Your Branch</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {DEPARTMENTS.map(dept => {
-                      const isActive = formData.department_slug === dept.id;
-                      return (
-                        <button
-                          key={dept.id}
-                          type="button"
-                          onClick={() => setFormData({...formData, department_slug: dept.id})}
-                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                            isActive 
-                              ? "bg-indigo-500/10 border-indigo-500 shadow-lg shadow-indigo-500/10" 
-                              : "bg-zinc-950/30 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
-                          }`}
-                        >
-                          <span className="text-3xl">{dept.icon}</span>
-                          <span className={`text-xs font-bold uppercase tracking-tighter ${isActive ? "text-indigo-400" : "text-zinc-500"}`}>
-                            {dept.name}
-                          </span>
-                        </button>
-                      );
-                    })}
+                  <div className="relative group">
+                    <select
+                      value={formData.department_slug}
+                      onChange={(e) => setFormData({...formData, department_slug: e.target.value})}
+                      className="w-full bg-zinc-950 border border-zinc-800 p-4 rounded-xl focus:border-indigo-500 outline-none transition-all appearance-none text-white cursor-pointer hover:bg-zinc-900"
+                    >
+                      <option value="" disabled>Choose your academic track</option>
+                      {DEPARTMENTS.map(dept => (
+                        <option key={dept.id} value={dept.id} className="bg-zinc-950 py-2">
+                          {dept.icon} {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 group-focus-within:text-indigo-500 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>

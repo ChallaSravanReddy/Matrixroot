@@ -45,13 +45,13 @@ export default function DashboardPage() {
       }
 
       try {
-        // Parallel fetching for 5x faster load times
+        // Parallel fetching
         const [
-          { data: userProfile },
-          { data: courseData },
-          { data: allEnrollments },
-          { data: progress },
-          { data: lessons }
+          profileRes,
+          courseRes,
+          enrollRes,
+          progressRes,
+          lessonRes
         ] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("courses").select("*, departments(name, slug)"),
@@ -59,6 +59,18 @@ export default function DashboardPage() {
           supabase.from("user_progress").select("*").eq("user_id", session.user.id),
           supabase.from("lessons").select("id, course_id")
         ]);
+
+        if (profileRes.error) console.error("Profile Fetch Error:", profileRes.error);
+        if (courseRes.error) console.error("Courses Fetch Error:", courseRes.error);
+        if (enrollRes.error) console.error("Enrollments Fetch Error:", enrollRes.error);
+        if (progressRes.error) console.error("Progress Fetch Error:", progressRes.error);
+        if (lessonRes.error) console.error("Lessons Fetch Error:", lessonRes.error);
+
+        const userProfile = profileRes.data;
+        const courseData = courseRes.data;
+        const allEnrollments = enrollRes.data;
+        const progress = progressRes.data;
+        const lessons = lessonRes.data;
 
         if (userProfile) setProfile(userProfile);
         if (courseData) setAllCourses(courseData as Course[]);
@@ -81,7 +93,7 @@ export default function DashboardPage() {
           });
         }
       } catch (error) {
-        console.error("Dashboard Load Error:", error);
+        console.error("Dashboard Load Error (Unexpected):", error);
       } finally {
         setLoading(false);
       }
