@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --foreground: #FFFFFF;
 }
 
 @theme inline {
@@ -10,13 +10,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Overrides for Dark Neon Theme */
+  --color-slate-50: #050505; /* True Black for main backgrounds */
+  --color-white: #0a0a0a; /* Slightly elevated black for cards */
+  --color-slate-100: #111111; /* Hover states */
+  --color-slate-200: #1f1f1f; /* Borders */
+  --color-slate-300: #333333; /* Darker Borders */
+  
+  --color-slate-900: #FFFFFF; /* Pure White for primary text */
+  --color-slate-700: #e5e5e5; /* Off-white text */
+  --color-slate-600: #a3a3a3; /* Muted text */
+  --color-slate-400: #737373; /* Disabled text */
+  
+  --color-blue-50: #001a22; /* Neon Cyan tint for active states */
+  --color-blue-100: #002b38; /* Light Neon Cyan background */
+  --color-blue-200: #004d66; /* Neon Cyan border */
+  --color-blue-400: #33e0ff; /* Lighter Neon Cyan */
+  --color-blue-500: #00c4eb; /* Bright Neon Cyan */
+  --color-blue-600: #00D4FF; /* Primary Action - Neon Cyan */
+  --color-blue-700: #00a8cc; /* Darker Neon Cyan for hovers */
+  
+  --color-sky-50: #262000; /* Gold tint */
+  --color-sky-600: #FFD700; /* Secondary Accent - Gold */
+  --color-sky-700: #cca800; /* Darker Gold for hovers */
 }
 
 body {

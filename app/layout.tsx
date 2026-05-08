@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rooted Matrix | Internship Platform",
+  title: "Matrix Root | Internship Platform",
   description: "Advanced Training-cum-Internship Platform for Engineering Students",
 };
 

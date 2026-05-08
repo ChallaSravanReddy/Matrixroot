@@ -36,7 +36,7 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Rooted-Matrix-Certificate-${studentName.replace(/\s+/g, "-")}.pdf`);
+      pdf.save(`Matrix-Root-Certificate-${studentName.replace(/\s+/g, "-")}.pdf`);
     } catch (error) {
       console.error("PDF Generation Error:", error);
       alert("Failed to generate PDF. Please try again.");
@@ -64,11 +64,11 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
           <div className="flex flex-col items-center h-full justify-between text-center">
             {/* Header */}
             <div className="space-y-4">
-              <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#4f46e5' }}>
-                <span className="text-4xl font-bold text-white">R</span>
+              <div className="mx-auto mb-4 flex items-center justify-center">
+                <img src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root" className="w-24 h-24 object-contain" />
               </div>
               <h1 className="text-5xl font-black tracking-tighter uppercase" style={{ color: '#1e1b4b' }}>Certificate of Excellence</h1>
-              <p className="text-xl text-zinc-500 font-sans tracking-widest uppercase">Rooted Matrix Internship Program</p>
+              <p className="text-xl text-zinc-500 font-sans tracking-widest uppercase">Matrix Root Internship Program</p>
             </div>
 
             {/* Body */}
@@ -94,7 +94,7 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
               <div className="flex flex-col items-center">
                   <div className="w-48 h-px bg-zinc-400 mb-2"></div>
                   <p className="text-lg font-bold text-zinc-900">Program Director</p>
-                  <p className="text-xs text-zinc-500">Rooted Matrix Engineering</p>
+                  <p className="text-xs text-zinc-500">Matrix Root Engineering</p>
               </div>
             </div>
           </div>
