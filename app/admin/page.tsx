@@ -204,7 +204,22 @@ export default function AdminPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto">
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+          <div className="flex items-center gap-2">
+            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain drop-shadow-md" priority />
+            <span className="font-bold text-slate-900">Admin</span>
+          </div>
+          <button onClick={() => window.location.href = '/dashboard'} className="p-2 text-slate-600 hover:text-slate-900">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+          </button>
+        </header>
+
+        <div className="flex-1 p-6 md:p-10 overflow-y-auto">
         
         {activeTab === "courses" && (
           <div className="space-y-12">

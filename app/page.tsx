@@ -11,23 +11,23 @@ export default function Home() {
           <div className="flex justify-between h-20 items-center">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-              <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={40} height={40} className="object-contain drop-shadow-md" priority />
-              <span className="font-extrabold text-2xl tracking-tight text-slate-900">
+              <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain sm:w-[40px] sm:h-[40px] drop-shadow-md" priority />
+              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 hidden sm:block">
                 Matrix Root
               </span>
             </Link>
             
             {/* Login and Signup buttons on the right */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link 
                 href="/login" 
-                className="text-slate-600 hover:text-blue-600 font-medium transition-colors px-4 py-2"
+                className="text-slate-600 hover:text-blue-600 font-medium transition-colors px-2 sm:px-4 py-2 text-sm sm:base"
               >
                 Login
               </Link>
               <Link 
                 href="/signup" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 text-sm sm:base"
               >
                 Sign Up 
               </Link>

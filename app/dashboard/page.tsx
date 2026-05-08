@@ -326,9 +326,7 @@ export default function DashboardPage() {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center font-bold text-slate-900">
-              R
-            </div>
+            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain drop-shadow-md" priority />
             <span className="font-bold text-slate-900">Dashboard</span>
           </div>
           <button onClick={() => window.location.href = '/profile'} className="p-2 text-slate-600 hover:text-slate-900 mr-2">

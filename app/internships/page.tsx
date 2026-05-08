@@ -77,16 +77,19 @@ export default function InternshipsPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-50/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/'}>
-            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={40} height={40} className="object-contain drop-shadow-md" priority />
-            <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain drop-shadow-md" priority />
+            <span className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent hidden sm:block">
               Matrix Root
             </span>
           </div>
           <button 
             onClick={() => window.location.href = '/dashboard'}
-            className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-200 transition-all font-medium text-sm"
+            className="px-4 sm:px-6 py-2 sm:py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-200 transition-all font-medium text-sm flex items-center gap-2"
           >
-            Go to Dashboard
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            <span className="hidden sm:inline">Go to Dashboard</span>
           </button>
         </div>
       </nav>
