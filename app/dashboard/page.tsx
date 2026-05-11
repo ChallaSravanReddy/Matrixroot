@@ -4,8 +4,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 import Image from "next/image";
-
-export const dynamic = "force-dynamic";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { 
+  GraduationCap, 
+  LayoutDashboard, 
+  BookOpen, 
+  LogOut, 
+  User, 
+  ShieldCheck, 
+  Clock, 
+  ArrowRight,
+  TrendingUp,
+  Search,
+  Sparkles,
+  BadgeCheck,
+  Award
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EnrollmentModal } from "@/components/EnrollmentModal";
 
 interface Course {
   id: string;
@@ -18,42 +35,26 @@ interface Course {
   };
 }
 
-import { useRouter } from "next/navigation";
-
 export default function DashboardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    completedLessons: 0,
-    totalLessons: 0,
-    assignmentCount: 0,
-    activeCourse: ""
-  });
   const [enrollments, setEnrollments] = useState<any[]>([]);
-  const [enrollment, setEnrollment] = useState<any>(null);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
         router.push("/login");
         return;
       }
 
       try {
-        // Parallel fetching
-        const [
-          profileRes,
-          courseRes,
-          enrollRes,
-          progressRes,
-          lessonRes
-        ] = await Promise.all([
+        const [profileRes, courseRes, enrollRes, progressRes, lessonRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("courses").select("*, departments(name, slug)"),
           supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id),
@@ -61,40 +62,13 @@ export default function DashboardPage() {
           supabase.from("lessons").select("id, course_id")
         ]);
 
-        if (profileRes.error) console.error("Profile Fetch Error:", profileRes.error);
-        if (courseRes.error) console.error("Courses Fetch Error:", courseRes.error);
-        if (enrollRes.error) console.error("Enrollments Fetch Error:", enrollRes.error);
-        if (progressRes.error) console.error("Progress Fetch Error:", progressRes.error);
-        if (lessonRes.error) console.error("Lessons Fetch Error:", lessonRes.error);
-
-        const userProfile = profileRes.data;
-        const courseData = courseRes.data;
-        const allEnrollments = enrollRes.data;
-        const progress = progressRes.data;
-        const lessons = lessonRes.data;
-
-        if (userProfile) setProfile(userProfile);
-        if (courseData) setAllCourses(courseData as Course[]);
-        
-        if (allEnrollments && allEnrollments.length > 0) {
-          setEnrollments(allEnrollments);
-          setEnrollment(allEnrollments[0]);
-        }
-
-        if (progress && lessons) {
-          setUserProgress(progress);
-          setCourseLessons(lessons);
-          
-          const assignmentsWithLinks = progress.filter(p => p.assignment_url && p.assignment_url.trim() !== "").length;
-          setStats({
-            completedLessons: progress.length,
-            totalLessons: lessons.length || 1,
-            assignmentCount: assignmentsWithLinks,
-            activeCourse: userProfile?.department_slug ? `Active in ${userProfile.departments?.name}` : "No Active Track"
-          });
-        }
+        if (profileRes.data) setProfile(profileRes.data);
+        if (courseRes.data) setAllCourses(courseRes.data as Course[]);
+        if (enrollRes.data) setEnrollments(enrollRes.data);
+        if (progressRes.data) setUserProgress(progressRes.data);
+        if (lessonRes.data) setCourseLessons(lessonRes.data);
       } catch (error) {
-        console.error("Dashboard Load Error (Unexpected):", error);
+        console.error("Dashboard Load Error:", error);
       } finally {
         setLoading(false);
       }
@@ -110,331 +84,268 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-background items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   const departmentSlug = profile?.department_slug;
-  const departmentName = profile?.departments?.name || departmentSlug;
-
-  // Filter courses based on user's department
   const recommendedCourses = allCourses.filter(course => course.departments?.slug === departmentSlug);
   const otherCourses = allCourses.filter(course => course.departments?.slug !== departmentSlug);
 
-  // Component to render a course card
-  const CourseCard = ({ course, isRecommended }: { course: Course, isRecommended: boolean }) => {
-    const isAlreadyEnrolled = enrollments.some(e => e.course_id === course.id && e.payment_status === 'completed');
-
-    return (
-      <div className="group flex flex-col bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 relative">
-        
-        {/* Recommended Badge */}
-        {isRecommended && (
-          <div className="absolute top-4 right-4 z-10 px-3 py-1 bg-gradient-to-r from-sky-500 to-blue-600 text-slate-900 text-xs font-bold uppercase tracking-wider rounded-full shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-            Recommended
-          </div>
-        )}
-
-        {/* Thumbnail Placeholder */}
-        <div className="w-full h-48 bg-slate-200 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-sky-500/20 group-hover:scale-105 transition-transform duration-500"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-16 h-16 text-slate-600 group-hover:text-blue-600/50 transition-colors duration-300">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-            </svg>
-          </div>
-          
-          {/* Department tag at bottom left */}
-          <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-xs font-medium text-slate-700">
-            {course.departments?.name || 'General'}
-          </div>
-        </div>
-        
-        {/* Content */}
-        <div className="flex-1 p-6 flex flex-col">
-          <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{course.title}</h3>
-          
-          {/* Progress Bar for Enrolled Courses */}
-          {isAlreadyEnrolled && (
-            <div className="mb-4 space-y-2">
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                <span className="text-slate-400">Course Progress</span>
-                <span className="text-blue-600">
-                  {Math.round((userProgress.filter(p => p.course_id === course.id).length / Math.max(1, courseLessons.filter(l => l.course_id === course.id).length)) * 100)}%
-                </span>
-              </div>
-              <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-blue-500 transition-all duration-1000" 
-                  style={{ width: `${(userProgress.filter(p => p.course_id === course.id).length / Math.max(1, courseLessons.filter(l => l.course_id === course.id).length)) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          <p className="text-sm text-slate-600 mb-6 flex-1 line-clamp-3">
-            {course.description || "No description available."}
-          </p>
-          
-          <button 
-            onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
-            className={`w-full py-2.5 px-4 font-medium rounded-xl transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group-hover:shadow-blue-500/20 ${
-              isAlreadyEnrolled 
-              ? "bg-sky-600 hover:bg-sky-500 text-white shadow-sky-500/20" 
-              : "bg-slate-200 hover:bg-blue-600 text-white group-hover:bg-blue-600"
-            }`}
-          >
-            {isAlreadyEnrolled ? (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                </svg>
-                Enrolled
-              </>
-            ) : (
-              <>
-                Start Internship
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 transform group-hover:translate-x-1 transition-transform">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
-                </svg>
-              </>
-            )}
-          </button>
-
-          {/* Certificate Download - Only if approved for this specific course */}
-          {isAlreadyEnrolled && enrollments.find(e => e.course_id === course.id)?.certification_status === 'approved' && (
-            <div className="mt-3 pt-3 border-t border-slate-200">
-              <CertificatePDF 
-                studentName={profile?.full_name || "Graduate"} 
-                courseName={course.title} 
-                branch={profile?.departments?.name || "Engineering"} 
-                score={enrollments.find(e => e.course_id === course.id)?.final_score || 0} 
-                certId={enrollments.find(e => e.course_id === course.id)?.id.substring(0, 13).toUpperCase() || "CERT"}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans">
-      
-      {/* SIDEBAR */}
-      <aside className="w-72 hidden md:flex flex-col border-r border-slate-200/60 bg-white/20 backdrop-blur-md">
-        <div className="p-6 border-b border-slate-200/60 flex items-center gap-3">
-          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain drop-shadow-md" priority />
-          <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            Matrix Root
-          </h2>
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 hidden lg:flex flex-col border-r border-border bg-card/30">
+        <div className="p-6 flex items-center gap-3 border-b border-border">
+          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
+          <span className="font-bold text-lg">Matrix Root</span>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8">
-          <div className="space-y-3">
-            <div className="px-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student Profile</p>
-              <h3 className="text-lg font-bold text-slate-900 mt-1 truncate">{profile?.full_name || "New Student"}</h3>
-            </div>
-            
-          </div>
-
-          <div className="space-y-2">
-            <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Menu</p>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-blue-600 bg-blue-500/10 rounded-lg transition-colors border border-blue-500/20">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-              </svg>
-              Dashboard
-            </button>
-            <button 
-              onClick={() => window.location.href = '/internships'}
-              className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-              </svg>
-              View Internships
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-              </svg>
-              Support / Office Hours
-            </button>
-
-            {profile?.role === 'admin' && (
-              <button 
-                onClick={() => window.location.href = '/admin'}
-                className="w-full flex items-center gap-3 px-3 py-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition-all border border-transparent hover:border-amber-500/30 font-bold mt-4 animate-pulse"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-                Go to Admin Panel
-              </button>
-            )}
-          </div>
-
-          {/* COURSES PANEL */}
-          <div className="space-y-2">
-            <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Internship Tracks</p>
-            <div className="space-y-1">
-              {allCourses.map((course) => (
-                <button 
-                  key={course.id} 
-                  onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all group"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-blue-700 transition-colors"></div>
-                  <span className="text-sm font-medium truncate">{course.title}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 border-t border-slate-200/60 space-y-2">
-          <button 
-            onClick={() => window.location.href = '/profile'}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-600 rounded-xl hover:bg-slate-200 transition-all text-sm font-medium text-slate-700 hover:text-slate-900"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-            Profile Settings
-          </button>
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Student Menu</p>
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
+          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => {}} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" />
           
-          <button 
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-600 rounded-xl hover:bg-slate-200 transition-all text-sm font-medium text-slate-700 hover:text-slate-900"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-            </svg>
-            Sign Out
-          </button>
+          <div className="pt-6">
+            <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Account</p>
+            <SidebarItem icon={<User size={18} />} label="Profile Settings" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
+          </div>
+        </nav>
+
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-accent/50">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">
+              {profile?.full_name?.charAt(0) || "S"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate">{profile?.full_name || "Student"}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{profile?.departments?.name || "No Track"}</p>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
-          <div className="flex items-center gap-2">
-            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root Logo" width={32} height={32} className="object-contain drop-shadow-md" priority />
-            <span className="font-bold text-slate-900">Dashboard</span>
+        {/* Header */}
+        <header className="h-20 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold">Dashboard</h2>
           </div>
-          <button onClick={() => window.location.href = '/profile'} className="p-2 text-slate-600 hover:text-slate-900 mr-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <input 
+                type="text" 
+                placeholder="Search tracks..." 
+                className="pl-10 pr-4 py-2 bg-accent/30 border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
+              />
+            </div>
+            <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+              <Sparkles size={20} />
+            </div>
+          </div>
         </header>
 
-        {/* Dashboard Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-20 space-y-12">
-          
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back!</h1>
-            <p className="text-slate-600 text-lg">
-              {departmentName ? (
-                <>Here are your internship modules for <span className="text-blue-600 font-medium">{departmentName}</span>.</>
-              ) : (
-                <span className="text-amber-400 font-medium">Choose your branch in Profile Settings to see your recommended track.</span>
-              )}
-            </p>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 pb-20">
+          {/* Welcome Card */}
+          <div className="relative rounded-[2rem] p-8 text-primary-foreground overflow-hidden" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
+            <div className="relative z-10">
+              <h1 className="text-3xl font-black mb-2">Welcome back, {profile?.full_name?.split(' ')[0] || "Student"}!</h1>
+              <p className="text-primary-foreground/80 max-w-lg">
+                Continue your industry-standard internship journey. Your progress is saved and mentor-reviewed.
+              </p>
+            </div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           </div>
 
-          {/* STUDENT SUCCESS ANALYTICS ROW */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Progress Card */}
-            <div className="bg-white/40 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-slate-600 text-sm font-medium uppercase tracking-wider">Course Progress</p>
-                <span className="px-2 py-1 bg-blue-500/10 text-blue-600 text-[10px] font-bold rounded border border-blue-500/20 uppercase tracking-tighter">
-                  {Math.round((stats.completedLessons / stats.totalLessons) * 100)}%
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-slate-900 mb-4">
-                {stats.completedLessons} / {stats.totalLessons} <span className="text-xs text-slate-400 font-normal">Modules Done</span>
-              </div>
-              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-sky-600 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
-                  style={{ width: `${(stats.completedLessons / stats.totalLessons) * 100}%` }}
-                ></div>
-              </div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard 
+              label="Completed Modules" 
+              value={`${userProgress.length} / ${courseLessons.length}`} 
+              icon={<ShieldCheck className="text-primary" size={20} />} 
+              progress={(userProgress.length / Math.max(1, courseLessons.length)) * 100}
+            />
+            <StatCard 
+              label="Certificates Earned" 
+              value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
+              icon={<Award className="text-amber-500" size={20} />} 
+            />
+            <StatCard 
+              label="Current Track" 
+              value={profile?.departments?.name || "General"} 
+              icon={<GraduationCap className="text-sky-500" size={20} />} 
+            />
+            <StatCard 
+              label="Account Type" 
+              value="Industrial Internship" 
+              icon={<BadgeCheck className="text-emerald-500" size={20} />} 
+            />
+          </div>
+
+          {/* Internship Tracks */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black tracking-tight">Your Recommended Tracks</h2>
+              <Link href="/signup" className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+                View all tracks <ArrowRight size={14} />
+              </Link>
             </div>
 
-            {/* Assignment Card */}
-            <div className="bg-white/40 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-slate-600 text-sm font-medium uppercase tracking-wider">Submissions</p>
-                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {recommendedCourses.map(course => (
+                <CourseCard 
+                  key={course.id} 
+                  course={course} 
+                  enrolled={enrollments.find(e => e.course_id === course.id)} 
+                  progress={userProgress.filter(p => p.course_id === course.id)}
+                  lessons={courseLessons.filter(l => l.course_id === course.id)}
+                  profile={profile}
+                  onEnroll={() => setSelectedCourse({id: course.id, title: course.title})}
+                />
+              ))}
+              {recommendedCourses.length === 0 && (
+                <div className="col-span-full py-12 text-center bg-accent/20 rounded-3xl border-2 border-dashed border-border">
+                  <p className="text-muted-foreground font-medium">No recommended tracks found for your branch. Visit Profile Settings to update.</p>
                 </div>
-              </div>
-              <div className="text-2xl font-bold text-slate-900 mb-1">
-                {stats.assignmentCount} <span className="text-xs text-slate-400 font-normal">Assignments Submitted</span>
-              </div>
-              <p className="text-xs text-slate-400">Keep submitting to qualify for certification.</p>
+              )}
             </div>
-          </div>
-
-          {/* RECOMMENDED COURSES SECTION */}
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold border-b border-slate-200 pb-2 inline-block">
-              Recommended for Your Branch
-            </h2>
-            
-            {recommendedCourses.length === 0 ? (
-              <div className="w-full p-8 bg-white/30 border border-slate-200/60 border-dashed rounded-2xl flex flex-col items-center justify-center text-center">
-                <p className="text-slate-600">
-                  {!departmentSlug ? "Choose your branch in Profile Settings to see recommended courses." : "No recommended courses available for this branch yet."}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recommendedCourses.map((course) => (
-                  <CourseCard key={course.id} course={course} isRecommended={true} />
-                ))}
-              </div>
-            )}
           </section>
 
-          {/* EXPLORE OTHER INTERNSHIPS SECTION */}
+          {/* Other Tracks */}
           <section className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-200 pb-2">
-              <h2 className="text-2xl font-bold text-slate-700">
-                Explore Other Internships
-              </h2>
-              <span className="px-3 py-1 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full">
-                {otherCourses.length} Modules
-              </span>
+            <h2 className="text-2xl font-black tracking-tight">Explore Other Disciplines</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {otherCourses.slice(0, 3).map(course => (
+                <CourseCard 
+                  key={course.id} 
+                  course={course} 
+                  enrolled={enrollments.find(e => e.course_id === course.id)}
+                  progress={userProgress.filter(p => p.course_id === course.id)}
+                  lessons={courseLessons.filter(l => l.course_id === course.id)}
+                  profile={profile}
+                  onEnroll={() => setSelectedCourse({id: course.id, title: course.title})}
+                />
+              ))}
             </div>
-            
-            {otherCourses.length === 0 ? (
-              <div className="w-full p-8 bg-white/30 border border-slate-200/60 border-dashed rounded-2xl flex flex-col items-center justify-center text-center">
-                <p className="text-slate-600">No other courses available at the moment.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {otherCourses.map((course) => (
-                  <CourseCard key={course.id} course={course} isRecommended={false} />
-                ))}
-              </div>
-            )}
           </section>
-
         </div>
       </main>
+
+      {/* Enrollment Modal Integration */}
+      {selectedCourse && (
+        <EnrollmentModal 
+          open={!!selectedCourse} 
+          onOpenChange={(open) => !open && setSelectedCourse(null)}
+          courseTitle={selectedCourse.title}
+          onPay={() => {
+            window.location.href = `/dashboard/courses/${selectedCourse.id}`;
+          }}
+          loading={false}
+        />
+      )}
+    </div>
+  );
+}
+
+function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+        active 
+        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
+  return (
+    <div className="bg-card border border-border rounded-3xl p-6 shadow-card hover:border-primary/20 transition-all group">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+        {progress !== undefined && (
+          <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded">
+            {Math.round(progress)}%
+          </span>
+        )}
+      </div>
+      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-xl font-black">{value}</p>
+      {progress !== undefined && (
+        <div className="mt-4 h-1.5 w-full bg-accent rounded-full overflow-hidden">
+          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: any) {
+  const isEnrolled = enrolled?.payment_status === 'completed';
+  const progressPercent = Math.round((progress.length / Math.max(1, lessons.length)) * 100);
+
+  return (
+    <div className="flex flex-col bg-card border border-border rounded-[2.5rem] p-2 hover:border-primary/30 hover:shadow-2xl transition-all group">
+      <div className="h-48 w-full bg-accent/30 rounded-[2rem] overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-60 transition-opacity">
+           <BookOpen size={64} className="text-primary" />
+        </div>
+        <div className="absolute top-4 left-4 px-3 py-1 bg-background/80 backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20">
+          {course.departments?.name || "Track"}
+        </div>
+      </div>
+      
+      <div className="p-6 flex flex-col flex-1">
+        <h3 className="text-xl font-black mb-2 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-1">{course.description}</p>
+        
+        {isEnrolled && (
+          <div className="mb-6 space-y-2">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+              <span>Progress</span>
+              <span>{progressPercent}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-accent rounded-full overflow-hidden">
+              <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <Button 
+            className="w-full rounded-2xl h-12 font-bold shadow-lg" 
+            variant={isEnrolled ? "default" : "secondary"}
+            onClick={() => isEnrolled ? window.location.href = `/dashboard/courses/${course.id}` : onEnroll()}
+          >
+            {isEnrolled ? "Continue Learning" : "Start Internship"}
+          </Button>
+
+          {isEnrolled && enrolled?.certification_status === 'approved' && (
+             <CertificatePDF 
+                studentName={profile?.full_name || "Graduate"} 
+                courseName={course.title} 
+                branch={profile?.departments?.name || "Engineering"} 
+                score={enrolled?.final_score || 0} 
+                certId={enrolled?.id.substring(0, 13).toUpperCase() || "CERT"}
+             />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

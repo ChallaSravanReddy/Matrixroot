@@ -2,25 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { Code2, Zap, Settings, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const DEPARTMENTS = [
   {
     id: "it",
     name: "Information Technology",
-    icon: "💻",
-    description: "Software engineering, data structures, and algorithms.",
+    icon: <Code2 className="text-blue-500" />,
+    description: "Software engineering, web development, and AI tracks.",
+    color: "from-blue-500/20 to-sky-500/10"
   },
   {
     id: "eee",
     name: "Electrical & Electronics",
-    icon: "⚡",
-    description: "Circuit design, power systems, and embedded computing.",
+    icon: <Zap className="text-amber-500" />,
+    description: "IoT, robotics, and embedded systems training.",
+    color: "from-amber-500/20 to-orange-500/10"
   },
   {
     id: "mech",
     name: "Mechanical Engineering",
-    icon: "⚙️",
-    description: "Thermodynamics, robotics, and fluid mechanics.",
+    icon: <Settings className="text-emerald-500" />,
+    description: "Industrial design, manufacturing, and automation.",
+    color: "from-emerald-500/20 to-teal-500/10"
   },
 ];
 
@@ -42,65 +47,62 @@ export default function OnboardingPage() {
 
   const handleSelectDepartment = async (slug: string) => {
     if (!userId) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({ 
-          id: userId, 
-          department_slug: slug,
-          has_accepted_terms: true,
-          role: 'student'
-        }, { onConflict: 'id' });
-
-      if (error) {
-        console.error("Supabase update error:", error);
-        throw error;
-      }
-
-      // Successfully updated, redirect to dashboard
+      await supabase.from("profiles").upsert({ 
+        id: userId, 
+        department_slug: slug,
+        has_accepted_terms: true,
+        role: 'student'
+      }, { onConflict: 'id' });
       window.location.href = "/dashboard";
-    } catch (err: any) {
-      console.error("Error updating department:", err);
+    } catch (err) {
       setLoading(false);
-      alert(`Failed to update department: ${err.message || "Unknown error"}. Please check your database connection.`);
+      alert("Selection failed. Please try again.");
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-slate-50 text-slate-900 font-sans">
-      <div className="w-full max-w-5xl space-y-12">
-        <div className="text-center space-y-4 mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-sky-400 to-sky-600 bg-clip-text text-transparent">
-            Select Your Department
+    <div className="min-h-screen flex items-center justify-center bg-background p-6 selection:bg-primary/20">
+      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
+      
+      <div className="w-full max-w-6xl">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold text-primary shadow-sm mb-6">
+            <Sparkles size={14} className="animate-pulse" />
+            CUSTOMIZE YOUR CAREER TRACK
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
+            Select Your <br />
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>Academic Discipline</span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
-            Choose your academic branch to customize your Matrix Root experience and curriculum.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
+            Choose your specialization to unlock mentor-reviewed curriculum and industrial assignments tailored to your branch.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {DEPARTMENTS.map((dept) => (
-            <button
+            <div
               key={dept.id}
-              onClick={() => handleSelectDepartment(dept.id)}
-              disabled={loading}
-              className="flex flex-col items-start p-8 text-left bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl hover:bg-slate-200/80 hover:border-blue-500/50 hover:-translate-y-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg shadow-black/50"
+              className="group relative flex flex-col p-8 bg-card/40 backdrop-blur-md border border-border rounded-[2.5rem] hover:border-primary/40 hover:-translate-y-2 transition-all duration-300 shadow-card"
             >
-              <div className="text-5xl mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${dept.color} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}>
                 {dept.icon}
               </div>
-              <h3 className="text-2xl font-semibold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">{dept.name}</h3>
-              <p className="text-base text-slate-600 leading-relaxed">{dept.description}</p>
               
-              <div className="mt-8 w-full flex items-center justify-between text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="text-sm font-medium">Select Branch</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </button>
+              <h3 className="text-2xl font-black mb-4 group-hover:text-primary transition-colors">{dept.name}</h3>
+              <p className="text-muted-foreground font-medium leading-relaxed mb-10 flex-1">{dept.description}</p>
+              
+              <Button 
+                onClick={() => handleSelectDepartment(dept.id)}
+                disabled={loading}
+                className="w-full h-12 rounded-2xl font-bold group-hover:shadow-lg transition-all"
+                variant="secondary"
+              >
+                {loading ? <Loader2 className="animate-spin" /> : <>Select Track <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>}
+              </Button>
+            </div>
           ))}
         </div>
       </div>

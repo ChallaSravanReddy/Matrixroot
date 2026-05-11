@@ -155,16 +155,19 @@ export default function LessonPage() {
     }
     
     // Simple check for MP4 vs embed (YouTube/Vimeo/Cloudinary)
-    if (url.endsWith('.mp4')) {
-      return <video src={url} controls className="w-full h-full object-cover" />;
+    const secureUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+
+    if (secureUrl.endsWith('.mp4')) {
+      return <video src={secureUrl} controls className="w-full h-full object-cover" />;
     } else {
       // Assuming it's an embeddable iframe URL (like YouTube embed)
       return (
         <iframe 
-          src={url} 
+          src={secureUrl} 
           className="w-full h-full" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
           allowFullScreen
+          loading="lazy"
         ></iframe>
       );
     }

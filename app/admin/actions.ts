@@ -9,31 +9,43 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function fetchAdminData(activeTab: string) {
+  console.log("fetchAdminData called with tab:", activeTab);
   const result: any = {};
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("Supabase environment variables are missing!");
+    throw new Error("Supabase configuration error");
+  }
 
   try {
     if (activeTab === "courses") {
-      const { data: depts } = await supabaseAdmin.from("departments").select("*");
+      const { data: depts, error: deptsErr } = await supabaseAdmin.from("departments").select("*");
+      if (deptsErr) console.error("Depts Error:", deptsErr);
       result.departments = depts || [];
-      const { data: crs } = await supabaseAdmin.from("courses").select("*, departments(name)");
+      
+      const { data: crs, error: crsErr } = await supabaseAdmin.from("courses").select("*, departments(name)");
+      if (crsErr) console.error("Courses Error:", crsErr);
       result.courses = crs || [];
     }
 
     if (activeTab === "lessons") {
-      const { data: crs } = await supabaseAdmin.from("courses").select("*");
+      const { data: crs, error: crsErr } = await supabaseAdmin.from("courses").select("*");
+      if (crsErr) console.error("Lessons/Courses Error:", crsErr);
       result.courses = crs || [];
     }
 
     if (activeTab === "students") {
-      const { data: stds } = await supabaseAdmin.from("profiles").select("*, departments(name)");
+      const { data: stds, error: stdsErr } = await supabaseAdmin.from("profiles").select("*, departments(name)");
+      if (stdsErr) console.error("Students Error:", stdsErr);
       result.students = stds || [];
     }
 
     if (activeTab === "grading" || activeTab === "certificates") {
-      const { data: progressData } = await supabaseAdmin
+      const { data: progressData, error: progErr } = await supabaseAdmin
         .from("user_progress")
         .select("*")
         .not("assignment_url", "is", null);
+      if (progErr) console.error("Progress Data Error:", progErr);
 
       const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name");
       const { data: lessons } = await supabaseAdmin.from("lessons").select("id, title, course_id");
@@ -50,7 +62,7 @@ export async function fetchAdminData(activeTab: string) {
     return result;
   } catch (error) {
     console.error("Error fetching admin data:", error);
-    return result;
+    throw error; // Throw so we can see it in the logs or 500
   }
 }
 

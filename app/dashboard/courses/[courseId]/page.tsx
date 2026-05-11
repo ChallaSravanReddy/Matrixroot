@@ -3,6 +3,26 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Script from "next/script";
+import { EnrollmentModal } from "@/components/EnrollmentModal";
+import { 
+  Play, 
+  CheckCircle2, 
+  Circle, 
+  ArrowLeft, 
+  ShieldCheck, 
+  Clock, 
+  BookOpen, 
+  Award,
+  Video
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface Lesson {
   id: string;
@@ -22,6 +42,7 @@ export default function CourseDetailPage() {
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -33,48 +54,25 @@ export default function CourseDetailPage() {
         return;
       }
 
-      // Fetch course details
-      const { data: courseData } = await supabase
-        .from("courses")
-        .select("*, departments(name)")
-        .eq("id", courseId)
-        .single();
+      const [courseRes, lessonRes, enrollRes] = await Promise.all([
+        supabase.from("courses").select("*, departments(name)").eq("id", courseId).single(),
+        supabase.from("lessons").select("*").eq("course_id", courseId).order("order_index", { ascending: true }),
+        supabase.from("enrollments").select("*").eq("student_id", session.user.id).eq("course_id", courseId).eq("payment_status", "completed").maybeSingle()
+      ]);
         
-      if (courseData) {
-        setCourse(courseData);
+      if (courseRes.data) setCourse(courseRes.data);
+      if (lessonRes.data) {
+        setLessons(lessonRes.data);
+        setCurrentLesson(lessonRes.data[0]);
       } else {
-        // Fallback for demo if ID is invalid
-        window.location.href = "/dashboard";
-      }
-
-      // Fetch lessons
-      const { data: lessonData } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", courseId)
-        .order("order_index", { ascending: true });
-        
-      if (lessonData && lessonData.length > 0) {
-        setLessons(lessonData);
-      } else {
-        // Insert dummy syllabus for the demo if no lessons are found
         setLessons([
           { id: "1", title: "Module 1: Introduction & Fundamentals" },
           { id: "2", title: "Module 2: Advanced Techniques" },
-          { id: "3", title: "Module 3: Hands-on Project" },
-          { id: "4", title: "Module 4: Final Assessment" }
+          { id: "3", title: "Module 3: Hands-on Project" }
         ]);
       }
-      // Check enrollment status
-      const { data: enrollment } = await supabase
-        .from("enrollments")
-        .select("*")
-        .eq("student_id", session.user.id)
-        .eq("course_id", courseId)
-        .eq("payment_status", "completed")
-        .maybeSingle();
       
-      if (enrollment) {
+      if (enrollRes.data) {
         setIsEnrolled(true);
       } else {
         setShowPayment(true);
@@ -86,276 +84,288 @@ export default function CourseDetailPage() {
     fetchCourseData();
   }, [courseId]);
 
-  const handleEnroll = () => {
-    setShowPayment(true);
-  };
-
   const handlePayNow = async () => {
     setEnrollLoading(true);
-    
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      
-      // Update enrollments table (mock function)
-      const { error } = await supabase
-        .from('enrollments')
-        .insert({
-          student_id: session.user.id,
+      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", session?.user.id).single();
+      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+      const options = {
+        key: razorpayKey,
+        amount: 50000,
+        currency: "INR",
+        name: "Matrix Root",
+        description: `Enrollment: ${course?.title}`,
+        retry: {
+          enabled: false // Disable retries to prevent modal hanging issues
+        },
+        timeout: 60,
+        handler: async function (response: any) {
+          try {
+            console.log("Starting enrollment update for student:", session?.user.id, "course:", courseId);
+            
+            // 1. Check if record already exists manually to avoid constraint issues
+            const { data: existing } = await supabase
+              .from('enrollments')
+              .select('id')
+              .eq('student_id', session?.user.id)
+              .eq('course_id', courseId)
+              .maybeSingle();
+
+            let dbError;
+            
+            if (existing) {
+              console.log("Updating existing enrollment:", existing.id);
+              const { error } = await supabase
+                .from('enrollments')
+                .update({
+                  payment_status: 'completed',
+                  payment_id: response.razorpay_payment_id,
+                  enrolled_at: new Date().toISOString()
+                })
+                .eq('id', existing.id);
+              dbError = error;
+            } else {
+              console.log("Inserting new enrollment");
+              const { error } = await supabase
+                .from('enrollments')
+                .insert({
+                  student_id: session?.user.id,
+                  course_id: courseId,
+                  payment_status: 'completed',
+                  payment_id: response.razorpay_payment_id,
+                  enrolled_at: new Date().toISOString()
+                });
+              dbError = error;
+            }
+            
+            if (dbError) throw dbError;
+            
+            console.log("Enrollment update successful");
+            alert("Enrollment Success!");
+            window.location.reload();
+          } catch (handlerErr: any) {
+            console.error("Critical Enrollment Error:", handlerErr);
+            alert(`PAYMENT SUCCESSFUL (ID: ${response.razorpay_payment_id}), but the database failed to update: ${handlerErr.message || "Unknown Error"}. Please screenshot this and contact support.`);
+          }
+        },
+        prefill: {
+          name: profile?.full_name || "",
+          email: session?.user.email || "",
+          contact: "" // Explicitly empty or provided if available
+        },
+        notes: {
           course_id: courseId,
-          payment_status: 'completed'
-        });
-        
-      if (error) {
-        console.error("Payment insert error:", error);
-        // We'll proceed anyway for the demo if table doesn't exist
-      }
-      
-      // Redirect to first lesson
-      const firstLessonId = lessons.length > 0 ? lessons[0].id : '';
-      if (firstLessonId) {
-        window.location.href = `/dashboard/courses/${courseId}/lessons/${firstLessonId}`;
-      } else {
-        alert("No lessons available yet.");
-        setShowPayment(false);
+          student_id: session?.user.id
+        },
+        theme: { 
+          color: "#2563eb",
+          backdrop_color: "rgba(0,0,0,0.8)"
+        },
+        modal: { 
+          ondismiss: () => setEnrollLoading(false),
+          escape: true,
+          backdropclose: false
+        }
+      };
+
+      if (!razorpayKey) {
+        console.error("RAZORPAY_KEY_ID is missing. Check your environment variables.");
+        alert("Payment initialization failed. Please try again later.");
         setEnrollLoading(false);
+        return;
       }
+
+      const rzp = new window.Razorpay(options);
       
+      rzp.on('payment.failed', function (response: any) {
+        console.error("Payment Failed:", response.error);
+        alert(`Payment failed: ${response.error.description}`);
+        setEnrollLoading(false);
+      });
+
+      rzp.open();
     } catch (err) {
-      console.error(err);
       setEnrollLoading(false);
-      setShowPayment(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-slate-50 items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-background items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
+  const progress = Math.round((lessons.filter(l => l.is_preview).length / lessons.length) * 100);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
-      {/* Header */}
-      <header className="flex items-center gap-4 p-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <button 
-          onClick={() => window.location.href = '/dashboard'} 
-          className="p-2 bg-slate-100 hover:bg-slate-700 rounded-lg transition-colors border border-slate-300"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent truncate max-w-[250px] md:max-w-none">
-            {course?.title || "Course Details"}
+    <div className="min-h-screen bg-background flex flex-col">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      
+      {/* Navbar */}
+      <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-xl">
+            <ArrowLeft size={20} />
+          </Button>
+          <div className="hidden sm:block h-4 w-px bg-border mx-2" />
+          <h1 className="text-sm font-bold truncate max-w-[200px] md:max-w-none">
+            {course?.title || "Course Player"}
           </h1>
+        </div>
+        <div className="flex items-center gap-4">
+           <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+             <ShieldCheck size={14} className="text-primary" />
+             Industrial Track
+           </div>
+           <Button size="sm" variant="outline" className="rounded-full px-4 h-9">
+              Resources
+           </Button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-12">
-        <div className="max-w-4xl mx-auto space-y-10">
-          
-          {/* Course Info & Syllabus */}
-          <div className="space-y-10">
-            {/* Hero Image / Placeholder */}
-            <div className="w-full h-64 md:h-80 bg-white border border-slate-200 rounded-3xl overflow-hidden relative shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-slate-900 to-sky-600/30"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-24 h-24 text-slate-700">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                </svg>
-              </div>
-              <div className="absolute bottom-6 left-6 flex items-center gap-3">
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-xs font-medium text-sky-300 uppercase tracking-wider">
-                  {course?.departments?.name || "General"} Track
-                </span>
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-xs font-medium text-sky-300 uppercase tracking-wider">
-                  Internship
-                </span>
-              </div>
-            </div>
+      {/* Main Player Area */}
+      <div className="flex-1 grid lg:grid-cols-[1fr_360px] h-[calc(100vh-64px)] overflow-hidden">
+        
+        {/* Left: Video & Content */}
+        <main className="flex flex-col overflow-y-auto">
+          {/* Video Player Placeholder */}
+          <div className="aspect-video w-full bg-black relative flex items-center justify-center overflow-hidden">
+             <div className="absolute inset-0 opacity-20" style={{ background: "var(--gradient-primary)" }} />
+             <div className="relative z-10 text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-primary mb-4 border border-primary/30 group cursor-pointer hover:scale-110 transition-transform">
+                   <Play size={40} className="fill-current ml-1" />
+                </div>
+                <p className="text-white/60 text-sm font-medium">Click to start Module: {currentLesson?.title}</p>
+             </div>
+             
+             {/* Player Controls Fake */}
+             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="h-1 w-full bg-white/20 rounded-full mb-4">
+                   <div className="h-full bg-primary rounded-full w-1/3" />
+                </div>
+                <div className="flex items-center justify-between text-white/80 text-xs font-bold uppercase tracking-widest">
+                   <div className="flex items-center gap-4">
+                      <span>02:45 / 15:00</span>
+                      <Video size={16} />
+                   </div>
+                   <span>HD</span>
+                </div>
+             </div>
+          </div>
 
-            {/* Description */}
-            <div className="space-y-4">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">{course?.title}</h2>
-              <p className="text-lg text-slate-600 leading-relaxed whitespace-pre-wrap">
-                {course?.description || "A comprehensive training program designed to equip you with the skills necessary for modern industry demands. This course blends theoretical knowledge with intense, practical application."}
-              </p>
+          {/* Description Section */}
+          <div className="p-8 md:p-12 max-w-4xl">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full border border-primary/20">
+                {course?.departments?.name || "Internship"}
+              </span>
+              <span className="px-3 py-1 bg-accent text-accent-foreground text-[10px] font-black uppercase tracking-widest rounded-full">
+                Module {currentLesson?.order_index || 1}
+              </span>
             </div>
+            
+            <h2 className="text-3xl font-black mb-4">{currentLesson?.title}</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+              {course?.description || "In this module, you will learn the fundamental concepts and industry standards required for this track. Our mentors have designed this to be highly practical and hands-on."}
+            </p>
 
-            {/* Syllabus */}
-            <div className="space-y-6 pt-6 border-t border-slate-200">
-              <div className="flex items-center gap-3">
-                <h3 className="text-2xl font-bold text-slate-900">Course Syllabus</h3>
-                <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs text-slate-600 font-medium">
-                  {lessons.length} Modules
-                </span>
-              </div>
-              
-              <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-8 border-t border-border pt-10">
+               <div className="space-y-4">
+                  <h4 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <Clock size={16} className="text-primary" />
+                    Module Duration
+                  </h4>
+                  <p className="text-muted-foreground">Approx. 45 minutes of lessons + 2 hours of practical task.</p>
+               </div>
+               <div className="space-y-4">
+                  <h4 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <Award size={16} className="text-primary" />
+                    Outcome
+                  </h4>
+                  <p className="text-muted-foreground">Successful completion unlocks the next module and earns progress toward certification.</p>
+               </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Right: Syllabus Sidebar */}
+        <aside className="border-l border-border bg-card/30 flex flex-col h-full overflow-hidden">
+          <div className="p-6 border-b border-border shrink-0">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-black text-sm uppercase tracking-widest">Course Syllabus</h3>
+                <span className="text-[10px] font-bold text-primary">{progress}% Done</span>
+             </div>
+             <div className="h-1.5 w-full bg-accent rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+             <ul className="divide-y divide-border/50">
                 {lessons.map((lesson, index) => {
                   const isLocked = !isEnrolled && !lesson.is_preview;
+                  const isActive = currentLesson?.id === lesson.id;
                   
                   return (
-                    <button 
+                    <li 
                       key={lesson.id} 
-                      onClick={() => {
-                        if (isLocked) {
-                          handleEnroll();
-                        } else {
-                          window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`;
-                        }
-                      }}
-                      className={`w-full flex gap-6 p-6 bg-white/80 backdrop-blur-sm border rounded-2xl transition-all text-left group ${
-                        isLocked ? "border-slate-200 opacity-75 cursor-default" : "border-slate-200 hover:bg-slate-100 hover:border-blue-500/30 cursor-pointer"
-                      }`}
+                      onClick={() => !isLocked && setCurrentLesson(lesson)}
+                      className={`p-4 flex gap-4 cursor-pointer transition-colors ${isActive ? "bg-primary/5" : "hover:bg-accent/50"} ${isLocked ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border transition-colors ${
-                          isLocked 
-                          ? "bg-slate-200 border-slate-300 text-slate-400" 
-                          : "bg-blue-500/10 border-blue-500/20 text-blue-600"
-                        }`}>
-                          {isLocked ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                          ) : index + 1}
-                        </div>
-                        {index !== lessons.length - 1 && (
-                          <div className="w-px h-full bg-slate-200 mt-4"></div>
+                      <div className="shrink-0 mt-1">
+                        {isLocked ? (
+                          <ShieldCheck size={18} className="text-muted-foreground" />
+                        ) : isActive ? (
+                          <Play size={18} className="text-primary fill-current" />
+                        ) : (
+                          <Circle size={18} className="text-muted-foreground" />
                         )}
                       </div>
-                      <div className="flex-1 pb-2 flex flex-col justify-center">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <h4 className={`text-lg font-semibold transition-colors ${isLocked ? "text-slate-400" : "text-slate-900"}`}>
-                              {lesson.title}
-                            </h4>
+                      <div className="flex-1 min-w-0">
+                         <h4 className={`text-sm font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                           {lesson.title}
+                         </h4>
+                         <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] font-bold text-muted-foreground">Module {index + 1}</span>
                             {lesson.is_preview && (
-                              <span className="px-2 py-0.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[10px] font-bold uppercase tracking-wider">
-                                Free Preview
-                              </span>
+                              <span className="text-[10px] font-black text-sky-500 uppercase tracking-tighter">Free Preview</span>
                             )}
-                          </div>
-                          {isLocked && (
-                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Locked</span>
-                          )}
-                        </div>
+                         </div>
                       </div>
-                    </button>
+                    </li>
                   );
                 })}
-              </div>
-            </div>
+             </ul>
           </div>
-        </div>
-      </main>
 
-      {/* Payment Modal / Guidelines */}
-      {showPayment && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4 flex-shrink-0">
-              <h3 className="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-blue-600">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                </svg>
-                Internship Enrollment & Guidelines
-              </h3>
-              <button 
-                onClick={() => !enrollLoading && setShowPayment(false)}
-                disabled={enrollLoading}
-                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto pr-2 space-y-6">
-              
-              {/* Syllabus Preview */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-blue-600">
-                    <path fillRule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.665l-.618.257a.75.75 0 00-.45.698v1.091A2.75 2.75 0 0112.352 18h-4.704A2.75 2.75 0 014.896 15.25v-1.091a.75.75 0 00-.45-.698l-.618-.257C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.328a41.623 41.623 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25z" clipRule="evenodd" />
-                  </svg>
-                  Syllabus Preview ({lessons.length} Modules)
-                </h4>
-                <div className="bg-white border border-slate-200 rounded-xl max-h-[160px] overflow-y-auto divide-y divide-slate-100">
-                  {lessons.map((l, i) => (
-                    <div key={l.id} className="p-3 text-sm flex items-start gap-3">
-                      <span className="text-slate-400 font-medium">{i + 1}.</span>
-                      <span className="text-slate-700 font-medium">{l.title}</span>
-                    </div>
-                  ))}
-                  {lessons.length === 0 && <div className="p-4 text-sm text-slate-500 text-center">Syllabus loading...</div>}
-                </div>
-              </div>
-
-              {/* Guidelines Box */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Type</span>
-                    <span className="text-sm font-medium text-slate-800">Self-Paced Industrial Training + Internship</span>
-                  </div>
-                  <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Stipend</span>
-                    <span className="text-sm font-medium text-slate-800">Non-stipendiary training program</span>
-                  </div>
-                  <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cost</span>
-                    <span className="text-sm font-medium text-slate-800">One-time Training & Infrastructure fee of <strong className="text-blue-600">₹500</strong></span>
-                  </div>
-                  <div>
-                    <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Refund Policy</span>
-                    <span className="text-sm font-medium text-slate-800">Strictly <strong className="text-red-500">No Refunds</strong> once materials are accessed</span>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-slate-200/60">
-                  <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Process</span>
-                  <span className="text-sm font-medium text-slate-800">Internship Certificate is awarded <strong>ONLY</strong> after successfully completing all modules and submitting all required assignments.</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Footer / Actions */}
-            <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col gap-4 flex-shrink-0">
-
-              <button 
-                onClick={handlePayNow}
-                disabled={enrollLoading}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98] flex justify-center items-center gap-2"
-              >
-                {enrollLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Initializing Secure Checkout...
-                  </>
-                ) : (
-                  "Start training"
-                )}
-              </button>
-            </div>
-
+          {/* Bottom Action */}
+          <div className="p-6 border-t border-border bg-background/50">
+             {!isEnrolled ? (
+               <Button className="w-full rounded-xl h-12 font-bold shadow-xl shadow-primary/20" onClick={() => setShowPayment(true)}>
+                 Enroll to Unlock All
+               </Button>
+             ) : (
+               <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest justify-center">
+                  <CheckCircle2 size={14} className="text-primary" />
+                  All modules unlocked
+               </div>
+             )}
           </div>
-        </div>
-      )}
+        </aside>
+      </div>
+
+      {/* Enrollment Modal Integration */}
+      <EnrollmentModal 
+        open={showPayment} 
+        onOpenChange={setShowPayment}
+        courseTitle={course?.title || "Program"}
+        onPay={handlePayNow}
+        loading={enrollLoading}
+      />
     </div>
   );
 }
