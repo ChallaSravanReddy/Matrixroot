@@ -62,7 +62,7 @@ export default function CareersPage() {
       <Navbar />
 
       {/* Hero Section - Rule of Thirds & Z-Pattern */}
-      <section className="relative pt-40 pb-32 md:pt-64 md:pb-56 overflow-hidden">
+      <section className="relative pt-10 pb-10 md:pt-10 md:pb-10 overflow-hidden">
         <div className="absolute inset-0 matrix-bg -z-10 opacity-30 matrix-bg-animate" />
         <div className="container mx-auto max-w-7xl px-4 relative z-10">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
