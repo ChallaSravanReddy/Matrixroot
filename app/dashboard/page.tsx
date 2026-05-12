@@ -106,7 +106,7 @@ export default function DashboardPage() {
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Student Menu</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
-          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => {}} />
+          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Performance" />
           
           <div className="pt-6">
@@ -258,7 +258,7 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+      className={`w-full flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-bold transition-all ${
         active 
         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
         : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -272,19 +272,21 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
 
 function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
   return (
-    <div className="bg-card border border-border rounded-3xl p-6 shadow-card hover:border-primary/20 transition-all group">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-[2rem] p-6 md:p-8 shadow-sm hover:shadow-card hover:border-primary/20 transition-all group flex flex-col justify-between">
+      <div className="flex items-start justify-between mb-6">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
           {icon}
         </div>
         {progress !== undefined && (
-          <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded">
+          <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg">
             {Math.round(progress)}%
           </span>
         )}
       </div>
-      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-xl font-black">{value}</p>
+      <div>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
+        <p className="text-3xl font-black tracking-tight">{value}</p>
+      </div>
       {progress !== undefined && (
         <div className="mt-4 h-1.5 w-full bg-accent rounded-full overflow-hidden">
           <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
@@ -341,7 +343,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: 
                 courseName={course.title} 
                 branch={profile?.departments?.name || "Engineering"} 
                 score={enrolled?.final_score || 0} 
-                certId={enrolled?.id.substring(0, 13).toUpperCase() || "CERT"}
+                certId={enrolled?.id}
              />
           )}
         </div>

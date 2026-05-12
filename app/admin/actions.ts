@@ -32,6 +32,10 @@ export async function fetchAdminData(activeTab: string) {
       const { data: crs, error: crsErr } = await supabaseAdmin.from("courses").select("*");
       if (crsErr) console.error("Lessons/Courses Error:", crsErr);
       result.courses = crs || [];
+
+      const { data: lsns, error: lsnsErr } = await supabaseAdmin.from("lessons").select("*").order("order_index", { ascending: true });
+      if (lsnsErr) console.error("Lessons Fetch Error:", lsnsErr);
+      result.lessons = lsns || [];
     }
 
     if (activeTab === "students") {
@@ -132,7 +136,30 @@ export async function createCourseAction(course: any) {
 }
 
 export async function createLessonAction(lesson: any) {
+  // If no order_index is provided, you might want to fetch max order_index or just let DB default it, 
+  // but it's fine as we can reorder it later.
   const { error } = await supabaseAdmin.from("lessons").insert([lesson]);
   if (error) return { success: false, error: error.message };
   return { success: true };
+}
+
+export async function deleteLessonAction(lessonId: string) {
+  const { error } = await supabaseAdmin.from("lessons").delete().eq("id", lessonId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function reorderLessonsAction(updates: { id: string, order_index: number }[]) {
+  try {
+    for (const update of updates) {
+      const { error } = await supabaseAdmin
+        .from("lessons")
+        .update({ order_index: update.order_index })
+        .eq("id", update.id);
+      if (error) throw error;
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }

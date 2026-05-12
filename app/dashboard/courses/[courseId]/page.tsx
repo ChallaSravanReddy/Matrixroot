@@ -177,6 +177,13 @@ export default function CourseDetailPage() {
         return;
       }
 
+      if (!window.Razorpay) {
+        console.error("Razorpay SDK failed to load.");
+        alert("Payment system is still loading or failed to connect. Please wait a few seconds and try again.");
+        setEnrollLoading(false);
+        return;
+      }
+
       const rzp = new window.Razorpay(options);
       
       rzp.on('payment.failed', function (response: any) {
@@ -203,7 +210,7 @@ export default function CourseDetailPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       
       {/* Navbar */}
       <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 sticky top-0 z-50">

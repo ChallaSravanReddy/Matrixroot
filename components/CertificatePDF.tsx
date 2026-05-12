@@ -83,12 +83,27 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
 
             {/* Footer Stats & Signatures */}
             <div className="w-full flex justify-between items-end mt-12 px-12">
-              <div className="text-left space-y-2">
-                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}>
-                  <p className="text-xs font-sans font-bold uppercase" style={{ color: '#818cf8' }}>Performance Score</p>
-                  <p className="text-3xl font-bold" style={{ color: '#312e81' }}>{score}%</p>
+              <div className="flex items-center gap-8">
+                {/* Performance Score */}
+                <div className="text-left space-y-2">
+                  <div className="p-4 rounded-xl border min-w-[140px]" style={{ backgroundColor: '#f5f3ff', borderColor: '#ddd6fe' }}>
+                    <p className="text-[10px] font-sans font-bold uppercase" style={{ color: '#818cf8' }}>Performance Score</p>
+                    <p className="text-3xl font-bold" style={{ color: '#312e81' }}>{score}%</p>
+                  </div>
+                  <p className="text-[10px] text-zinc-400 font-sans tracking-tight">Certificate ID: {certId?.substring(0, 13).toUpperCase()}</p>
                 </div>
-                <p className="text-[10px] text-zinc-400 font-sans">Certificate ID: {certId}</p>
+
+                {/* QR Code Verification */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-2 bg-white border border-zinc-200 rounded-xl">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/verify/' + certId : '')}`} 
+                      alt="Verify Certificate" 
+                      className="w-16 h-16"
+                    />
+                  </div>
+                  <p className="text-[8px] font-sans font-black uppercase tracking-widest text-zinc-400">Scan to Verify</p>
+                </div>
               </div>
 
               <div className="flex flex-col items-center">

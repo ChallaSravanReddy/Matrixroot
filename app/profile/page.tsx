@@ -94,10 +94,10 @@ export default function ProfilePage() {
           <span className="font-bold text-lg">Matrix Root</span>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <Button variant="ghost" className="w-full justify-start font-bold" onClick={() => window.location.href = '/dashboard'}>
+          <Button variant="ghost" className="w-full justify-start font-bold min-h-[48px]" onClick={() => window.location.href = '/dashboard'}>
             <LayoutDashboard size={18} className="mr-3" /> Dashboard
           </Button>
-          <Button variant="default" className="w-full justify-start font-bold">
+          <Button variant="default" className="w-full justify-start font-bold min-h-[48px]">
             <User size={18} className="mr-3" /> My Profile
           </Button>
         </nav>

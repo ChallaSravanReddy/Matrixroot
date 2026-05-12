@@ -35,34 +35,49 @@ export default function Home() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-24 md:pt-48 md:pb-40">
+    <section className="relative overflow-hidden pt-10 pb-10 md:pt-10 md:pb-10">
       <div className="absolute inset-0 matrix-bg -z-10 opacity-40 matrix-bg-animate" />
-      <div className="container mx-auto max-w-7xl px-4">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 backdrop-blur-sm px-4 py-2 text-xs font-black tracking-widest text-primary shadow-sm mb-10 animate-kinetic">
-            <Sparkles className="h-4 w-4" />
-            BUILDING SCALABLE INFRASTRUCTURE
+      <div className="container mx-auto max-w-7xl px-4 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
+          {/* Rule of Thirds: Content takes up 7/12 (~60%) of the grid */}
+          <div className="lg:col-span-8 flex flex-col items-start text-left">
+            <div className="inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md px-5 py-2.5 text-xs font-black tracking-[0.2em] text-primary shadow-sm mb-10 animate-kinetic">
+              <Sparkles className="h-4 w-4" />
+              BUILDING SCALABLE INFRASTRUCTURE
+            </div>
+            
+            {/* Adjusted typography scale and leading to prevent overlap */}
+            <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground leading-[1.1] mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              Building Scalable <br />
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>
+                Digital Infrastructure
+              </span> <br />
+              for the Future.
+            </h1>
+
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl font-medium animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200 mb-12">
+              We provide enterprise-grade web development, AI automation, and custom software solutions that drive business growth.
+            </p>
+
+            {/* Z-Pattern: CTAs at the bottom right of the text block */}
+            <div className="flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
+              <Button asChild size="lg" className="rounded-full px-10 h-16 text-lg font-black shadow-2xl shadow-primary/40 bg-primary hover:shadow-primary/60 transition-all hover:-translate-y-2">
+                <Link href="/#services">View Our Services <ArrowRight className="ml-3 h-6 w-6" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-bold border-border/50 bg-card/40 backdrop-blur-xl hover:bg-card hover:-translate-y-2 transition-all">
+                <Link href="/careers">Start an Internship</Link>
+              </Button>
+            </div>
           </div>
           
-          <h1 className="text-6xl md:text-[7rem] font-black tracking-tighter text-foreground leading-[0.85] mb-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            Building Scalable <br />
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>
-              Digital Infrastructure
-            </span> <br />
-            for the Future.
-          </h1>
-
-          <p className="mt-12 text-lg md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-            We provide enterprise-grade web development, AI automation, and custom software solutions that drive business growth.
-          </p>
-
-          <div className="mt-16 flex flex-wrap justify-center gap-6 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
-            <Button asChild size="lg" className="rounded-full px-12 h-16 text-lg font-black shadow-2xl shadow-primary/30 bg-primary hover:shadow-primary/50 transition-all hover:-translate-y-1">
-              <Link href="/#services">View Our Services <ArrowRight className="ml-2 h-5 w-5" /></Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full px-12 h-16 text-lg font-bold border-border bg-card/50 backdrop-blur-md hover:bg-card hover:-translate-y-1 transition-all">
-              <Link href="/careers">Start an Internship</Link>
-            </Button>
+          {/* Rule of Thirds: Visual balance on the right 5/12 (~40%) */}
+          <div className="lg:col-span-4 hidden lg:flex justify-center relative">
+             <div className="w-full aspect-square rounded-[3rem] border border-border/30 bg-card/10 backdrop-blur-sm shadow-2xl relative overflow-hidden flex items-center justify-center">
+                <div className="absolute inset-0 matrix-bg opacity-50" />
+                <Cpu className="h-32 w-32 text-primary opacity-80 animate-float" />
+             </div>
+             {/* Glowing orb behind */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -z-10" />
           </div>
         </div>
       </div>
@@ -97,11 +112,12 @@ function Services() {
   ];
 
   return (
-    <section id="services" className="py-32 border-y border-border/50 bg-card/20 relative">
+    <section id="services" className="py-40 border-y border-border/30 bg-card/10 relative">
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="max-w-2xl mb-20">
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-6">Our Expertise</h2>
-          <p className="text-lg text-muted-foreground font-medium">We deliver no-bluff, production-ready software solutions for the modern era.</p>
+        {/* F-Pattern Alignment for headers */}
+        <div className="max-w-3xl mb-24 text-left">
+          <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-8">Our Expertise</h2>
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">We deliver no-bluff, production-ready software solutions for the modern era.</p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
@@ -129,9 +145,9 @@ function Services() {
 
 function BentoShowcase() {
   return (
-    <section className="py-32 overflow-hidden">
+    <section className="py-40 overflow-hidden relative">
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2 md:row-span-2 bento-card bg-gradient-to-br from-primary/20 to-transparent flex flex-col justify-between min-h-[400px]">
              <div>
                <h3 className="text-3xl font-black tracking-tighter mb-4">The Matrix Architecture</h3>
@@ -173,9 +189,9 @@ function BentoShowcase() {
 
 function TrustSection() {
   return (
-    <section className="py-24 border-y border-border/50 bg-card/10">
+    <section className="py-32 border-y border-border/30 bg-card/5">
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="grid gap-12 md:grid-cols-4">
+        <div className="grid gap-12 md:gap-8 md:grid-cols-4">
           {[
             { icon: ShieldCheck, label: "Government Registered", value: "MSME UDYAM" },
             { icon: Database, label: "Secure Data", value: "ISO Standards" },
@@ -200,12 +216,12 @@ function TrustSection() {
 
 function CTASection() {
   return (
-    <section className="py-32">
+    <section className="py-40">
       <div className="container mx-auto max-w-6xl px-4">
-        <div className="relative overflow-hidden rounded-[3.5rem] px-8 py-20 text-primary-foreground md:py-32 text-center" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[0.9]">Ready to Build the <br /> Future with Us?</h2>
-            <p className="text-lg md:text-xl opacity-90 mb-12 font-medium">Whether you need a custom software solution or want to kickstart your career with an elite internship, Matrix Root is your destination.</p>
+        <div className="relative overflow-hidden rounded-[4rem] px-8 py-24 text-primary-foreground md:py-40 text-center" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-10 leading-[0.9]">Ready to Build the <br /> Future with Us?</h2>
+            <p className="text-xl md:text-2xl opacity-90 mb-16 font-medium max-w-2xl mx-auto">Whether you need a custom software solution or want to kickstart your career with an elite internship, Matrix Root is your destination.</p>
             <div className="flex flex-wrap justify-center gap-6">
               <Button asChild size="lg" variant="secondary" className="rounded-full h-16 px-12 text-lg font-black shadow-2xl hover:-translate-y-1 transition-all">
                 <Link href="/signup">Contact Agency</Link>
