@@ -149,6 +149,8 @@ export async function createLessonAction(lesson: any) {
 }
 
 export async function deleteLessonAction(lessonId: string) {
+  // Clear user_progress for this lesson first to prevent foreign key violations
+  await supabaseAdmin.from("user_progress").delete().eq("lesson_id", lessonId);
   const { error } = await supabaseAdmin.from("lessons").delete().eq("id", lessonId);
   if (error) return { success: false, error: error.message };
   return { success: true };
@@ -170,9 +172,19 @@ export async function reorderLessonsAction(updates: { id: string, order_index: n
 }
 
 export async function deleteCourseAction(courseId: string) {
-  const { error } = await supabaseAdmin.from("courses").delete().eq("id", courseId);
-  if (error) return { success: false, error: error.message };
-  return { success: true };
+  try {
+    // Manually cascade delete child foreign key records to avoid postgres constraint errors
+    await supabaseAdmin.from("user_progress").delete().eq("course_id", courseId);
+    await supabaseAdmin.from("enrollments").delete().eq("course_id", courseId);
+    await supabaseAdmin.from("lessons").delete().eq("course_id", courseId);
+    await supabaseAdmin.from("course_modules").delete().eq("course_id", courseId);
+
+    const { error } = await supabaseAdmin.from("courses").delete().eq("id", courseId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function createModuleAction(moduleData: any) {
@@ -182,7 +194,19 @@ export async function createModuleAction(moduleData: any) {
 }
 
 export async function deleteModuleAction(moduleId: string) {
-  const { error } = await supabaseAdmin.from("course_modules").delete().eq("id", moduleId);
-  if (error) return { success: false, error: error.message };
-  return { success: true };
+  try {
+    // First, clear out child lessons and their associated progress records
+    const { data: modLessons } = await supabaseAdmin.from("lessons").select("id").eq("module_id", moduleId);
+    if (modLessons && modLessons.length > 0) {
+      const lessonIds = modLessons.map(l => l.id);
+      await supabaseAdmin.from("user_progress").delete().in("lesson_id", lessonIds);
+      await supabaseAdmin.from("lessons").delete().eq("module_id", moduleId);
+    }
+
+    const { error } = await supabaseAdmin.from("course_modules").delete().eq("id", moduleId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
