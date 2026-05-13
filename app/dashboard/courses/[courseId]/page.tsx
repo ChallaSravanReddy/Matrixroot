@@ -11,18 +11,9 @@ import {
   Circle, 
   ArrowLeft, 
   ShieldCheck, 
-  Clock, 
-  BookOpen, 
-  Award,
-  Video
+  Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
 
 interface Lesson {
   id: string;
@@ -47,6 +38,14 @@ export default function CourseDetailPage() {
   const [showPayment, setShowPayment] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+
+  // Lesson progress tracking state
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
+  const [progressRecords, setProgressRecords] = useState<any[]>([]);
+  const [assignmentUrl, setAssignmentUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -57,31 +56,44 @@ export default function CourseDetailPage() {
         window.location.href = "/login";
         return;
       }
+      setSessionUser(session.user);
 
-      const [courseRes, lessonRes, enrollRes, moduleRes] = await Promise.all([
+      const [courseRes, lessonRes, allEnrollsRes, moduleRes, progRes, profileRes] = await Promise.all([
         supabase.from("courses").select("*, departments(name)").eq("id", courseId).single(),
         supabase.from("lessons").select("*").eq("course_id", courseId).order("order_index", { ascending: true }),
-        supabase.from("enrollments").select("*").eq("student_id", session.user.id).eq("course_id", courseId).eq("payment_status", "completed").maybeSingle(),
-        supabase.from("course_modules").select("*").eq("course_id", courseId).order("order_index", { ascending: true })
+        supabase.from("enrollments").select("*").eq("student_id", session.user.id),
+        supabase.from("course_modules").select("*").eq("course_id", courseId).order("order_index", { ascending: true }),
+        supabase.from("user_progress").select("*").eq("user_id", session.user.id).eq("course_id", courseId),
+        supabase.from("profiles").select("full_name").eq("id", session.user.id).maybeSingle()
       ]);
         
       if (courseRes.data) setCourse(courseRes.data);
       if (moduleRes?.data) setModules(moduleRes.data);
-      if (lessonRes.data) {
-        setLessons(lessonRes.data);
-        setCurrentLesson(lessonRes.data[0]);
+      if (profileRes?.data) setProfile(profileRes.data);
+
+      if (progRes?.data) {
+        setProgressRecords(progRes.data);
+        setCompletedLessonIds(progRes.data.map((p: any) => p.lesson_id));
+      }
+
+      let loadedLessons: Lesson[] = [];
+      if (lessonRes.data && lessonRes.data.length > 0) {
+        loadedLessons = lessonRes.data;
+        setLessons(loadedLessons);
+        setCurrentLesson(loadedLessons[0]);
       } else {
-        setLessons([
-          { id: "1", title: "Module 1: Introduction & Fundamentals" },
-          { id: "2", title: "Module 2: Advanced Techniques" },
-          { id: "3", title: "Module 3: Hands-on Project" }
-        ]);
+        // Fallback placeholder lesson data if empty
+        loadedLessons = [
+          { id: "1", title: "Module 1: Introduction & Fundamentals", is_preview: true, notes: "Welcome to the official study material notes workspace." }
+        ];
+        setLessons(loadedLessons);
+        setCurrentLesson(loadedLessons[0]);
       }
       
-      if (enrollRes.data) {
+      const hasPaid = allEnrollsRes.data?.some(e => String(e.course_id) === String(courseId) && (e.payment_status === "completed" || e.payment_status === "success"));
+      
+      if (hasPaid) {
         setIsEnrolled(true);
-      } else {
-        setShowPayment(true);
       }
       
       setLoading(false);
@@ -90,11 +102,52 @@ export default function CourseDetailPage() {
     fetchCourseData();
   }, [courseId]);
 
+  // Synchronize assignment submission input state whenever currentLesson or loaded progression records swap
+  useEffect(() => {
+    if (!currentLesson) return;
+    const rec = progressRecords.find(p => String(p.lesson_id) === String(currentLesson.id));
+    setAssignmentUrl(rec?.assignment_url || "");
+  }, [currentLesson, progressRecords]);
+
+  const handleCompleteLesson = async (lessonToComplete?: Lesson | null) => {
+    const targetLesson = lessonToComplete || currentLesson;
+    if (!sessionUser || !targetLesson) return;
+    setSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from("user_progress")
+        .upsert({
+          user_id: sessionUser.id,
+          lesson_id: targetLesson.id,
+          course_id: courseId,
+          assignment_url: assignmentUrl || null,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id, lesson_id'
+        });
+
+      if (error) {
+        console.error("Progress upsert error:", error);
+      } else {
+        if (!completedLessonIds.includes(targetLesson.id)) {
+          setCompletedLessonIds(prev => [...prev, targetLesson.id]);
+        }
+        setProgressRecords(prev => {
+          const filtered = prev.filter(p => String(p.lesson_id) !== String(targetLesson.id));
+          return [...filtered, { lesson_id: targetLesson.id, assignment_url: assignmentUrl || null }];
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handlePayNow = async () => {
     setEnrollLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", session?.user.id).single();
       const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
       const options = {
@@ -103,26 +156,19 @@ export default function CourseDetailPage() {
         currency: "INR",
         name: "Matrix Root",
         description: `Enrollment: ${course?.title}`,
-        retry: {
-          enabled: false // Disable retries to prevent modal hanging issues
-        },
+        retry: { enabled: false },
         timeout: 60,
         handler: async function (response: any) {
           try {
-            console.log("Starting enrollment update for student:", session?.user.id, "course:", courseId);
-            
-            // 1. Check if record already exists manually to avoid constraint issues
             const { data: existing } = await supabase
               .from('enrollments')
               .select('id')
-              .eq('student_id', session?.user.id)
+              .eq('student_id', sessionUser?.id)
               .eq('course_id', courseId)
               .maybeSingle();
 
             let dbError;
-            
             if (existing) {
-              console.log("Updating existing enrollment:", existing.id);
               const { error } = await supabase
                 .from('enrollments')
                 .update({
@@ -133,11 +179,10 @@ export default function CourseDetailPage() {
                 .eq('id', existing.id);
               dbError = error;
             } else {
-              console.log("Inserting new enrollment");
               const { error } = await supabase
                 .from('enrollments')
                 .insert({
-                  student_id: session?.user.id,
+                  student_id: sessionUser?.id,
                   course_id: courseId,
                   payment_status: 'completed',
                   payment_id: response.razorpay_payment_id,
@@ -148,321 +193,474 @@ export default function CourseDetailPage() {
             
             if (dbError) throw dbError;
             
-            console.log("Enrollment update successful");
             alert("Enrollment Success!");
-            window.location.reload();
+            setIsEnrolled(true);
+            setShowPayment(false);
+            setEnrollLoading(false);
           } catch (handlerErr: any) {
-            console.error("Critical Enrollment Error:", handlerErr);
-            alert(`PAYMENT SUCCESSFUL (ID: ${response.razorpay_payment_id}), but the database failed to update: ${handlerErr.message || "Unknown Error"}. Please screenshot this and contact support.`);
+            console.error("Enrollment status confirmation error:", handlerErr);
+            alert(`Payment database mapping sync failed: ${handlerErr.message || "Unknown Error"}. Please contact administrators.`);
+            setEnrollLoading(false);
           }
         },
         prefill: {
           name: profile?.full_name || "",
-          email: session?.user.email || "",
-          contact: "" // Explicitly empty or provided if available
+          email: sessionUser?.email || "",
+          contact: ""
         },
         notes: {
           course_id: courseId,
-          student_id: session?.user.id
+          student_id: sessionUser?.id
         },
-        theme: { 
-          color: "#2563eb",
-          backdrop_color: "rgba(0,0,0,0.8)"
-        },
+        theme: { color: "#2563eb" },
         modal: { 
           ondismiss: () => setEnrollLoading(false),
-          escape: true,
-          backdropclose: false
+          escape: true
         }
       };
 
-      if (!razorpayKey) {
-        console.error("RAZORPAY_KEY_ID is missing. Check your environment variables.");
-        alert("Payment initialization failed. Please try again later.");
-        setEnrollLoading(false);
-        return;
-      }
-
-      if (!window.Razorpay) {
-        console.error("Razorpay SDK failed to load.");
-        alert("Payment system is still loading or failed to connect. Please wait a few seconds and try again.");
+      if (!razorpayKey || !window.Razorpay) {
+        alert("Payment gateway communication link offline. Try re-opening momentarily.");
         setEnrollLoading(false);
         return;
       }
 
       const rzp = new window.Razorpay(options);
-      
       rzp.on('payment.failed', function (response: any) {
-        console.error("Payment Failed:", response.error);
-        alert(`Payment failed: ${response.error.description}`);
+        alert(`Transaction declined: ${response.error.description}`);
         setEnrollLoading(false);
       });
-
       rzp.open();
     } catch (err) {
       setEnrollLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-background items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
+  const renderVideoPlayer = (url: string) => {
+    if (!url) return null;
+    const secureUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+    if (secureUrl.endsWith('.mp4')) {
+      return <video src={secureUrl} controls className="w-full h-full object-cover rounded-2xl" />;
+    } else {
+      return (
+        <iframe 
+          src={secureUrl} 
+          className="w-full h-full rounded-2xl border-0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowFullScreen
+          loading="lazy"
+        ></iframe>
+      );
+    }
+  };
 
-  const progress = Math.round((lessons.filter(l => l.is_preview).length / lessons.length) * 100);
+  const sortedLessons = [...lessons].sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+  const currentIndex = sortedLessons.findIndex(l => l.id === currentLesson?.id);
+  const prevLesson = currentIndex > 0 ? sortedLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex < sortedLessons.length - 1 ? sortedLessons[currentIndex + 1] : null;
+
+  const parentModule = modules.find(m => currentLesson?.module_id ? String(m.id) === String(currentLesson.module_id) : false);
+  const requiresAssessment = currentLesson?.has_assignment || parentModule?.has_assessment;
+  const isCurrentLessonCompleted = currentLesson ? completedLessonIds.includes(currentLesson.id) : false;
+
+  const renderSyllabus = () => (
+    <div className="bg-card text-card-foreground border border-border rounded-3xl p-6 shadow-sm space-y-6 font-sans">
+      <div className="border-b border-border pb-4 flex items-center justify-between font-sans">
+        <div className="font-sans">
+          <h2 className="text-base font-bold text-foreground font-sans">Curriculum Structure</h2>
+          <p className="text-xs text-muted-foreground mt-0.5 font-sans">{lessons.length} Planned Sessions</p>
+        </div>
+        {!isEnrolled && (
+          <Button size="sm" onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl h-8 font-sans">
+            Enroll Track
+          </Button>
+        )}
+      </div>
+      
+      <div className="space-y-6 font-sans">
+        {modules.map((mod) => {
+          const modLessons = sortedLessons.filter(l => String(l.module_id) === String(mod.id));
+          
+          return (
+            <div key={mod.id} className="space-y-2 font-sans">
+              <div className="flex items-center justify-between px-3 py-2 bg-accent text-accent-foreground rounded-xl font-sans">
+                <span className="text-xs font-bold truncate font-sans">{mod.title}</span>
+                {mod.has_assessment && <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 shrink-0 font-sans">Assessment</span>}
+              </div>
+              
+              <div className="space-y-1 pl-1 font-sans">
+                {modLessons.length === 0 ? (
+                  <div className="text-[11px] text-muted-foreground italic px-2 py-1 font-sans">No lessons added.</div>
+                ) : (
+                  modLessons.map((lesson) => {
+                    const isActive = currentLesson?.id === lesson.id;
+                    const isLocked = !isEnrolled && !lesson.is_preview;
+                    const isDone = completedLessonIds.includes(lesson.id);
+                    
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => {
+                          if (!isLocked) {
+                            setCurrentLesson(lesson);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }
+                        }}
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
+                          isActive 
+                            ? "bg-primary text-primary-foreground shadow-md font-semibold" 
+                            : isLocked 
+                            ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
+                            : "hover:bg-accent/50 text-foreground font-medium"
+                        }`}
+                      >
+                        <div className="shrink-0 font-sans">
+                          {isLocked ? (
+                            <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
+                          ) : isDone ? (
+                            <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
+                          ) : isActive ? (
+                            <Play size={14} className="text-primary-foreground fill-current font-sans" />
+                          ) : (
+                            <Circle size={14} className="text-muted-foreground/50 font-sans" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0 pr-2 font-sans">
+                          <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
+                            {lesson.title}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-0.5 font-sans">
+                            {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
+                            {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
+                            {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
+                            {(lesson.has_assignment || mod.has_assessment) && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                          </div>
+                        </div>
+                        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Unassigned lessons fallback visibility container */}
+        {(() => {
+          const unassigned = sortedLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id)));
+          if (unassigned.length === 0) return null;
+          
+          return (
+            <div className="space-y-2 pt-2 border-t border-border font-sans">
+              <div className="px-3 py-1 font-sans">
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground font-sans">General Curriculum</span>
+              </div>
+              <div className="space-y-1 pl-1 font-sans">
+                {unassigned.map((lesson) => {
+                  const isActive = currentLesson?.id === lesson.id;
+                  const isLocked = !isEnrolled && !lesson.is_preview;
+                  const isDone = completedLessonIds.includes(lesson.id);
+                  
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => {
+                        if (!isLocked) {
+                          setCurrentLesson(lesson);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
+                        isActive 
+                          ? "bg-primary text-primary-foreground shadow-md font-semibold" 
+                          : isLocked 
+                          ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
+                          : "hover:bg-accent/50 text-foreground font-medium"
+                      }`}
+                    >
+                      <div className="shrink-0 font-sans">
+                        {isLocked ? (
+                          <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
+                        ) : isDone ? (
+                          <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
+                        ) : isActive ? (
+                          <Play size={14} className="text-primary-foreground fill-current font-sans" />
+                        ) : (
+                          <Circle size={14} className="text-muted-foreground/50 font-sans" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0 pr-2 font-sans">
+                        <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
+                          {lesson.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5 font-sans">
+                          {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
+                          {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
+                          {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
+                          {lesson.has_assignment && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                        </div>
+                      </div>
+                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {lessons.length === 0 && (
+          <div className="text-xs text-muted-foreground italic text-center py-6 font-sans">No session entries mapped.</div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderNotesAndAssessment = () => (
+    <div className="space-y-8 font-sans">
+      {/* Title & Metadata Section */}
+      <div className="space-y-3 border-b border-border pb-5 font-sans">
+        <div className="flex flex-wrap items-center justify-between gap-4 font-sans">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight font-sans">
+            {currentLesson?.title}
+          </h1>
+          {isCurrentLessonCompleted && (
+            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 self-start font-sans">
+              <CheckCircle2 size={14} className="font-sans" />
+              Completed
+            </span>
+          )}
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2.5 font-sans">
+          {currentLesson?.notes && <span className="text-xs font-semibold bg-accent text-accent-foreground px-2.5 py-0.5 rounded font-sans">📝 Text Notes Included</span>}
+          {requiresAssessment && <span className="text-xs font-semibold bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded border border-amber-500/20 font-sans">⚠️ Mandatory Assessment Link Required</span>}
+        </div>
+      </div>
+
+      {/* Comprehensive Text Notes Rendering with Absolute Document Hardcoded Inline Overrides */}
+      {currentLesson?.notes ? (
+        <div className="space-y-4 border border-border rounded-none p-8 md:p-12 shadow-md max-w-none font-sans" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
+          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-3 font-sans" style={{ color: '#64748b' }}>
+            <span>📄 Official Document & Lecture Notes</span>
+          </h3>
+          <div className="font-serif text-base md:text-lg leading-relaxed whitespace-pre-wrap selection:bg-blue-100 block font-normal font-serif" style={{ color: '#000000' }}>
+            {currentLesson.notes}
+          </div>
+        </div>
+      ) : (
+        <div className="text-sm text-muted-foreground italic py-4 font-sans">No companion text notes provided for this lesson.</div>
+      )}
+
+      {/* Assignment / Assessment Submission Section */}
+      {requiresAssessment && (
+        <div className="bg-card text-card-foreground border border-border rounded-3xl p-6 md:p-8 shadow-sm space-y-6 font-sans">
+          <h2 className="text-lg font-bold flex items-center gap-2.5 text-foreground border-b border-border pb-3 font-sans">
+            <Award className="w-5 h-5 text-primary shrink-0 font-sans" />
+            Required Assessment Submission
+          </h2>
+          
+          <div className="space-y-5 font-sans">
+            <div className="space-y-2 font-sans">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-sans">
+                Task Submission Link {parentModule?.has_assessment ? "(Module Assessment)" : "(Lesson Assessment)"}
+              </label>
+              <textarea 
+                value={assignmentUrl}
+                onChange={(e) => setAssignmentUrl(e.target.value)}
+                placeholder="Paste your accessible project output link (GitHub repository, deployed link, or Google Drive document)..."
+                className="w-full bg-background border border-border hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3.5 text-foreground placeholder:text-muted-foreground text-sm transition-all min-h-[90px] resize-y outline-none font-medium font-sans"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1 font-sans">
+              <p className="text-xs text-muted-foreground max-w-xs leading-relaxed font-sans">
+                Submitting your project link saves your output for mentor evaluation and credit validation.
+              </p>
+              
+              <button 
+                onClick={() => handleCompleteLesson()}
+                disabled={submitting || !assignmentUrl.trim()} 
+                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-end sm:self-auto shrink-0 font-sans ${
+                  isCurrentLessonCompleted 
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md" 
+                    : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md active:scale-[0.98]"
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                {submitting ? (
+                  <span className="font-sans">Saving...</span>
+                ) : isCurrentLessonCompleted ? (
+                  <span className="font-sans">Update Submitted Task</span>
+                ) : (
+                  <span className="font-sans">Submit Assessment</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Lesson Cycling & Navigation Actions */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-6 border-t border-border font-sans">
+        {prevLesson ? (
+          <button
+            onClick={() => {
+              setCurrentLesson(prevLesson);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="px-5 py-3 bg-card hover:bg-accent text-foreground border border-border font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs font-sans"
+          >
+            <ArrowLeft size={14} className="font-sans" />
+            <span className="truncate max-w-[180px] font-sans">Prev: {prevLesson.title}</span>
+          </button>
+        ) : <div />}
+
+        {nextLesson ? (
+          <button
+            onClick={async () => {
+              if (!requiresAssessment && !isCurrentLessonCompleted) {
+                await handleCompleteLesson(currentLesson);
+              }
+              setCurrentLesson(nextLesson);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98] font-sans"
+          >
+            <span className="truncate max-w-[180px] font-sans">Next: {nextLesson.title}</span>
+            <Play size={10} className="fill-current font-sans" />
+          </button>
+        ) : (
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md font-sans"
+          >
+            <CheckCircle2 size={14} className="font-sans" />
+            Finish Course Track
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const hasVideo = !!currentLesson?.content_url;
+  const isLocked = !isEnrolled && !currentLesson?.is_preview;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex flex-col h-screen bg-background text-foreground font-sans overflow-hidden font-sans">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       
-      {/* Navbar */}
-      <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-xl">
-            <ArrowLeft size={20} />
+      {/* Top Navigation Bar */}
+      <header className="flex-shrink-0 h-16 border-b border-border bg-card flex items-center px-6 justify-between z-10 shadow-xs font-sans">
+        <div className="flex items-center gap-4 font-sans">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-xl hover:bg-accent text-foreground font-sans">
+            <ArrowLeft size={20} className="font-sans" />
           </Button>
-          <div className="hidden sm:block h-4 w-px bg-border mx-2" />
-          <h1 className="text-sm font-bold truncate max-w-[200px] md:max-w-none">
-            {course?.title || "Course Player"}
+          <div className="hidden sm:block h-4 w-px bg-border mx-2 font-sans" />
+          <h1 className="text-sm font-bold text-foreground truncate max-w-[250px] md:max-w-none font-sans">
+            {course?.title || "Course Player Studio"}
           </h1>
+          {parentModule && (
+            <>
+              <div className="hidden sm:block h-4 w-px bg-border mx-2 font-sans" />
+              <span className="hidden md:inline-flex text-xs font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20 truncate max-w-xs font-sans">
+                {parentModule.title}
+              </span>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-4">
-           <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-             <ShieldCheck size={14} className="text-primary" />
+        <div className="flex items-center gap-4 font-sans">
+           <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">
+             <ShieldCheck size={14} className="text-primary font-sans" />
              Industrial Track
            </div>
-           <Button size="sm" variant="outline" className="rounded-full px-4 h-9">
+           <Button size="sm" variant="outline" className="rounded-full px-4 h-9 border-border text-foreground font-bold text-xs font-sans">
               Resources
            </Button>
         </div>
       </header>
 
-      {/* Main Player Area */}
-      <div className="flex-1 grid lg:grid-cols-[1fr_360px] h-[calc(100vh-64px)] overflow-hidden">
-        
-        {/* Left: Video & Content */}
-        <main className="flex flex-col overflow-y-auto">
-          {/* Video Player Placeholder / Studio Launcher */}
-          <div 
-            onClick={() => currentLesson && (window.location.href = `/dashboard/courses/${courseId}/lessons/${currentLesson.id}`)}
-            className="aspect-video w-full bg-black relative flex items-center justify-center overflow-hidden cursor-pointer group select-none"
-          >
-             <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity" style={{ background: "var(--gradient-primary)" }} />
-             <div className="relative z-10 text-center space-y-4 p-6">
-                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center text-primary mx-auto border border-primary/30 group-hover:scale-110 transition-transform shadow-2xl">
-                   <Play size={40} className="fill-current ml-1" />
-                </div>
-                <div>
-                  <span className="px-3 py-1 bg-background/80 backdrop-blur-sm rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-border">
-                    Interactive Lesson Studio
-                  </span>
-                  <h3 className="text-white font-bold text-lg mt-2 max-w-lg truncate">Launch: {currentLesson?.title || "Select a Lesson"}</h3>
-                  <p className="text-white/60 text-xs mt-1">Click anywhere to launch the video player, read study notes, and submit assessments.</p>
-                </div>
-             </div>
-             
-             {/* Fake Controls Footer */}
-             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                <div className="flex items-center justify-between text-white/80 text-xs font-bold uppercase tracking-widest">
-                   <div className="flex items-center gap-4">
-                      {currentLesson?.content_url && <span className="flex items-center gap-1.5 text-sky-400"><Video size={14} /> Video Available</span>}
-                      {currentLesson?.notes && <span className="text-amber-400">📝 Study Notes</span>}
-                      {currentLesson?.has_assignment && <span className="text-emerald-400">✓ Assessment</span>}
-                   </div>
-                   <span className="bg-white/20 px-2 py-0.5 rounded text-[9px]">Premium UX</span>
-                </div>
-             </div>
-          </div>
+      {/* Main Studio Area */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-[1600px] w-full mx-auto font-sans">
+        {!currentLesson ? (
+          <div className="py-20 text-center text-muted-foreground font-sans">Loading lesson studio workspace...</div>
+        ) : hasVideo ? (
+          /* SCENARIO A: Has Video */
+          <div className="grid lg:grid-cols-12 gap-8 items-start font-sans">
+            
+            {/* Left Side: Video + Syllabus Below */}
+            <div className="lg:col-span-5 xl:col-span-5 space-y-6 font-sans">
+              <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-border font-sans">
+                {isLocked ? (
+                  <div className="w-full h-full bg-card flex flex-col items-center justify-center p-6 text-center space-y-4 font-sans">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 font-sans">
+                      <ShieldCheck size={24} className="text-primary font-sans" />
+                    </div>
+                    <div className="font-sans">
+                      <h3 className="text-base font-bold text-foreground font-sans">Enrollment Required</h3>
+                      <p className="text-xs text-muted-foreground max-w-xs mx-auto mt-1 font-sans">Unlock all modules and study tasks instantly.</p>
+                    </div>
+                    <Button 
+                      size="sm"
+                      onClick={() => setShowPayment(true)}
+                      className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl shadow-xs font-sans"
+                    >
+                      Enroll to Unlock
+                    </Button>
+                  </div>
+                ) : (
+                  renderVideoPlayer(currentLesson.content_url || "")
+                )}
+              </div>
 
-          {/* Description Section */}
-          <div className="p-8 md:p-12 max-w-4xl space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full border border-primary/20">
-                {course?.departments?.name || "Internship Track"}
-              </span>
-              {currentLesson?.module_id && (
-                <span className="px-3 py-1 bg-accent text-accent-foreground text-[10px] font-black uppercase tracking-widest rounded-full truncate max-w-[200px]">
-                  {modules.find(m => m.id === currentLesson.module_id)?.title || "Module"}
-                </span>
+              {renderSyllabus()}
+            </div>
+
+            {/* Right Side: Lesson Notes & Tasks */}
+            <div className="lg:col-span-7 xl:col-span-7 font-sans">
+              {isLocked ? (
+                <div className="bg-card text-card-foreground border border-border rounded-3xl p-12 text-center space-y-4 font-sans">
+                  <h3 className="text-lg font-bold text-foreground font-sans">{currentLesson.title}</h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto font-sans">
+                    This lesson contains comprehensive material, practical code notes, and evaluated assessments available to enrolled interns.
+                  </p>
+                  <Button onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl font-sans">
+                    Unlock Course Track
+                  </Button>
+                </div>
+              ) : (
+                renderNotesAndAssessment()
               )}
             </div>
-            
-            <h2 className="text-3xl font-black">{currentLesson?.title || course?.title}</h2>
-            
-            {/* Quick Notes preview if available */}
-            {currentLesson?.notes ? (
-              <div className="p-6 bg-accent/30 border border-border rounded-2xl space-y-2">
-                <div className="text-[10px] font-black uppercase tracking-widest text-primary">Lesson Study Notes Preview</div>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">{currentLesson.notes}</p>
+
+          </div>
+        ) : (
+          /* SCENARIO B: No Video */
+          <div className="max-w-4xl mx-auto space-y-10 font-sans">
+            {isLocked ? (
+              <div className="bg-card text-card-foreground border border-border rounded-3xl p-12 text-center space-y-4 font-sans">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 mx-auto font-sans">
+                  <ShieldCheck size={24} className="text-primary font-sans" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground font-sans">Premium Lesson Content Locked</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto font-sans">
+                  Complete your program enrollment to access official lecture notes and task evaluations.
+                </p>
+                <Button onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl font-sans">
+                  Enroll Now
+                </Button>
               </div>
             ) : (
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {course?.description || "In this module, you will learn the fundamental concepts and industry standards required for this track. Our mentors have designed this to be highly practical and hands-on."}
-              </p>
+              renderNotesAndAssessment()
             )}
 
-            <div className="grid sm:grid-cols-2 gap-8 border-t border-border pt-6">
-               <div className="space-y-3">
-                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                    <Clock size={14} className="text-primary" />
-                    Format Included
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    {currentLesson?.content_url ? "Video Walkthrough" : "Text / Practical Tasks"} 
-                    {currentLesson?.notes ? " + Detailed Lecture Notes" : ""}
-                  </p>
-               </div>
-               <div className="space-y-3">
-                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                    <Award size={14} className="text-primary" />
-                    Verification
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    {currentLesson?.has_assignment ? "Requires task submission link to approve completion." : "Self-paced reading/watching validation."}
-                  </p>
-               </div>
+            <div className="pt-2 border-t border-border font-sans">
+              {renderSyllabus()}
             </div>
           </div>
-        </main>
-
-        {/* Right: Syllabus Sidebar */}
-        <aside className="border-l border-border bg-card/30 flex flex-col h-full overflow-hidden">
-          <div className="p-6 border-b border-border shrink-0">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-black text-sm uppercase tracking-widest">Course Syllabus</h3>
-                <span className="text-[10px] font-bold text-primary">{progress}% Preview</span>
-             </div>
-             <div className="h-1.5 w-full bg-accent rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
-             </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-             {/* Map over modules */}
-             {modules.map((mod, mIdx) => {
-               const modLessons = lessons.filter(l => String(l.module_id) === String(mod.id)).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
-               
-               return (
-                 <div key={mod.id} className="space-y-2">
-                   <div className="flex items-center justify-between px-2 py-1 bg-accent/40 rounded-lg">
-                     <span className="text-xs font-bold text-foreground truncate">{mod.title}</span>
-                     {mod.has_assessment && <span className="text-[8px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Assessment</span>}
-                   </div>
-                   
-                   <ul className="space-y-1 pl-2">
-                     {modLessons.length === 0 ? (
-                       <li className="text-[10px] text-muted-foreground italic px-2 py-1">No lessons populated yet.</li>
-                     ) : (
-                       modLessons.map((lesson, lIdx) => {
-                         const isLocked = !isEnrolled && !lesson.is_preview;
-                         const isActive = currentLesson?.id === lesson.id;
-                         
-                         return (
-                           <li 
-                             key={lesson.id} 
-                             onClick={() => !isLocked && setCurrentLesson(lesson)}
-                             className={`p-2.5 rounded-xl flex items-center gap-3 cursor-pointer transition-all ${isActive ? "bg-primary/10 border border-primary/20" : "hover:bg-accent/50"} ${isLocked ? "opacity-50 cursor-not-allowed" : ""}`}
-                           >
-                             <div className="shrink-0">
-                               {isLocked ? (
-                                 <ShieldCheck size={14} className="text-muted-foreground" />
-                               ) : isActive ? (
-                                 <Play size={14} className="text-primary fill-current" />
-                               ) : (
-                                 <Circle size={14} className="text-muted-foreground" />
-                               )}
-                             </div>
-                             <div className="flex-1 min-w-0">
-                                <h4 className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
-                                  {lesson.title}
-                                </h4>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                   {lesson.notes && <span className="text-[8px] text-muted-foreground">📝 Notes</span>}
-                                   {lesson.content_url && <span className="text-[8px] text-muted-foreground">🎥 Video</span>}
-                                   {lesson.is_preview && <span className="text-[8px] font-black text-sky-400">Preview</span>}
-                                   {lesson.has_assignment && <span className="text-[8px] font-bold text-primary">Task</span>}
-                                </div>
-                             </div>
-                           </li>
-                         );
-                       })
-                     )}
-                   </ul>
-                 </div>
-               );
-             })}
-
-             {/* Unassigned lessons */}
-             {(() => {
-               const unassignedLessons = lessons.filter(l => !l.module_id).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
-               if (unassignedLessons.length === 0) return null;
-               
-               return (
-                 <div className="space-y-2 pt-2 border-t border-border/60">
-                   <div className="px-2 py-1">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">General Lessons</span>
-                   </div>
-                   <ul className="space-y-1 pl-2">
-                     {unassignedLessons.map((lesson) => {
-                       const isLocked = !isEnrolled && !lesson.is_preview;
-                       const isActive = currentLesson?.id === lesson.id;
-                       
-                       return (
-                         <li 
-                           key={lesson.id} 
-                           onClick={() => !isLocked && setCurrentLesson(lesson)}
-                           className={`p-2.5 rounded-xl flex items-center gap-3 cursor-pointer transition-all ${isActive ? "bg-primary/10 border border-primary/20" : "hover:bg-accent/50"} ${isLocked ? "opacity-50 cursor-not-allowed" : ""}`}
-                         >
-                           <div className="shrink-0">
-                             {isLocked ? (
-                               <ShieldCheck size={14} className="text-muted-foreground" />
-                             ) : isActive ? (
-                               <Play size={14} className="text-primary fill-current" />
-                             ) : (
-                               <Circle size={14} className="text-muted-foreground" />
-                             )}
-                           </div>
-                           <div className="flex-1 min-w-0">
-                              <h4 className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
-                                {lesson.title}
-                              </h4>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                 {lesson.notes && <span className="text-[8px] text-muted-foreground">📝 Notes</span>}
-                                 {lesson.content_url && <span className="text-[8px] text-muted-foreground">🎥 Video</span>}
-                                 {lesson.is_preview && <span className="text-[8px] font-black text-sky-400">Preview</span>}
-                                 {lesson.has_assignment && <span className="text-[8px] font-bold text-primary">Task</span>}
-                              </div>
-                           </div>
-                         </li>
-                       );
-                     })}
-                   </ul>
-                 </div>
-               );
-             })()}
-
-             {modules.length === 0 && lessons.filter(l => !l.module_id).length === 0 && (
-               <div className="text-xs text-muted-foreground italic text-center py-8">No lesson content available yet.</div>
-             )}
-          </div>
-
-          {/* Bottom Action */}
-          <div className="p-6 border-t border-border bg-background/50 shrink-0">
-             {!isEnrolled ? (
-               <Button className="w-full rounded-xl h-12 font-bold shadow-xl shadow-primary/20" onClick={() => setShowPayment(true)}>
-                 Enroll to Unlock All
-               </Button>
-             ) : (
-               <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest justify-center">
-                  <CheckCircle2 size={14} className="text-primary" />
-                  All modules unlocked
-               </div>
-             )}
-          </div>
-        </aside>
+        )}
       </div>
 
       {/* Enrollment Modal Integration */}
