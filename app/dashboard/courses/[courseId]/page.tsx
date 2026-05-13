@@ -233,13 +233,13 @@ export default function CourseDetailPage() {
         }
       };
 
-      if (!razorpayKey || !window.Razorpay) {
+      if (!razorpayKey || !(window as any).Razorpay) {
         alert("Payment gateway communication link offline. Try re-opening momentarily.");
         setEnrollLoading(false);
         return;
       }
 
-      const rzp = new window.Razorpay(options);
+      const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
         alert(`Transaction declined: ${response.error.description}`);
         setEnrollLoading(false);

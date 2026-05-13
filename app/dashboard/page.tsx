@@ -107,7 +107,7 @@ export default function DashboardPage() {
           <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Student Menu</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" onClick={() => router.push('/dashboard/performance')} />
           
           <div className="pt-6">
             <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Account</p>

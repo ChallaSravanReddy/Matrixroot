@@ -73,7 +73,7 @@ export default function MyInternshipsPage() {
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" onClick={() => router.push('/dashboard')} />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" active />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" onClick={() => router.push('/dashboard/performance')} />
           
           <div className="pt-6">
             <SidebarItem icon={<User size={18} />} label="Profile Settings" onClick={() => router.push('/profile')} />
