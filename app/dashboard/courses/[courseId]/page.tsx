@@ -46,6 +46,7 @@ export default function CourseDetailPage() {
   const [progressRecords, setProgressRecords] = useState<any[]>([]);
   const [assignmentUrl, setAssignmentUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [openModuleId, setOpenModuleId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -108,6 +109,19 @@ export default function CourseDetailPage() {
     const rec = progressRecords.find(p => String(p.lesson_id) === String(currentLesson.id));
     setAssignmentUrl(rec?.assignment_url || "");
   }, [currentLesson, progressRecords]);
+
+  // Automatically sequence open module accordion state based on current lesson progression
+  useEffect(() => {
+    if (currentLesson?.module_id) {
+      setOpenModuleId(currentLesson.module_id);
+    } else if (currentLesson && !currentLesson.module_id) {
+      setOpenModuleId("general");
+    }
+  }, [currentLesson]);
+
+  const toggleModule = (modId: string) => {
+    setOpenModuleId(prev => prev === modId ? null : modId);
+  };
 
   const handleCompleteLesson = async (lessonToComplete?: Lesson | null) => {
     const targetLesson = lessonToComplete || currentLesson;
@@ -277,22 +291,114 @@ export default function CourseDetailPage() {
         )}
       </div>
       
-      <div className="space-y-6 font-sans">
+      <div className="space-y-4 font-sans">
         {modules.map((mod) => {
           const modLessons = sortedLessons.filter(l => String(l.module_id) === String(mod.id));
+          const isOpen = String(openModuleId) === String(mod.id);
           
           return (
-            <div key={mod.id} className="space-y-2 font-sans">
-              <div className="flex items-center justify-between px-3 py-2 bg-accent text-accent-foreground rounded-xl font-sans">
-                <span className="text-xs font-bold truncate font-sans">{mod.title}</span>
-                {mod.has_assessment && <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 shrink-0 font-sans">Assessment</span>}
-              </div>
+            <div key={mod.id} className="space-y-1.5 font-sans border-b border-border/40 pb-3 last:border-0">
+              {/* Module Dropdown Trigger Header */}
+              <button
+                onClick={() => toggleModule(mod.id)}
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-accent hover:bg-accent/80 text-accent-foreground rounded-xl transition-all font-sans text-left group"
+              >
+                <div className="flex items-center gap-2 min-w-0 pr-2 font-sans">
+                  <span className="text-xs font-bold truncate font-sans">{mod.title}</span>
+                  {mod.has_assessment && <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 shrink-0 font-sans">Assessment</span>}
+                </div>
+                <div className="shrink-0 transition-transform duration-200 font-sans" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </div>
+              </button>
               
-              <div className="space-y-1 pl-1 font-sans">
-                {modLessons.length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground italic px-2 py-1 font-sans">No lessons added.</div>
-                ) : (
-                  modLessons.map((lesson) => {
+              {/* Collapsible Dropdown Lessons Container */}
+              {isOpen && (
+                <div className="space-y-1 pl-1.5 pt-1 font-sans animate-in fade-in-50 duration-200">
+                  {modLessons.length === 0 ? (
+                    <div className="text-[11px] text-muted-foreground italic px-2 py-1 font-sans">No lessons added.</div>
+                  ) : (
+                    modLessons.map((lesson) => {
+                      const isActive = currentLesson?.id === lesson.id;
+                      const isLocked = !isEnrolled && !lesson.is_preview;
+                      const isDone = completedLessonIds.includes(lesson.id);
+                      
+                      return (
+                        <button
+                          key={lesson.id}
+                          onClick={() => {
+                            if (!isLocked) {
+                              setCurrentLesson(lesson);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
+                            isActive 
+                              ? "bg-primary text-primary-foreground shadow-md font-semibold" 
+                              : isLocked 
+                              ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
+                              : "hover:bg-accent/50 text-foreground font-medium"
+                          }`}
+                        >
+                          <div className="shrink-0 font-sans">
+                            {isLocked ? (
+                              <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
+                            ) : isDone ? (
+                              <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
+                            ) : isActive ? (
+                              <Play size={14} className="text-primary-foreground fill-current font-sans" />
+                            ) : (
+                              <Circle size={14} className="text-muted-foreground/50 font-sans" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0 pr-2 font-sans">
+                            <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
+                              {lesson.title}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-0.5 font-sans">
+                              {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
+                              {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
+                              {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
+                              {(lesson.has_assignment || mod.has_assessment) && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                            </div>
+                          </div>
+                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Unassigned lessons fallback accordion visibility container */}
+        {(() => {
+          const unassigned = sortedLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id)));
+          if (unassigned.length === 0) return null;
+          const isOpen = openModuleId === "general";
+          
+          return (
+            <div className="space-y-1.5 pt-2 border-t border-border font-sans">
+              <button
+                onClick={() => setOpenModuleId(prev => prev === "general" ? null : "general")}
+                className="w-full flex items-center justify-between px-3 py-2 bg-accent/40 hover:bg-accent/60 text-muted-foreground rounded-xl transition-all font-sans text-left"
+              >
+                <span className="text-[10px] font-black uppercase tracking-wider font-sans">General Curriculum</span>
+                <div className="shrink-0 transition-transform duration-200 font-sans" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className="space-y-1 pl-1.5 pt-1 font-sans animate-in fade-in-50 duration-200">
+                  {unassigned.map((lesson) => {
                     const isActive = currentLesson?.id === lesson.id;
                     const isLocked = !isEnrolled && !lesson.is_preview;
                     const isDone = completedLessonIds.includes(lesson.id);
@@ -334,80 +440,15 @@ export default function CourseDetailPage() {
                             {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
                             {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
                             {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
-                            {(lesson.has_assignment || mod.has_assessment) && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                            {lesson.has_assignment && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
                           </div>
                         </div>
                         {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
                       </button>
                     );
-                  })
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Unassigned lessons fallback visibility container */}
-        {(() => {
-          const unassigned = sortedLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id)));
-          if (unassigned.length === 0) return null;
-          
-          return (
-            <div className="space-y-2 pt-2 border-t border-border font-sans">
-              <div className="px-3 py-1 font-sans">
-                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground font-sans">General Curriculum</span>
-              </div>
-              <div className="space-y-1 pl-1 font-sans">
-                {unassigned.map((lesson) => {
-                  const isActive = currentLesson?.id === lesson.id;
-                  const isLocked = !isEnrolled && !lesson.is_preview;
-                  const isDone = completedLessonIds.includes(lesson.id);
-                  
-                  return (
-                    <button
-                      key={lesson.id}
-                      onClick={() => {
-                        if (!isLocked) {
-                          setCurrentLesson(lesson);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                      }}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
-                        isActive 
-                          ? "bg-primary text-primary-foreground shadow-md font-semibold" 
-                          : isLocked 
-                          ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
-                          : "hover:bg-accent/50 text-foreground font-medium"
-                      }`}
-                    >
-                      <div className="shrink-0 font-sans">
-                        {isLocked ? (
-                          <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
-                        ) : isDone ? (
-                          <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
-                        ) : isActive ? (
-                          <Play size={14} className="text-primary-foreground fill-current font-sans" />
-                        ) : (
-                          <Circle size={14} className="text-muted-foreground/50 font-sans" />
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0 pr-2 font-sans">
-                        <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
-                          {lesson.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-0.5 font-sans">
-                          {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
-                          {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
-                          {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
-                          {lesson.has_assignment && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
-                        </div>
-                      </div>
-                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
-                    </button>
-                  );
-                })}
-              </div>
+                  })}
+                </div>
+              )}
             </div>
           );
         })()}
