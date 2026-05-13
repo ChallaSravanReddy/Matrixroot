@@ -219,8 +219,7 @@ export default function CourseDetailPage() {
         },
         prefill: {
           name: profile?.full_name || "",
-          email: sessionUser?.email || "",
-          contact: ""
+          email: sessionUser?.email || ""
         },
         notes: {
           course_id: courseId,
