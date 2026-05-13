@@ -33,6 +33,11 @@ export async function fetchAdminData(activeTab: string) {
       if (crsErr) console.error("Lessons/Courses Error:", crsErr);
       result.courses = crs || [];
 
+      // Gracefully fetch course_modules if the table exists
+      const { data: mods, error: modsErr } = await supabaseAdmin.from("course_modules").select("*").order("order_index", { ascending: true });
+      if (modsErr) console.error("Course Modules Fetch Error (Table might not be created yet):", modsErr);
+      result.modules = mods || [];
+
       const { data: lsns, error: lsnsErr } = await supabaseAdmin.from("lessons").select("*").order("order_index", { ascending: true });
       if (lsnsErr) console.error("Lessons Fetch Error:", lsnsErr);
       result.lessons = lsns || [];
@@ -162,4 +167,22 @@ export async function reorderLessonsAction(updates: { id: string, order_index: n
   } catch (err: any) {
     return { success: false, error: err.message };
   }
+}
+
+export async function deleteCourseAction(courseId: string) {
+  const { error } = await supabaseAdmin.from("courses").delete().eq("id", courseId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function createModuleAction(moduleData: any) {
+  const { error } = await supabaseAdmin.from("course_modules").insert([moduleData]);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function deleteModuleAction(moduleId: string) {
+  const { error } = await supabaseAdmin.from("course_modules").delete().eq("id", moduleId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
 }

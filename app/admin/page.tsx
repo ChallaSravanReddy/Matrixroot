@@ -9,7 +9,10 @@ import {
   createCourseAction, 
   createLessonAction,
   deleteLessonAction,
-  reorderLessonsAction
+  reorderLessonsAction,
+  deleteCourseAction,
+  createModuleAction,
+  deleteModuleAction
 } from "./actions";
 import Image from "next/image";
 import { 
@@ -40,6 +43,7 @@ export default function AdminPage() {
   // Data States
   const [departments, setDepartments] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [modules, setModules] = useState<any[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -47,7 +51,8 @@ export default function AdminPage() {
 
   // Form States
   const [newCourse, setNewCourse] = useState({ title: "", description: "", dept_id: "" });
-  const [newLesson, setNewLesson] = useState({ course_id: "", title: "", content_url: "", is_preview: false });
+  const [newModule, setNewModule] = useState({ course_id: "", title: "", description: "", has_assessment: false });
+  const [newLesson, setNewLesson] = useState({ course_id: "", module_id: "", title: "", content_url: "", notes: "", is_preview: false, has_assignment: false });
 
   useEffect(() => {
     checkAdmin();
@@ -83,6 +88,7 @@ export default function AdminPage() {
       }
       if (activeTab === "lessons") {
         if (data.courses) setCourses(data.courses);
+        if (data.modules) setModules(data.modules);
         if (data.lessons) setLessons(data.lessons);
       }
       if (activeTab === "students" && data.students) setStudents(data.students);
@@ -135,12 +141,44 @@ export default function AdminPage() {
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure you want to delete this module? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this lesson? This cannot be undone.")) return;
     const res = await deleteLessonAction(lessonId);
     if (res.success) {
       fetchData();
     } else {
+      alert("Error deleting lesson: " + res.error);
+    }
+  };
+
+  const handleCreateModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await createModuleAction(newModule);
+    if (res.success) {
+      alert("Module created!");
+      setNewModule({ course_id: "", title: "", description: "", has_assessment: false });
+      fetchData();
+    } else {
+      alert("Error creating module: " + res.error + "\n(Did you run the SQL script to create the course_modules table?)");
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string) => {
+    if (!confirm("Are you sure you want to delete this module? All associated lessons will be removed.")) return;
+    const res = await deleteModuleAction(moduleId);
+    if (res.success) {
+      fetchData();
+    } else {
       alert("Error deleting module: " + res.error);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!confirm("Are you sure you want to delete this course track? All associated modules might be removed. This cannot be undone.")) return;
+    const res = await deleteCourseAction(courseId);
+    if (res.success) {
+      fetchData();
+    } else {
+      alert("Error deleting course: " + res.error);
     }
   };
 
@@ -247,10 +285,17 @@ export default function AdminPage() {
                  <h3 className="text-xl font-black">Active Tracks</h3>
                  <div className="grid sm:grid-cols-2 gap-4">
                     {courses.map(c => (
-                      <div key={c.id} className="p-6 bg-card border border-border rounded-[2rem] hover:border-primary/20 transition-all">
-                        <div className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">{c.departments?.name}</div>
-                        <h4 className="font-bold text-lg mb-2">{c.title}</h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                      <div key={c.id} className="p-6 bg-card border border-border rounded-[2rem] hover:border-primary/20 transition-all flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest">{c.departments?.name}</div>
+                            <button onClick={() => handleDeleteCourse(c.id)} className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors" title="Delete Track">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <h4 className="font-bold text-lg mb-2">{c.title}</h4>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                        </div>
                       </div>
                     ))}
                  </div>
@@ -259,70 +304,160 @@ export default function AdminPage() {
           )}
 
           {activeTab === "lessons" && (
-             <div className="grid lg:grid-cols-[400px_1fr] gap-10">
-               <div className="space-y-6">
-                  <h3 className="text-xl font-black">Add New Module</h3>
-                  <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    const res = await createLessonAction(newLesson);
-                    if (res.success) {
-                      alert("Module added!");
-                      setNewLesson({ ...newLesson, title: "", content_url: "" });
-                      fetchData();
-                    }
-                  }} className="space-y-4 p-6 bg-card border border-border rounded-[2rem] shadow-card">
-                     <select className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.course_id} onChange={(e) => setNewLesson({...newLesson, course_id: e.target.value})} required>
-                       <option value="">Select Track</option>
-                       {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                     </select>
-                     <input type="text" placeholder="Module Title" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.title} onChange={(e) => setNewLesson({...newLesson, title: e.target.value})} required />
-                     <input type="text" placeholder="Video/Content URL" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.content_url} onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})} required />
-                     <label className="flex items-center gap-3 p-2 cursor-pointer">
-                        <input type="checkbox" className="w-5 h-5 rounded-md accent-primary" checked={newLesson.is_preview} onChange={(e) => setNewLesson({...newLesson, is_preview: e.target.checked})} />
-                        <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Free Preview</span>
-                     </label>
-                     <Button type="submit" className="w-full h-14 rounded-2xl font-black shadow-xl shadow-primary/20">Publish Module</Button>
-                  </form>
+             <div className="grid lg:grid-cols-[420px_1fr] gap-10">
+               <div className="space-y-10">
+                  {/* Create Module Form */}
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-black">1. Create Module</h3>
+                    <form onSubmit={handleCreateModule} className="space-y-4 p-6 bg-card border border-border rounded-[2rem] shadow-card">
+                       <select className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newModule.course_id} onChange={(e) => setNewModule({...newModule, course_id: e.target.value})} required>
+                         <option value="">Select Track</option>
+                         {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                       </select>
+                       <input type="text" placeholder="Module Title (e.g. Week 1: Fundamentals)" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newModule.title} onChange={(e) => setNewModule({...newModule, title: e.target.value})} required />
+                       <textarea placeholder="Module Description (Optional)" className="w-full bg-background border border-border p-4 rounded-xl font-medium h-20" value={newModule.description} onChange={(e) => setNewModule({...newModule, description: e.target.value})} />
+                       <label className="flex items-center gap-3 p-2 cursor-pointer">
+                          <input type="checkbox" className="w-5 h-5 rounded-md accent-primary" checked={newModule.has_assessment} onChange={(e) => setNewModule({...newModule, has_assessment: e.target.checked})} />
+                          <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Module-wide Assessment</span>
+                       </label>
+                       <Button type="submit" className="w-full h-12 rounded-xl font-black shadow-lg shadow-primary/20">Initialize Module</Button>
+                    </form>
+                  </div>
+
+                  {/* Add Lesson Form */}
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-black">2. Add Lesson to Module</h3>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const res = await createLessonAction(newLesson);
+                      if (res.success) {
+                        alert("Lesson added successfully!");
+                        setNewLesson({ ...newLesson, title: "", content_url: "", notes: "", has_assignment: false });
+                        fetchData();
+                      } else {
+                        alert("Error adding lesson: " + res.error);
+                      }
+                    }} className="space-y-4 p-6 bg-card border border-border rounded-[2rem] shadow-card">
+                       <select className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.course_id} onChange={(e) => setNewLesson({...newLesson, course_id: e.target.value, module_id: ""})} required>
+                         <option value="">Select Track</option>
+                         {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                       </select>
+                       <select className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.module_id} onChange={(e) => setNewLesson({...newLesson, module_id: e.target.value})} required>
+                         <option value="">Select Parent Module</option>
+                         {(() => {
+                           const filtered = modules.filter(m => String(m.course_id) === String(newLesson.course_id));
+                           if (filtered.length === 0 && newLesson.course_id) {
+                             return <option value="" disabled>⚠️ First initialize a Module using Form 1 above</option>;
+                           }
+                           return filtered.map(m => (
+                             <option key={m.id} value={m.id}>{m.title}</option>
+                           ));
+                         })()}
+                       </select>
+                       <input type="text" placeholder="Lesson Title" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.title} onChange={(e) => setNewLesson({...newLesson, title: e.target.value})} required />
+                       <textarea placeholder="Text Notes / Study Material" className="w-full bg-background border border-border p-4 rounded-xl font-medium h-28" value={newLesson.notes} onChange={(e) => setNewLesson({...newLesson, notes: e.target.value})} />
+                       <input type="text" placeholder="Video URL (Optional)" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.content_url} onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})} />
+                       <div className="flex flex-col gap-1">
+                         <label className="flex items-center gap-3 p-2 cursor-pointer">
+                            <input type="checkbox" className="w-5 h-5 rounded-md accent-primary" checked={newLesson.is_preview} onChange={(e) => setNewLesson({...newLesson, is_preview: e.target.checked})} />
+                            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Free Preview</span>
+                         </label>
+                         <label className="flex items-center gap-3 p-2 cursor-pointer">
+                            <input type="checkbox" className="w-5 h-5 rounded-md accent-primary" checked={newLesson.has_assignment} onChange={(e) => setNewLesson({...newLesson, has_assignment: e.target.checked})} />
+                            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Lesson Assessment</span>
+                         </label>
+                       </div>
+                       <Button type="submit" className="w-full h-12 rounded-xl font-black shadow-lg shadow-primary/20">Publish Lesson</Button>
+                    </form>
+                  </div>
                </div>
-               <div className="space-y-6">
+
+               <div className="space-y-8">
                   <h3 className="text-xl font-black">Curriculum Overview</h3>
-                  <div className="space-y-4">
+                  <div className="space-y-8">
                      {courses.map(c => {
-                       const courseLessons = lessons.filter(l => l.course_id === c.id).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+                       const courseModules = modules.filter(m => String(m.course_id) === String(c.id)).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+                       const unassignedLessons = lessons.filter(l => String(l.course_id) === String(c.id) && !l.module_id).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
                        
                        return (
-                         <div key={c.id} className="p-6 bg-card/50 border border-border rounded-[2rem]">
-                            <h4 className="font-bold text-primary mb-4 flex items-center gap-2">
-                               <BookOpen size={16} />
+                         <div key={c.id} className="p-6 bg-card/40 border border-border rounded-[2.5rem] space-y-6">
+                            <h4 className="font-black text-lg text-primary flex items-center gap-2 border-b border-border/60 pb-3">
+                               <BookOpen size={18} />
                                {c.title}
                             </h4>
-                            {courseLessons.length === 0 ? (
-                              <p className="text-xs text-muted-foreground italic">No modules added yet.</p>
-                            ) : (
-                              <div className="space-y-2 mt-4">
-                                {courseLessons.map((lesson, idx) => (
-                                  <div key={lesson.id} className="flex items-center justify-between p-3 bg-background border border-border rounded-xl hover:border-primary/20 transition-colors">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                      <div className="flex flex-col items-center gap-1 shrink-0">
-                                        <button onClick={() => handleMoveLesson(c.id, idx, 'up')} disabled={idx === 0} className="text-muted-foreground hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed">
-                                          <ArrowUp size={14} />
-                                        </button>
-                                        <button onClick={() => handleMoveLesson(c.id, idx, 'down')} disabled={idx === courseLessons.length - 1} className="text-muted-foreground hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed">
-                                          <ArrowDown size={14} />
-                                        </button>
-                                      </div>
+
+                            {/* Render Modules */}
+                            <div className="space-y-4">
+                              {courseModules.map((mod, mIdx) => {
+                                const modLessons = lessons.filter(l => String(l.module_id) === String(mod.id)).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+                                return (
+                                  <div key={mod.id} className="p-4 bg-background border border-border rounded-2xl space-y-3">
+                                    <div className="flex items-center justify-between">
                                       <div>
-                                        <div className="text-sm font-bold truncate">{lesson.title}</div>
-                                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Module {lesson.order_index || idx + 1} {lesson.is_preview ? '• Preview' : ''}</div>
+                                        <div className="font-bold text-sm">{mod.title}</div>
+                                        {mod.has_assessment && <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">Module Assessment</span>}
                                       </div>
+                                      <button onClick={() => handleDeleteModule(mod.id)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition-colors shrink-0" title="Delete Module">
+                                        <Trash2 size={14} />
+                                      </button>
                                     </div>
-                                    <button onClick={() => handleDeleteLesson(lesson.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors shrink-0">
-                                      <Trash2 size={16} />
-                                    </button>
+                                    
+                                    {/* Lessons inside Module */}
+                                    <div className="space-y-1.5 pl-3 border-l-2 border-border/60">
+                                      {modLessons.length === 0 ? (
+                                        <div className="text-[11px] text-muted-foreground italic py-1">No lessons added to this module yet.</div>
+                                      ) : (
+                                        modLessons.map((lsn, lIdx) => (
+                                          <div key={lsn.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-accent/40 transition-colors group">
+                                            <div className="min-w-0 pr-2">
+                                              <div className="text-xs font-semibold truncate">{lsn.title}</div>
+                                              <div className="flex items-center gap-2 mt-0.5">
+                                                {lsn.notes && <span className="text-[9px] text-muted-foreground">📝 Notes</span>}
+                                                {lsn.content_url && <span className="text-[9px] text-muted-foreground">🎥 Video</span>}
+                                                {lsn.is_preview && <span className="text-[9px] font-bold text-sky-400">Preview</span>}
+                                                {lsn.has_assignment && <span className="text-[9px] font-bold text-primary">Assessment</span>}
+                                              </div>
+                                            </div>
+                                            <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-destructive hover:bg-destructive/10 rounded transition-all shrink-0">
+                                              <Trash2 size={12} />
+                                            </button>
+                                          </div>
+                                        ))
+                                      )}
+                                    </div>
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                );
+                              })}
+
+                              {/* Unassigned/Legacy Lessons */}
+                              {unassignedLessons.length > 0 && (
+                                <div className="p-4 bg-background/50 border border-dashed border-border rounded-2xl space-y-3">
+                                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Unassigned / General Lessons</div>
+                                  <div className="space-y-1.5 pl-3 border-l-2 border-border/40">
+                                    {unassignedLessons.map((lsn) => (
+                                      <div key={lsn.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-accent/40 transition-colors group">
+                                        <div className="min-w-0 pr-2">
+                                          <div className="text-xs font-semibold truncate">{lsn.title}</div>
+                                          <div className="flex items-center gap-2 mt-0.5">
+                                            {lsn.notes && <span className="text-[9px] text-muted-foreground">📝 Notes</span>}
+                                            {lsn.content_url && <span className="text-[9px] text-muted-foreground">🎥 Video</span>}
+                                            {lsn.is_preview && <span className="text-[9px] font-bold text-sky-400">Preview</span>}
+                                            {lsn.has_assignment && <span className="text-[9px] font-bold text-primary">Assessment</span>}
+                                          </div>
+                                        </div>
+                                        <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-destructive hover:bg-destructive/10 rounded transition-all shrink-0">
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {courseModules.length === 0 && unassignedLessons.length === 0 && (
+                                <p className="text-xs text-muted-foreground italic text-center py-4">No curriculum structured yet.</p>
+                              )}
+                            </div>
                          </div>
                        );
                      })}
