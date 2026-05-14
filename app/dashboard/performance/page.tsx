@@ -13,14 +13,13 @@ import {
   ArrowLeft, 
   Award, 
   ShieldCheck, 
-  Sparkles,
-  BarChart3,
   Calendar,
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
-// Static reference data representation reproducing dense historical semestral performance metrics (RCD)
+// Static reference data representation reproducing dense historical semestral performance metrics
 const RCD = [
   {
     id: "sem-5",
@@ -109,6 +108,19 @@ const RCD = [
   }
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring" as const, 
+      stiffness: 400, 
+      damping: 25 
+    } 
+  },
+};
+
 export default function PerformanceReportCardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
@@ -138,8 +150,8 @@ export default function PerformanceReportCardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background items-center justify-center font-sans">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center font-sans">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -147,57 +159,63 @@ export default function PerformanceReportCardPage() {
   // Currently active report card object binding
   const activeSemData = RCD.find(s => s.id === activeSemesterId) || RCD[0];
 
-  // Table rendering logic engine mapping evaluation variables (rcRender)
+  // Table rendering logic engine mapping evaluation variables
   const rcRender = () => (
-    <div className="bg-card/40 backdrop-blur-xl border border-border rounded-[2.5rem] overflow-hidden shadow-sm font-sans">
-      <div className="p-6 md:p-8 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-accent/20 font-sans">
-        <div className="font-sans">
-          <div className="flex items-center gap-2 font-sans">
-            <h3 className="text-xl font-black text-foreground font-sans">{activeSemData.term} Breakdown</h3>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 font-sans">
+    <motion.div 
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      key={activeSemesterId}
+      className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none font-sans"
+    >
+      <div className="p-[24px] md:p-[32px] border-b border-[#8B4513]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] bg-[#F9F5F0]/50">
+        <div>
+          <div className="flex items-center gap-[8px]">
+            <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.term} Breakdown</h3>
+            <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">
               {activeSemData.academicYear}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 font-sans">Subject-wise evaluation scorecard tracking standard grading metrics</p>
+          <p className="text-xs text-[#3D2B1F]/70 mt-1">Subject-wise evaluation scorecard tracking standard grading metrics</p>
         </div>
         
-        <div className="flex items-center gap-3 self-start sm:self-auto font-sans">
-          <div className="text-right font-sans">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground block font-sans">Term Score Status</span>
-            <span className="text-xs font-black text-emerald-500 font-sans">{activeSemData.evaluationStatus}</span>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="text-right">
+            <span className="text-[10px] uppercase font-medium text-[#3D2B1F]/60 block tracking-wider">Term Score Status</span>
+            <span className="text-xs font-semibold text-emerald-800">{activeSemData.evaluationStatus}</span>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto font-sans">
-        <table className="w-full text-left border-collapse font-sans">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-border/60 text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-accent/10 font-sans">
-              <th className="p-4 pl-6 font-sans">Subject Code</th>
-              <th className="p-4 font-sans">Course Title</th>
-              <th className="p-4 text-center font-sans">Credits</th>
-              <th className="p-4 text-center font-sans">Internal Evaluation</th>
-              <th className="p-4 text-center font-sans">External Grade</th>
-              <th className="p-4 pr-6 text-right font-sans">Status</th>
+            <tr className="border-b border-[#8B4513]/10 text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 bg-[#F9F5F0]/20">
+              <th className="p-4 pl-6">Subject Code</th>
+              <th className="p-4">Course Title</th>
+              <th className="p-4 text-center">Credits</th>
+              <th className="p-4 text-center">Internal Evaluation</th>
+              <th className="p-4 text-center">External Grade</th>
+              <th className="p-4 pr-6 text-right">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/40 text-xs font-sans">
+          <tbody className="divide-y divide-[#8B4513]/5 text-xs">
             {activeSemData.subjects.map((subj) => (
-              <tr key={subj.code} className="hover:bg-accent/30 transition-colors font-sans">
-                <td className="p-4 pl-6 font-bold text-foreground font-sans">
-                  <span className="px-2 py-1 rounded-md bg-accent text-accent-foreground text-[11px] font-mono font-sans">{subj.code}</span>
+              <tr key={subj.code} className="hover:bg-[#F9F5F0]/30 transition-colors">
+                <td className="p-4 pl-6 font-medium text-[#3D2B1F]">
+                  <span className="px-2 py-0.5 rounded-[4px] bg-[#8B4513]/5 text-[#8B4513] text-[11px] font-mono border border-[#8B4513]/10">{subj.code}</span>
                 </td>
-                <td className="p-4 font-bold text-foreground max-w-xs truncate font-sans">{subj.title}</td>
-                <td className="p-4 text-center font-bold text-muted-foreground font-sans">{subj.credits}</td>
-                <td className="p-4 text-center font-medium text-muted-foreground font-sans">{subj.internalMarks}</td>
-                <td className="p-4 text-center font-sans">
-                  <span className="font-black text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10 text-xs font-sans">
+                <td className="p-4 font-normal text-[#3D2B1F] max-w-xs truncate">{subj.title}</td>
+                <td className="p-4 text-center font-normal text-[#3D2B1F]/70">{subj.credits}</td>
+                <td className="p-4 text-center font-normal text-[#3D2B1F]/70">{subj.internalMarks}</td>
+                <td className="p-4 text-center">
+                  <span className="font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10 text-xs">
                     {subj.externalGrade}
                   </span>
                 </td>
-                <td className="p-4 pr-6 text-right font-sans">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-sans">
-                    <CheckCircle2 size={10} className="font-sans" /> Cleared
+                <td className="p-4 pr-6 text-right">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">
+                    <CheckCircle2 size={10} /> Cleared
                   </span>
                 </td>
               </tr>
@@ -206,149 +224,160 @@ export default function PerformanceReportCardPage() {
         </table>
       </div>
       
-      <div className="p-4 bg-accent/10 border-t border-border flex flex-wrap items-center justify-between gap-4 text-xs font-sans text-muted-foreground">
-        <div className="flex items-center gap-2 font-sans">
-          <ShieldCheck size={14} className="text-primary font-sans" />
-          <span className="font-sans">All internal practical modules accredited by Matrix Root Evaluation Boards.</span>
+      <div className="p-4 bg-[#F9F5F0]/30 border-t border-[#8B4513]/10 flex flex-wrap items-center justify-between gap-4 text-xs text-[#3D2B1F]/70">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={14} className="text-[#8B4513]" />
+          <span>All internal practical modules accredited by Matrix Root Evaluation Boards.</span>
         </div>
-        <div className="font-bold text-foreground font-sans">
-          Cleared Component Credits: <span className="text-primary font-sans">{activeSemData.creditsCleared}</span>
+        <div className="font-medium text-[#3D2B1F]">
+          Cleared Component Credits: <span className="text-[#8B4513]">{activeSemData.creditsCleared}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
       {/* Sidebar Navigation Pane */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-border bg-card/30 shrink-0 font-sans">
-        <div className="p-6 flex items-center gap-3 border-b border-border font-sans">
+      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
           <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-bold text-lg font-sans">Matrix Root</span>
+          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto font-sans">
-          <SidebarItem icon={<LayoutDashboard size={18} className="font-sans" />} label="Dashboard" onClick={() => router.push('/dashboard')} />
-          <SidebarItem icon={<BookOpen size={18} className="font-sans" />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} className="font-sans" />} label="Performance" active />
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" onClick={() => router.push('/dashboard')} />
+          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
           
-          <div className="pt-6 font-sans">
-            <SidebarItem icon={<User size={18} className="font-sans" />} label="Profile Settings" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} className="font-sans" />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
+          <div className="pt-6">
+            <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
           </div>
         </nav>
       </aside>
 
       {/* Primary Analytics Content Dashboard */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden font-sans">
-        <header className="h-20 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0 font-sans">
-          <div className="flex items-center gap-4 font-sans">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard')} className="rounded-xl font-sans">
-              <ArrowLeft size={20} className="font-sans" />
-            </Button>
-            <div className="font-sans">
-              <h2 className="text-xl font-bold font-sans">Performance Studio</h2>
-              <p className="text-[11px] text-muted-foreground hidden sm:block font-sans">Historical metrics framework scaling 2024–2026 track analytics</p>
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-4">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+              <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-[#8B4513]/20 shadow-none">
+                <ArrowLeft size={16} className="text-[#8B4513]" />
+              </Button>
+            </motion.div>
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Performance Studio Node</h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 font-sans">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-[11px] font-bold text-foreground border border-border font-sans">
-              <Award size={14} className="text-amber-500 font-sans" />
-              <span>CGPA Tracker Active</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#8B4513]/5 text-[10px] font-medium text-[#8B4513] border border-[#8B4513]/10">
+              <Award size={12} />
+              <span>CGPA Ledger Synchronized</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 pb-20 max-w-[1600px] w-full mx-auto font-sans">
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] space-y-[48px] pb-20 max-w-[1600px] w-full mx-auto">
           
           {/* Top Performance Status Widget Container */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 font-sans">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-[24px]">
             
-            <div className="bg-card border border-border rounded-[2rem] p-6 flex flex-col justify-between shadow-xs font-sans">
-              <div className="flex items-center justify-between mb-4 font-sans">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">Cumulative Index</span>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded font-sans">CGPA</span>
+            <motion.div variants={cardVariants} initial="hidden" animate="visible" className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
+              <div className="flex items-center justify-between mb-[16px]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Cumulative Index</span>
+                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">CGPA</span>
               </div>
-              <div className="font-sans">
-                <p className="text-4xl font-black text-foreground font-sans">9.35</p>
-                <p className="text-xs text-muted-foreground mt-1 font-sans">Overall academic status vector</p>
+              <div>
+                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">9.35</p>
+                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Overall academic status vector</p>
               </div>
-              <div className="h-1.5 w-full bg-accent rounded-full mt-4 overflow-hidden font-sans">
-                <div className="h-full bg-primary font-sans" style={{ width: '93.5%' }}></div>
+              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
+                <div className="h-full bg-[#8B4513]" style={{ width: '93.5%' }}></div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-card border border-border rounded-[2rem] p-6 flex flex-col justify-between shadow-xs font-sans">
-              <div className="flex items-center justify-between mb-4 font-sans">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">Active Term Index</span>
-                <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded font-sans">SGPA</span>
+            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
+              <div className="flex items-center justify-between mb-[16px]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Active Term Index</span>
+                <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">SGPA</span>
               </div>
-              <div className="font-sans">
-                <p className="text-4xl font-black text-foreground font-sans">{activeSemData.sgpa}</p>
-                <p className="text-xs text-muted-foreground mt-1 font-sans">Current target evaluation metric</p>
+              <div>
+                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.sgpa}</p>
+                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Current target evaluation metric</p>
               </div>
-              <div className="h-1.5 w-full bg-accent rounded-full mt-4 overflow-hidden font-sans">
-                <div className="h-full bg-emerald-500 font-sans" style={{ width: `${parseFloat(activeSemData.sgpa) * 10}%` }}></div>
+              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
+                <div className="h-full bg-emerald-700" style={{ width: `${parseFloat(activeSemData.sgpa) * 10}%` }}></div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-card border border-border rounded-[2rem] p-6 flex flex-col justify-between shadow-xs font-sans">
-              <div className="flex items-center justify-between mb-4 font-sans">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">Verified Attendance</span>
-                <span className="text-[10px] font-bold text-sky-500 bg-sky-500/10 px-2 py-0.5 rounded font-sans">KPI</span>
+            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
+              <div className="flex items-center justify-between mb-[16px]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Verified Attendance</span>
+                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">KPI</span>
               </div>
-              <div className="font-sans">
-                <p className="text-4xl font-black text-foreground font-sans">{activeSemData.attendance}</p>
-                <p className="text-xs text-muted-foreground mt-1 font-sans">Industrial workspace presence verification</p>
+              <div>
+                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.attendance}</p>
+                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Workspace presence verification</p>
               </div>
-              <div className="h-1.5 w-full bg-accent rounded-full mt-4 overflow-hidden font-sans">
-                <div className="h-full bg-sky-500 font-sans" style={{ width: activeSemData.attendance }}></div>
+              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
+                <div className="h-full bg-[#8B4513]" style={{ width: activeSemData.attendance }}></div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="bg-card border border-border rounded-[2rem] p-6 flex flex-col justify-between shadow-xs font-sans">
-              <div className="flex items-center justify-between mb-4 font-sans">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">Cleared Component</span>
-                <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded font-sans">Credits</span>
+            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
+              <div className="flex items-center justify-between mb-[16px]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Cleared Component</span>
+                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">Credits</span>
               </div>
-              <div className="font-sans">
-                <p className="text-4xl font-black text-foreground font-sans">{activeSemData.creditsCleared.split('/')[0].trim()}</p>
-                <p className="text-xs text-muted-foreground mt-1 font-sans">Accredited study points confirmed</p>
+              <div>
+                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.creditsCleared.split('/')[0].trim()}</p>
+                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Accredited study points confirmed</p>
               </div>
-              <div className="flex items-center gap-1.5 mt-4 text-[11px] font-bold text-emerald-500 font-sans">
-                <ShieldCheck size={14} className="font-sans" /> Fully Aligned
+              <div className="flex items-center gap-1 mt-[16px] text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] w-fit border border-emerald-200">
+                <ShieldCheck size={12} /> Fully Aligned
               </div>
-            </div>
+            </motion.div>
 
           </div>
 
           {/* Interactive Term Switcher Navigation Header */}
-          <div className="space-y-4 font-sans">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans">
-              <h3 className="text-lg font-black tracking-tight font-sans">Historical Report Cards (2024–2026)</h3>
-              <p className="text-xs text-muted-foreground font-sans">Select term tabs below to parse evaluation data subsets</p>
+          <div className="space-y-[16px]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[8px]">
+              <h3 className="text-xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Historical Report Ledgers</h3>
+              <p className="text-xs text-[#3D2B1F]/70">Select term tabs below to parse evaluation subsets</p>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-sans">
+            <div className="flex items-center gap-[16px] overflow-x-auto pb-2 scrollbar-none border-b border-[#8B4513]/10">
               {RCD.map((sem) => {
                 const isSelected = sem.id === activeSemesterId;
                 return (
-                  <button
+                  <motion.button
+                    whileHover={{ y: -1 }}
+                    whileTap={{ y: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     key={sem.id}
                     onClick={() => setActiveSemesterId(sem.id)}
-                    className={`px-5 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all font-sans flex items-center gap-2 ${
+                    className={`pb-3 text-xs font-medium transition-colors relative shrink-0 flex items-center gap-2 ${
                       isSelected 
-                        ? "bg-primary text-primary-foreground shadow-md font-black scale-105" 
-                        : "bg-card border border-border hover:bg-accent text-foreground"
+                        ? "text-[#8B4513] font-semibold" 
+                        : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"
                     }`}
                   >
-                    <Calendar size={14} className={isSelected ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
-                    <span className="font-sans">{sem.term}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-sans ${isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-accent text-muted-foreground"}`}>
+                    <Calendar size={12} className={isSelected ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
+                    <span>{sem.term}</span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded-[8px] border ${isSelected ? "bg-[#8B4513]/5 text-[#8B4513] border-[#8B4513]/20" : "bg-white text-[#3D2B1F]/60 border-[#8B4513]/10"}`}>
                       {sem.sgpa}
                     </span>
-                  </button>
+                    {isSelected && (
+                      <motion.div 
+                        layoutId="activeTabUnderline"
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4513]" 
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      />
+                    )}
+                  </motion.button>
                 );
               })}
             </div>
@@ -365,16 +394,19 @@ export default function PerformanceReportCardPage() {
 
 function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
   return (
-    <button 
+    <motion.button 
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all font-sans ${
+      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
         active 
-        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" 
+        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
       }`}
     >
-      {icon}
+      <span className="text-[#8B4513]">{icon}</span>
       {label}
-    </button>
+    </motion.button>
   );
 }

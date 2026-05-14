@@ -49,86 +49,84 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 selection:bg-primary/20">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-      
+    <div className="min-h-screen flex items-center justify-center bg-[#F9F5F0] p-[32px] md:p-[64px] text-[#3D2B1F] font-sans">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={48} height={48} />
-            <span className="font-black text-2xl tracking-tighter">Matrix Root</span>
+        <div className="text-center mb-[40px]">
+          <Link href="/" className="inline-flex items-center gap-2 mb-[24px]">
+            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={40} height={40} className="object-contain" />
+            <span className="font-medium text-xl tracking-tight text-[#3D2B1F]">Matrix Root</span>
           </Link>
-          <h2 className="text-3xl font-black text-foreground">Join the Track</h2>
-          <p className="text-muted-foreground mt-2 font-medium">Start your industrial internship today</p>
+          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Institution Enrollment</h2>
+          <p className="text-sm text-[#3D2B1F]/80 mt-1">Foundational membership & curriculum access</p>
         </div>
 
-        <div className="bg-card/50 backdrop-blur-2xl border border-border rounded-[2.5rem] p-8 shadow-2xl shadow-primary/5">
-          <form onSubmit={handleSignup} className="space-y-5">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Full Name</label>
+        <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] shadow-none">
+          <form onSubmit={handleSignup} className="space-y-[24px]">
+            <div className="space-y-[16px]">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Full Legal Name</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 bg-background border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                    placeholder="John Doe"
+                    className="w-full pl-12 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                    placeholder="Jane Doe"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 bg-background border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                    placeholder="name@university.edu"
+                    className="w-full pl-12 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                    placeholder="name@institution.edu"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Password</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Secure Credentials</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 bg-background border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                    placeholder="Min. 6 characters"
+                    className="w-full pl-12 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                    placeholder="Minimum 6 characters"
                     minLength={6}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-2xl bg-primary/5 border border-primary/10">
+            <div className="flex items-start gap-3 p-3 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10">
               <input
                 id="terms"
                 type="checkbox"
                 required
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded-sm border-border text-primary focus:ring-primary/20"
+                className="mt-0.5 w-4 h-4 rounded-[4px] border-[#8B4513]/20 text-[#8B4513] focus:ring-0"
               />
-              <label htmlFor="terms" className="text-xs text-foreground font-medium leading-relaxed cursor-pointer">
-                I agree to the <span className="text-primary font-bold">Matrix Root training terms</span> and the industrial internship code of conduct.
+              <label htmlFor="terms" className="text-xs text-[#3D2B1F] font-normal leading-relaxed cursor-pointer">
+                I bind myself to the <span className="font-medium text-[#8B4513]">Matrix Root directives</span> and academic confidentiality agreements.
               </label>
             </div>
 
             {error && (
-              <div className={`p-4 text-xs font-bold border rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in-95 ${error.includes('Success') ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'text-destructive bg-destructive/10 border-destructive/20'}`}>
-                <ShieldCheck size={18} />
+              <div className={`p-3 text-xs font-medium rounded-[12px] flex items-center gap-2 ${error.includes('Success') ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10'}`}>
+                <ShieldCheck size={16} />
                 {error}
               </div>
             )}
@@ -136,22 +134,21 @@ export default function SignupPage() {
             <Button
               type="submit"
               disabled={!agreedToTerms || loading}
-              className="w-full h-14 rounded-2xl font-black text-base shadow-xl shadow-primary/20 mt-2"
-              style={{ background: "var(--gradient-primary)" }}
+              className="w-full h-11 rounded-[12px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none font-medium mt-2"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-[#8B4513]" />
               ) : (
-                <>Create Account <ArrowRight className="ml-2 h-5 w-5" /></>
+                <>Submit Identity Affirmation <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
               )}
             </Button>
           </form>
 
-          <div className="mt-8 text-center border-t border-border pt-6">
-            <p className="text-sm font-medium text-muted-foreground">
-              Already have an account?{' '}
-              <Link href="/login" className="text-primary font-bold hover:underline">
-                Sign In
+          <div className="mt-[32px] text-center border-t border-[#8B4513]/10 pt-[24px]">
+            <p className="text-xs text-[#3D2B1F]/60">
+              Already possess authenticated credentials?{' '}
+              <Link href="/login" className="text-[#8B4513] font-medium hover:underline">
+                Access Portal
               </Link>
             </p>
           </div>

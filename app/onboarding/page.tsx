@@ -2,30 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Code2, Zap, Settings, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Code2, Zap, Settings, ArrowRight, Loader2, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DEPARTMENTS = [
   {
     id: "it",
     name: "Information Technology",
-    icon: <Code2 className="text-blue-500" />,
+    icon: <Code2 className="text-[#8B4513] h-5 w-5" />,
     description: "Software engineering, web development, and AI tracks.",
-    color: "from-blue-500/20 to-sky-500/10"
   },
   {
     id: "eee",
     name: "Electrical & Electronics",
-    icon: <Zap className="text-amber-500" />,
+    icon: <Zap className="text-[#8B4513] h-5 w-5" />,
     description: "IoT, robotics, and embedded systems training.",
-    color: "from-amber-500/20 to-orange-500/10"
   },
   {
     id: "mech",
     name: "Mechanical Engineering",
-    icon: <Settings className="text-emerald-500" />,
+    icon: <Settings className="text-[#8B4513] h-5 w-5" />,
     description: "Industrial design, manufacturing, and automation.",
-    color: "from-emerald-500/20 to-teal-500/10"
   },
 ];
 
@@ -63,44 +60,44 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 selection:bg-primary/20">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-      
-      <div className="w-full max-w-6xl">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-bold text-primary shadow-sm mb-6">
-            <Sparkles size={14} className="animate-pulse" />
-            CUSTOMIZE YOUR CAREER TRACK
+    <div className="min-h-screen flex items-center justify-center bg-[#F9F5F0] p-[32px] md:p-[64px] text-[#3D2B1F] font-sans">
+      <div className="w-full max-w-5xl">
+        <div className="text-center mb-[48px]">
+          <div className="inline-flex items-center gap-2 rounded-[12px] border border-[#8B4513]/10 bg-[#8B4513]/5 px-4 py-1.5 text-xs font-medium text-[#8B4513] mb-[24px]">
+            <Award size={14} />
+            ACADEMIC INTEGRATION
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
-            Select Your <br />
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>Academic Discipline</span>
+          <h1 className="text-3xl md:text-5xl font-normal tracking-[-0.02em] mb-[16px] text-[#3D2B1F]">
+            Select Your Discipline
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
-            Choose your specialization to unlock mentor-reviewed curriculum and industrial assignments tailored to your branch.
+          <p className="text-sm md:text-base text-[#3D2B1F]/80 max-w-xl mx-auto font-normal">
+            Choose your specialization to unlock foundational curriculum and assignments tailored to your domain.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
           {DEPARTMENTS.map((dept) => (
             <div
               key={dept.id}
-              className="group relative flex flex-col p-8 bg-card/40 backdrop-blur-md border border-border rounded-[2.5rem] hover:border-primary/40 hover:-translate-y-2 transition-all duration-300 shadow-card"
+              className="flex flex-col p-[32px] bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors shadow-none"
             >
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${dept.color} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}>
+              <div className="w-12 h-12 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center mb-[24px]">
                 {dept.icon}
               </div>
               
-              <h3 className="text-2xl font-black mb-4 group-hover:text-primary transition-colors">{dept.name}</h3>
-              <p className="text-muted-foreground font-medium leading-relaxed mb-10 flex-1">{dept.description}</p>
+              <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F] mb-[16px]">
+                {dept.name}
+              </h3>
+              <p className="text-sm text-[#3D2B1F]/80 leading-[1.6] mb-[32px] flex-1">
+                {dept.description}
+              </p>
               
               <Button 
                 onClick={() => handleSelectDepartment(dept.id)}
                 disabled={loading}
-                className="w-full h-12 rounded-2xl font-bold group-hover:shadow-lg transition-all"
-                variant="secondary"
+                className="w-full h-11 rounded-[12px] font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none"
               >
-                {loading ? <Loader2 className="animate-spin" /> : <>Select Track <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" /></>}
+                {loading ? <Loader2 className="animate-spin" /> : <>Select Track <ArrowRight size={16} className="ml-2 text-[#8B4513]" /></>}
               </Button>
             </div>
           ))}

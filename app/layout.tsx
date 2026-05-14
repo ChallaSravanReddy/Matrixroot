@@ -1,24 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Matrix Root | Internship Platform",
-  description: "Advanced Training-cum-Internship Platform for Engineering Students",
+  title: "Matrix Root | Premium Educational Institution",
+  description: "Advanced Training and Verifiable Excellence Platform",
 };
-
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function RootLayout({
   children,
@@ -28,17 +20,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <link rel="preconnect" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://api.razorpay.com" />
       </head>
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+      <body className="min-h-full flex flex-col font-sans bg-[#F9F5F0] text-[#3D2B1F]">
+        {children}
       </body>
     </html>
   );

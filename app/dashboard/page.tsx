@@ -6,6 +6,7 @@ import CertificatePDF from "@/components/CertificatePDF";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { 
   GraduationCap, 
   LayoutDashboard, 
@@ -13,7 +14,6 @@ import {
   LogOut, 
   User, 
   ShieldCheck, 
-  Clock, 
   ArrowRight,
   TrendingUp,
   Search,
@@ -34,6 +34,29 @@ interface Course {
     slug: string;
   };
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring" as const, 
+      stiffness: 400, 
+      damping: 25 
+    } 
+  },
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -84,8 +107,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -95,35 +118,35 @@ export default function DashboardPage() {
   const otherCourses = allCourses.filter(course => course.departments?.slug !== departmentSlug);
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-border bg-card/30">
-        <div className="p-6 flex items-center gap-3 border-b border-border">
+      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
+        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
           <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-bold text-lg">Matrix Root</span>
+          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Student Menu</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
+          <p className="px-3 text-[10px] font-semibold text-[#3D2B1F]/60 uppercase tracking-wider mb-2">Student Ledger</p>
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" active />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance" onClick={() => router.push('/dashboard/performance')} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" onClick={() => router.push('/dashboard/performance')} />
           
           <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Account</p>
-            <SidebarItem icon={<User size={18} />} label="Profile Settings" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
+            <p className="px-3 text-[10px] font-semibold text-[#3D2B1F]/60 uppercase tracking-wider mb-2">Configuration</p>
+            <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={handleSignOut} />
           </div>
         </nav>
 
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-accent/50">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">
-              {profile?.full_name?.charAt(0) || "S"}
+        <div className="p-4 border-t border-[#8B4513]/10">
+          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10">
+            <div className="w-8 h-8 rounded-[12px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-medium text-xs">
+              {profile?.full_name?.charAt(0) || "M"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{profile?.full_name || "Student"}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{profile?.departments?.name || "No Track"}</p>
+              <p className="text-xs font-medium text-[#3D2B1F] truncate">{profile?.full_name || "Institution Scholar"}</p>
+              <p className="text-[10px] text-[#3D2B1F]/60 truncate">{profile?.departments?.name || "Active Track"}</p>
             </div>
           </div>
         </div>
@@ -132,73 +155,93 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <header className="h-20 border-b border-border bg-background/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold">Dashboard</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Curriculum Ledger</h2>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
               <input 
                 type="text" 
-                placeholder="Search tracks..." 
-                className="pl-10 pr-4 py-2 bg-accent/30 border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
+                placeholder="Query parameters..." 
+                className="pl-10 pr-4 py-1.5 bg-white border border-[#8B4513]/20 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513] w-64 text-[#3D2B1F]"
               />
             </div>
-            <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              <Sparkles size={20} />
+            <div className="w-8 h-8 rounded-[12px] border border-[#8B4513]/20 flex items-center justify-center text-[#8B4513] hover:bg-[#8B4513]/5 transition-colors cursor-pointer">
+              <Sparkles size={14} />
             </div>
           </div>
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 pb-20">
-          {/* Welcome Card */}
-          <div className="relative rounded-[2rem] p-8 text-primary-foreground overflow-hidden" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }}>
-            <div className="relative z-10">
-              <h1 className="text-3xl font-black mb-2">Welcome back, {profile?.full_name?.split(' ')[0] || "Student"}!</h1>
-              <p className="text-primary-foreground/80 max-w-lg">
-                Continue your industry-standard internship journey. Your progress is saved and mentor-reviewed.
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] space-y-[48px] pb-20">
+          {/* Welcome Announcement Block */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] shadow-none"
+          >
+            <div className="max-w-2xl">
+              <span className="text-xs font-medium text-[#8B4513] uppercase tracking-wider block mb-[8px]">
+                Active Directives Status
+              </span>
+              <h1 className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F] mb-[16px]">
+                Greetings, {profile?.full_name?.split(' ')[0] || "Scholar"}.
+              </h1>
+              <p className="text-sm text-[#3D2B1F]/80 leading-[1.6]">
+                Your engineering track progress is strictly preserved and logged inside verifiable records. Select your active modules below to resume mechanical mastery.
               </p>
             </div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          </div>
+          </motion.div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]"
+          >
             <StatCard 
-              label="Completed Modules" 
+              label="Completed Directives" 
               value={`${userProgress.length} / ${courseLessons.length}`} 
-              icon={<ShieldCheck className="text-primary" size={20} />} 
+              icon={<ShieldCheck className="text-[#8B4513]" size={18} />} 
               progress={(userProgress.length / Math.max(1, courseLessons.length)) * 100}
             />
             <StatCard 
-              label="Certificates Earned" 
+              label="Credentials Validated" 
               value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
-              icon={<Award className="text-amber-500" size={20} />} 
+              icon={<Award className="text-[#8B4513]" size={18} />} 
             />
             <StatCard 
-              label="Current Track" 
-              value={profile?.departments?.name || "General"} 
-              icon={<GraduationCap className="text-sky-500" size={20} />} 
+              label="Primary Designation" 
+              value={profile?.departments?.name || "Foundational"} 
+              icon={<GraduationCap className="text-[#8B4513]" size={18} />} 
             />
             <StatCard 
-              label="Account Type" 
-              value="Industrial Internship" 
-              icon={<BadgeCheck className="text-emerald-500" size={20} />} 
+              label="Operational Track" 
+              value="Verified Candidate" 
+              icon={<BadgeCheck className="text-[#8B4513]" size={18} />} 
             />
-          </div>
+          </motion.div>
 
           {/* Internship Tracks */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black tracking-tight">Your Recommended Tracks</h2>
-              <Link href="/signup" className="text-xs font-bold text-primary flex items-center gap-1 hover:underline">
-                View all tracks <ArrowRight size={14} />
+          <section className="space-y-[24px]">
+            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[16px]">
+              <h2 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Assigned Professional Modules</h2>
+              <Link href="/onboarding" className="relative text-xs font-medium text-[#8B4513] group py-1 px-2">
+                Reconfigure Discipline <ArrowRight size={12} className="inline ml-1" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-[#8B4513] transition-all duration-300 group-hover:w-full rounded-full" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
+            >
               {recommendedCourses.map(course => (
                 <CourseCard 
                   key={course.id} 
@@ -211,17 +254,24 @@ export default function DashboardPage() {
                 />
               ))}
               {recommendedCourses.length === 0 && (
-                <div className="col-span-full py-12 text-center bg-accent/20 rounded-3xl border-2 border-dashed border-border">
-                  <p className="text-muted-foreground font-medium">No recommended tracks found for your branch. Visit Profile Settings to update.</p>
-                </div>
+                <motion.div variants={cardVariants} className="col-span-full py-[48px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
+                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No specialized programs allocated for current discipline parameters.</p>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           </section>
 
           {/* Other Tracks */}
-          <section className="space-y-6">
-            <h2 className="text-2xl font-black tracking-tight">Explore Other Disciplines</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <section className="space-y-[24px]">
+            <div className="border-b border-[#8B4513]/10 pb-[16px]">
+              <h2 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Alternate Engineering Directives</h2>
+            </div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
+            >
               {otherCourses.slice(0, 3).map(course => (
                 <CourseCard 
                   key={course.id} 
@@ -233,7 +283,7 @@ export default function DashboardPage() {
                   onEnroll={() => setSelectedCourse({id: course.id, title: course.title})}
                 />
               ))}
-            </div>
+            </motion.div>
           </section>
         </div>
       </main>
@@ -256,43 +306,49 @@ export default function DashboardPage() {
 
 function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
   return (
-    <button 
+    <motion.button 
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-bold transition-all ${
+      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
         active 
-        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" 
+        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
       }`}
     >
-      {icon}
+      <span className="text-[#8B4513]">{icon}</span>
       {label}
-    </button>
+    </motion.button>
   );
 }
 
 function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-[2rem] p-6 md:p-8 shadow-sm hover:shadow-card hover:border-primary/20 transition-all group flex flex-col justify-between">
-      <div className="flex items-start justify-between mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+    <motion.div 
+      variants={cardVariants}
+      className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] shadow-none flex flex-col justify-between hover:border-[#8B4513]/40 transition-colors"
+    >
+      <div className="flex items-start justify-between mb-[16px]">
+        <div className="w-10 h-10 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center">
           {icon}
         </div>
         {progress !== undefined && (
-          <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg">
+          <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
             {Math.round(progress)}%
           </span>
         )}
       </div>
       <div>
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
-        <p className="text-3xl font-black tracking-tight">{value}</p>
+        <p className="text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider mb-[4px]">{label}</p>
+        <p className="text-2xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{value}</p>
       </div>
       {progress !== undefined && (
-        <div className="mt-4 h-1.5 w-full bg-accent rounded-full overflow-hidden">
-          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
+        <div className="mt-[16px] h-1 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/10">
+          <div className="h-full bg-[#8B4513]" style={{ width: `${progress}%` }} />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -301,53 +357,70 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: 
   const progressPercent = Math.round((progress.length / Math.max(1, lessons.length)) * 100);
 
   return (
-    <div className="flex flex-col bg-card border border-border rounded-[2.5rem] p-2 hover:border-primary/30 hover:shadow-2xl transition-all group">
-      <div className="h-48 w-full bg-accent/30 rounded-[2rem] overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-60 transition-opacity">
-           <BookOpen size={64} className="text-primary" />
+    <motion.div 
+      variants={cardVariants}
+      className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] hover:border-[#8B4513]/40 transition-colors shadow-none group overflow-hidden"
+    >
+      {course.video_url && (
+        <div className="h-40 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0] shrink-0">
+          <img src={course.video_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         </div>
-        <div className="absolute top-4 left-4 px-3 py-1 bg-background/80 backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20">
-          {course.departments?.name || "Track"}
-        </div>
+      )}
+
+      <div className="border-b border-[#8B4513]/10 pb-[16px] mb-[16px] flex items-center justify-between">
+        <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+          {course.departments?.name || "Discipline"}
+        </span>
+        <BookOpen size={16} className="text-[#8B4513]/60" />
       </div>
       
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-xl font-black mb-2 leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-1">{course.description}</p>
+      <div className="flex flex-col flex-1">
+        <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F] mb-[8px]">
+          {course.title}
+        </h3>
+        <p className="text-xs text-[#3D2B1F]/80 line-clamp-3 mb-[24px] leading-[1.6] flex-1">
+          {course.description}
+        </p>
         
         {isEnrolled && (
-          <div className="mb-6 space-y-2">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-              <span>Progress</span>
+          <div className="mb-[24px] space-y-1">
+            <div className="flex justify-between text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider">
+              <span>Mechanical Completion</span>
               <span>{progressPercent}%</span>
             </div>
-            <div className="h-1.5 w-full bg-accent rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
+            <div className="h-1 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/10">
+              <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         )}
 
-        <div className="space-y-3">
-          <Button 
-            className="w-full rounded-2xl h-12 font-bold shadow-lg" 
-            variant={isEnrolled ? "default" : "secondary"}
-            onClick={() => isEnrolled ? window.location.href = `/dashboard/courses/${course.id}` : onEnroll()}
+        <div className="space-y-[16px]">
+          <motion.div 
+            whileHover={{ scale: 1.01 }} 
+            whileTap={{ scale: 0.98 }} 
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
-            {isEnrolled ? "Continue Learning" : "Start Internship"}
-          </Button>
+            <Button 
+              className="w-full rounded-[12px] h-10 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" 
+              onClick={() => isEnrolled ? window.location.href = `/dashboard/courses/${course.id}` : onEnroll()}
+            >
+              {isEnrolled ? "Resume Directives" : "Affirm Enrollment"}
+            </Button>
+          </motion.div>
 
           {isEnrolled && enrolled?.certification_status === 'approved' && (
-             <CertificatePDF 
-                studentName={profile?.full_name || "Graduate"} 
-                courseName={course.title} 
-                branch={profile?.departments?.name || "Engineering"} 
-                score={enrolled?.final_score || 0} 
-                certId={enrolled?.id}
-             />
+             <div className="pt-[8px] border-t border-[#8B4513]/10">
+               <CertificatePDF 
+                  studentName={profile?.full_name || "Graduate"} 
+                  courseName={course.title} 
+                  branch={profile?.departments?.name || "Engineering"} 
+                  score={enrolled?.final_score || 0} 
+                  certId={enrolled?.id}
+               />
+             </div>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

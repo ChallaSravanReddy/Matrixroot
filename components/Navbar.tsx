@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 
@@ -16,57 +15,58 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full border-b border-[#8B4513]/10 bg-[#F9F5F0]/80 backdrop-blur-[10px] transition-all">
       <div className="container mx-auto max-w-7xl px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <Image 
-                src="/img/Matrixroot_onlyimglogo-removebg-preview.png" 
-                alt="Matrix Root Logo" 
-                width={36} 
-                height={36} 
-                className="object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300" 
-                priority 
-              />
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 -z-10" />
-            </div>
-            <span className="font-black text-xl tracking-tighter text-foreground">
+            <Image 
+              src="/img/Matrixroot_onlyimglogo-removebg-preview.png" 
+              alt="Matrix Root Logo" 
+              width={32} 
+              height={32} 
+              className="object-contain transition-transform duration-300 group-hover:opacity-90" 
+              priority 
+            />
+            <span className="font-medium text-lg tracking-tight text-[#3D2B1F]">
               Matrix Root
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-4 py-2 text-sm font-bold tracking-tight transition-colors rounded-full ${
-                  pathname === link.href 
-                    ? "text-primary bg-primary/5" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-2">
+            {links.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative px-4 py-2 text-sm font-medium tracking-tight transition-colors rounded-[12px] group ${
+                    isActive 
+                      ? "text-[#3D2B1F] font-semibold" 
+                      : "text-[#3D2B1F]/80 hover:text-[#3D2B1F]"
+                  }`}
+                >
+                  {link.label}
+                  {/* Subtle underline expanding from center on hover */}
+                  <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-[#8B4513] transition-all duration-300 group-hover:w-[calc(100%-24px)] rounded-full" />
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-4">
             <Link 
               href="/login" 
-              className="px-4 py-2 text-sm font-bold tracking-tight text-muted-foreground hover:text-primary transition-colors"
+              className="relative text-sm font-medium tracking-tight text-[#3D2B1F] group py-1 px-2"
             >
               Login
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-[#8B4513] transition-all duration-300 group-hover:w-full rounded-full" />
             </Link>
-            <Button asChild size="sm" className="rounded-full px-6 font-bold shadow-lg shadow-primary/20 bg-primary hover:shadow-primary/40 transition-all">
+            <Button asChild size="sm" className="rounded-[12px] px-6 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] transition-colors shadow-none">
               <Link href="/signup">Get Started</Link>
             </Button>
           </div>
-          <div className="h-6 w-px bg-border/60 mx-1 hidden sm:block" />
-          <ThemeToggle />
         </div>
       </div>
     </header>

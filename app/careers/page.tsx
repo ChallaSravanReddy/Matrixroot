@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import Image from "next/image";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { 
@@ -17,6 +17,30 @@ import {
   ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: "spring" as const, 
+      stiffness: 400, 
+      damping: 25 
+    } 
+  },
+};
 
 export default function CareersPage() {
   const [courses, setCourses] = useState<any[]>([]);
@@ -39,10 +63,10 @@ export default function CareersPage() {
   }, []);
 
   const categories = [
-    { id: "all", name: "All Tracks", icon: Layers, color: "text-primary", bg: "bg-primary/10" },
-    { id: "it", name: "IT & Software", icon: Code, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { id: "eee", name: "EEE & Electronics", icon: Zap, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { id: "mech", name: "Mechanical & Core", icon: Settings, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { id: "all", name: "All Offerings", icon: Layers },
+    { id: "it", name: "Software Systems", icon: Code },
+    { id: "eee", name: "Embedded Logic", icon: Zap },
+    { id: "mech", name: "Mechanical Core", icon: Settings },
   ];
 
   const filteredCourses = selectedCategory === "all" 
@@ -51,162 +75,209 @@ export default function CareersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
+      <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20 selection:text-primary">
+    <div className="min-h-screen bg-[#F9F5F0] text-[#3D2B1F] font-sans overflow-hidden">
       <Navbar />
 
-      {/* Hero Section - Rule of Thirds & Z-Pattern */}
-      <section className="relative pt-10 pb-10 md:pt-10 md:pb-10 overflow-hidden">
-        <div className="absolute inset-0 matrix-bg -z-10 opacity-30 matrix-bg-animate" />
-        <div className="container mx-auto max-w-7xl px-4 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            {/* Left 2/3 for text content (F-pattern start) */}
-            <div className="lg:col-span-8 flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md text-xs font-black uppercase tracking-[0.2em] text-primary shadow-sm mb-10 animate-kinetic">
-                <Sparkles className="h-4 w-4" />
-                Training-cum-Internships 2024
-              </div>
-              <h1 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground leading-[1.1] mb-10">
-                Shape the Future of <br />
-                <span className="bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>
-                  Infrastructure.
-                </span>
-              </h1>
-              <p className="max-w-2xl text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed mb-12">
-                Real projects. Industry standards. Verifiable certificates. 
-                Join our specialized internship tracks designed for the next generation of engineers.
-              </p>
-              
-              <Button asChild size="lg" className="rounded-full px-10 h-16 text-lg font-black shadow-2xl shadow-primary/40 bg-primary hover:shadow-primary/60 transition-all hover:-translate-y-2">
-                <Link href="#openings">View Openings <ArrowRight className="ml-3 h-6 w-6" /></Link>
-              </Button>
-            </div>
+      {/* Hero Section */}
+      <section className="relative py-[64px] md:py-[112px] overflow-hidden border-b border-[#8B4513]/10">
+        {/* Subtle geometric structural vector compass lines in background */}
+        <div className="absolute top-0 right-0 w-96 h-96 opacity-5 pointer-events-none transform translate-x-1/3 -translate-y-1/3">
+          <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B4513] stroke-current stroke-1 fill-none animate-spin-slow">
+            <circle cx="50" cy="50" r="45" />
+            <circle cx="50" cy="50" r="25" />
+            <line x1="50" y1="0" x2="50" y2="100" />
+            <line x1="0" y1="50" x2="100" y2="50" />
+          </svg>
+        </div>
+
+        <div className="container mx-auto max-w-6xl px-4 relative z-10">
+          <div className="max-w-3xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10 text-xs font-medium text-[#8B4513] mb-[24px]"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              PROFESSIONAL RESIDENCY PROGRAM
+            </motion.div>
             
-            {/* Right 1/3 for visual balance */}
-            <div className="lg:col-span-4 hidden lg:flex justify-center relative">
-               <div className="w-full aspect-square rounded-[3rem] border border-border/30 bg-card/10 backdrop-blur-sm shadow-2xl relative overflow-hidden flex items-center justify-center">
-                  <div className="absolute inset-0 matrix-bg opacity-50" />
-                  <Code className="h-32 w-32 text-primary opacity-80 animate-float" />
-               </div>
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -z-10" />
-            </div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: 0.1 }}
+              className="text-4xl md:text-6xl font-normal tracking-[-0.02em] text-[#3D2B1F] leading-[1.1] mb-[24px]"
+            >
+              Admissions & <br />
+              <span className="font-serif italic">Operational Tracks</span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: 0.2 }}
+              className="text-base md:text-lg text-[#3D2B1F]/80 leading-[1.6] font-normal mb-[40px]"
+            >
+              Real enterprise assignments. Industrial evaluation standards. Verifiable academic credentials. Review available functional allocations below to initiate residency parameters.
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }} className="inline-block">
+                <Button asChild size="lg" className="rounded-[12px] px-[32px] h-[48px] font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none">
+                  <Link href="#openings">Inspect Modules <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></Link>
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Key Features */}
-      <section className="py-12 border-y border-border/50 bg-card/20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="py-[64px] border-b border-[#8B4513]/10 bg-[#F9F5F0]">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
             {[
-              { icon: Clock, title: "Self-Paced Training", desc: "Learn at your own speed with high-quality industry curriculum." },
-              { icon: Layers, title: "Project-Based Learning", desc: "Build enterprise-grade software and systems from day one." },
-              { icon: BadgeCheck, title: "QR-Verified Certification", desc: "Secure, tamper-proof credentials to boost your LinkedIn profile." },
+              { icon: Clock, title: "Self-Paced Execution", desc: "Assimilate complex paradigms at customized learning velocities." },
+              { icon: Layers, title: "Artifact Centric Architecture", desc: "Construct production infrastructure components directly." },
+              { icon: BadgeCheck, title: "Verifiable Ledgers", desc: "Secure public lookup nodes authenticating individual credential issuance." },
             ].map((f, i) => (
-              <div key={i} className="flex items-start gap-4 p-6 rounded-3xl border border-transparent hover:border-border hover:bg-card transition-all group">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                  <f.icon className="h-6 w-6" />
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: i * 0.1 }}
+                className="flex items-start gap-4 p-[24px] bg-white border border-[#8B4513]/10 rounded-[12px] hover:border-[#8B4513]/30 transition-colors group"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[#8B4513]/5 text-[#8B4513] group-hover:scale-110 transition-transform">
+                  <f.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg mb-2">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{f.desc}</p>
+                  <h3 className="font-medium text-base tracking-[-0.02em] text-[#3D2B1F] mb-[8px]">{f.title}</h3>
+                  <p className="text-xs text-[#3D2B1F]/80 leading-[1.6]">{f.desc}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Current Openings */}
-      <section id="openings" className="py-40">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
-            <div className="space-y-4 text-left">
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter">Current Openings</h2>
-              <p className="text-xl text-muted-foreground font-medium">Select your track and start your professional journey.</p>
+      <section id="openings" className="py-[64px] md:py-[112px]">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-[32px] mb-[48px]">
+            <div className="space-y-2">
+              <h2 className="text-3xl md:text-4xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Allocated Programs</h2>
+              <p className="text-sm text-[#3D2B1F]/80 font-normal">Select an academic track to initiate identity parameters.</p>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-[8px]">
               {categories.map((cat) => (
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}
                   key={cat.id} 
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-8 min-h-[48px] rounded-full border text-sm font-bold transition-all shadow-sm ${
+                  className={`px-4 py-2 rounded-[12px] border text-xs font-medium transition-colors shadow-none ${
                     selectedCategory === cat.id 
-                      ? "border-primary bg-primary/10 text-primary shadow-primary/20" 
-                      : "border-border bg-card/50 text-muted-foreground hover:border-primary/50 hover:bg-card"
+                      ? "border-[#8B4513]/30 bg-[#8B4513]/5 text-[#8B4513] font-semibold" 
+                      : "border-[#8B4513]/10 bg-white text-[#3D2B1F]/70 hover:border-[#8B4513]/20 hover:text-[#3D2B1F]"
                   }`}
                 >
                   {cat.name}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            key={selectedCategory}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px] min-h-[300px]"
+          >
             {filteredCourses.length > 0 ? (
               filteredCourses.map((course) => {
-                const deptSlug = course.departments?.slug || "general";
-                const category = categories.find(c => deptSlug.includes(c.id)) || categories[1];
-
                 return (
-                  <div 
+                  <motion.div 
+                    variants={cardVariants}
                     key={course.id}
-                    className="bento-card group flex flex-col h-full animate-in fade-in zoom-in duration-500"
+                    className="group relative flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] hover:border-[#8B4513]/40 transition-colors shadow-none overflow-hidden"
                   >
-                    <div className="relative h-48 rounded-[2rem] overflow-hidden mb-8">
-                      <div className={`absolute inset-0 ${category.bg} opacity-20 group-hover:scale-110 transition-transform duration-700`} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <category.icon className={`w-16 h-16 ${category.color} opacity-40 group-hover:opacity-80 transition-all duration-500`} />
+                    {/* Decorative hover graphic wire inside card */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#8B4513]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500" />
+
+                    {course.video_url && (
+                      <div className="h-40 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0] shrink-0 z-10">
+                        <img src={course.video_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
-                      <div className="absolute top-4 right-4 px-4 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
-                        {course.departments?.name || "General"}
-                      </div>
+                    )}
+
+                    <div className="border-b border-[#8B4513]/10 pb-[16px] mb-[16px] flex items-center justify-between relative z-10">
+                      <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                        {course.departments?.name || "Foundational"}
+                      </span>
+                      <Code className="w-4 h-4 text-[#8B4513]/60" />
                     </div>
 
-                    <div className="flex-1 space-y-4 mb-8">
-                      <h3 className="text-2xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-3">
-                        {course.description || "Industry-standard professional training track for aspiring engineers."}
+                    <div className="flex-1 space-y-[16px] mb-[32px] relative z-10">
+                      <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F] leading-tight group-hover:text-[#8B4513] transition-colors">
+                        {course.title}
+                      </h3>
+                      <p className="text-xs text-[#3D2B1F]/80 leading-[1.6] line-clamp-3">
+                        {course.description || "Industry-standard professional training track for verifiable architectural residency."}
                       </p>
                       
-                      <ul className="space-y-2 pt-4">
-                        {["Self-Paced Training", "Project-Based Learning", "QR-Verified"].map((item, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest">
-                            <ChevronRight className="h-3 w-3 text-primary" />
+                      <ul className="space-y-1 pt-[8px]">
+                        {["Self-Paced Execution", "Artifact Focused", "Public Signature"].map((item, idx) => (
+                          <li key={idx} className="flex items-center gap-1.5 text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider">
+                            <ChevronRight className="h-3 w-3 text-[#8B4513]" />
                             {item}
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <Button 
-                      asChild 
-                      className="w-full h-12 rounded-2xl font-black tracking-tight shadow-lg shadow-primary/10 group-hover:shadow-primary/30 group-hover:-translate-y-1 transition-all"
-                    >
-                      <Link href={`/signup?course=${course.id}`}>
-                        Apply Now <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
+                    <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }} className="relative z-10 mt-auto">
+                      <Button 
+                        asChild 
+                        className="w-full h-10 rounded-[12px] font-medium text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none"
+                      >
+                        <Link href={`/signup?course=${course.id}`}>
+                          Initiate Application <ArrowRight className="ml-2 h-3.5 w-3.5 text-[#8B4513]" />
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  </motion.div>
                 );
               })
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-20 text-center space-y-4">
-                <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center border border-border">
-                  <Layers className="h-10 w-10 text-muted-foreground" />
+              <motion.div variants={cardVariants} className="col-span-full flex flex-col items-center justify-center py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
+                <div className="w-10 h-10 bg-[#8B4513]/5 rounded-[12px] flex items-center justify-center border border-[#8B4513]/10 mb-[16px]">
+                  <Layers className="h-5 w-5 text-[#8B4513]" />
                 </div>
-                <h3 className="text-xl font-bold">No tracks found</h3>
-                <p className="text-muted-foreground max-w-xs">We haven't listed any internships for this department yet. Check back soon!</p>
-                <Button variant="outline" onClick={() => setSelectedCategory("all")}>View All Tracks</Button>
-              </div>
+                <h3 className="text-base font-normal tracking-[-0.02em] text-[#3D2B1F]">Parameters Exhausted</h3>
+                <p className="text-xs text-[#3D2B1F]/80 max-w-xs mt-1">No operational slots assigned for targeted domain query.</p>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }} className="mt-[24px]">
+                  <Button variant="outline" size="sm" className="rounded-[12px] border-[#8B4513]/20 shadow-none text-xs" onClick={() => setSelectedCategory("all")}>
+                    Reset Constraints
+                  </Button>
+                </motion.div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -214,5 +285,3 @@ export default function CareersPage() {
     </div>
   );
 }
-
-import Link from "next/link";
