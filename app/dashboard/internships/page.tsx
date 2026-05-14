@@ -14,7 +14,8 @@ import {
   TrendingUp,
   LayoutDashboard,
   User,
-  LogOut
+  LogOut,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CertificatePDF from "@/components/CertificatePDF";
@@ -85,37 +86,41 @@ export default function MyInternshipsPage() {
 
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar */}
+      {/* Sidebar - Friendly Edtech layout */}
       <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
         <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
+          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+            <GraduationCap size={20} />
+          </div>
+          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" onClick={() => router.push('/dashboard')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" active />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" onClick={() => router.push('/dashboard/performance')} />
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" active />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
           
           <div className="pt-6">
-            <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
+            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
           </div>
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center gap-4 px-6 shrink-0">
+        <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center gap-4 px-6 shrink-0 shadow-none">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-[#8B4513]/20 shadow-none">
+            <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[8px] h-8 w-8 border-[#8B4513]/20 shadow-none">
               <ArrowLeft size={16} className="text-[#8B4513]" />
             </Button>
           </motion.div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Active Subscriptions Ledger</h2>
+          <h2 className="text-xs font-bold text-[#3D2B1F]">My Enrolled Course Classes</h2>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] pb-20">
+        <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] pb-20 max-w-7xl mx-auto w-full">
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -126,60 +131,61 @@ export default function MyInternshipsPage() {
               enrollments.map((enroll) => {
                 const lessons = courseLessons.filter(l => l.course_id === enroll.course_id);
                 const progress = userProgress.filter(p => p.course_id === enroll.course_id);
-                const progressPercent = Math.round((progress.length / Math.max(1, lessons.length)) * 100);
+                const totalLessons = Math.max(1, lessons.length);
+                const progressPercent = Math.round((progress.length / totalLessons) * 100);
 
                 return (
                   <motion.div 
                     variants={cardVariants}
                     key={enroll.id} 
-                    className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] hover:border-[#8B4513]/40 transition-colors shadow-none group"
+                    className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] p-[20px] hover:border-[#8B4513]/40 transition-colors shadow-none group"
                   >
-                    <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[16px] mb-[16px]">
-                       <div className="w-10 h-10 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                          <BookOpen size={16} />
+                    <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px] mb-[12px]">
+                       <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                          <BookOpen size={14} />
                        </div>
                        {enroll.certification_status === 'approved' ? (
-                         <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-800 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">
-                            <ShieldCheck size={12} /> Mastered
+                         <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
+                            <ShieldCheck size={10} /> Certified
                          </div>
                        ) : (
-                         <div className="flex items-center gap-1 text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">
-                            <Clock size={12} /> Active Track
+                         <div className="flex items-center gap-1 text-[9px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10">
+                            <Clock size={10} /> In Progress
                          </div>
                        )}
                     </div>
 
-                    <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F] mb-[8px]">
+                    <h3 className="text-base font-bold text-[#3D2B1F] mb-[6px] group-hover:text-[#8B4513] transition-colors leading-tight">
                       {enroll.courses?.title}
                     </h3>
-                    <p className="text-xs text-[#3D2B1F]/80 line-clamp-3 mb-[24px] leading-[1.6]">
+                    <p className="text-xs text-[#3D2B1F]/70 line-clamp-2 mb-[16px] leading-[1.6] font-medium">
                       {enroll.courses?.description}
                     </p>
 
                     <div className="space-y-[16px] mt-auto">
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider">
-                          <span>Completion Metric</span>
-                          <span>{progressPercent}%</span>
+                      <div className="space-y-1.5 pt-2 border-t border-[#8B4513]/5">
+                        <div className="flex justify-between text-[10px] font-bold text-[#3D2B1F]/60">
+                          <span>Track Progress</span>
+                          <span className="text-[#8B4513]">{progressPercent}%</span>
                         </div>
-                        <div className="h-1 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/10">
+                        <div className="h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
                           <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
                         </div>
                       </div>
 
-                      <div className="pt-[16px] border-t border-[#8B4513]/10 space-y-[8px]">
+                      <div className="pt-[12px] border-t border-[#8B4513]/10 space-y-[8px]">
                         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-                          <Button className="w-full rounded-[12px] h-10 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" onClick={() => router.push(`/dashboard/courses/${enroll.course_id}`)}>
-                            Resume Execution
+                          <Button className="w-full rounded-[8px] h-9 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" onClick={() => router.push(`/dashboard/courses/${enroll.course_id}`)}>
+                            Resume Lessons
                           </Button>
                         </motion.div>
                         
                         {enroll.certification_status === 'approved' && (
-                          <div className="pt-[8px]">
+                          <div className="pt-2">
                             <CertificatePDF 
-                              studentName={profile?.full_name || "Scholar"} 
+                              studentName={profile?.full_name || "Graduate"} 
                               courseName={enroll.courses?.title} 
-                              branch={profile?.departments?.name || "Foundational"} 
+                              branch={profile?.departments?.name || "Engineering"} 
                               score={enroll.final_score || 0} 
                               certId={enroll.id}
                             />
@@ -191,17 +197,17 @@ export default function MyInternshipsPage() {
                 );
               })
             ) : (
-              <motion.div variants={cardVariants} className="col-span-full py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px] space-y-[24px]">
+              <motion.div variants={cardVariants} className="col-span-full py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px] space-y-[16px]">
                  <div className="w-12 h-12 bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-[12px] flex items-center justify-center mx-auto text-[#8B4513]">
                     <BookOpen size={20} />
                  </div>
                  <div className="space-y-1">
-                    <h3 className="text-xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Ledger Unpopulated</h3>
-                    <p className="text-xs text-[#3D2B1F]/80 max-w-sm mx-auto">No programmatic records instantiated for current identity profiles.</p>
+                    <h3 className="text-base font-bold text-[#3D2B1F]">No Subscriptions Active Yet</h3>
+                    <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto font-medium">Browse available institutional courses to subscribe and kickstart your career learning track.</p>
                  </div>
-                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-                   <Button className="rounded-[12px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none h-10 text-xs font-medium" onClick={() => router.push('/dashboard')}>
-                     Inspect Offerings
+                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                   <Button className="rounded-[8px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none h-10 px-6 text-xs font-bold" onClick={() => router.push('/dashboard')}>
+                     Browse Course Catalog
                    </Button>
                  </motion.div>
               </motion.div>
@@ -220,14 +226,14 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
+      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
         active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" 
+        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
         : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
       }`}
     >
-      <span className="text-[#8B4513]">{icon}</span>
-      {label}
+      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="truncate">{label}</span>
     </motion.button>
   );
 }

@@ -19,7 +19,11 @@ import {
   Search,
   Sparkles,
   BadgeCheck,
-  Award
+  Award,
+  PlayCircle,
+  Layers,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
@@ -46,7 +50,7 @@ const containerVariants = {
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
     y: 0, 
@@ -119,120 +123,135 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar */}
+      {/* Sidebar - Friendly Edtech layout */}
       <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
         <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
+          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+            <GraduationCap size={20} />
+          </div>
+          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <p className="px-3 text-[10px] font-semibold text-[#3D2B1F]/60 uppercase tracking-wider mb-2">Student Ledger</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" active />
-          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" onClick={() => router.push('/dashboard/performance')} />
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
+          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
           
           <div className="pt-6">
-            <p className="px-3 text-[10px] font-semibold text-[#3D2B1F]/60 uppercase tracking-wider mb-2">Configuration</p>
-            <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={handleSignOut} />
+            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
           </div>
         </nav>
 
         <div className="p-4 border-t border-[#8B4513]/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10">
-            <div className="w-8 h-8 rounded-[12px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-medium text-xs">
-              {profile?.full_name?.charAt(0) || "M"}
+          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#F9F5F0] border border-[#8B4513]/10">
+            <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-bold text-xs">
+              {profile?.full_name?.charAt(0) || "S"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-[#3D2B1F] truncate">{profile?.full_name || "Institution Scholar"}</p>
-              <p className="text-[10px] text-[#3D2B1F]/60 truncate">{profile?.departments?.name || "Active Track"}</p>
+              <p className="text-xs font-bold text-[#3D2B1F] truncate">{profile?.full_name || "Student Account"}</p>
+              <p className="text-[10px] text-[#3D2B1F]/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Curriculum Ledger</h2>
+        {/* Header Navigation */}
+        <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 px-2.5 py-1 rounded-[6px] border border-[#8B4513]/10">
+              Edtech Studio Mode
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
               <input 
                 type="text" 
-                placeholder="Query parameters..." 
-                className="pl-10 pr-4 py-1.5 bg-white border border-[#8B4513]/20 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513] w-64 text-[#3D2B1F]"
+                placeholder="Search courses, classes, lessons..." 
+                className="pl-9 pr-4 py-1.5 bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[8px] text-xs focus:outline-none focus:border-[#8B4513] w-64 text-[#3D2B1F] font-medium"
               />
             </div>
-            <div className="w-8 h-8 rounded-[12px] border border-[#8B4513]/20 flex items-center justify-center text-[#8B4513] hover:bg-[#8B4513]/5 transition-colors cursor-pointer">
-              <Sparkles size={14} />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8B4513] bg-[#8B4513]/5 px-3 py-1.5 rounded-[8px] border border-[#8B4513]/10">
+              <Sparkles size={12} /> Live Support
             </div>
           </div>
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] space-y-[48px] pb-20">
-          {/* Welcome Announcement Block */}
+        <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] space-y-[32px] pb-20 max-w-7xl mx-auto w-full">
+          {/* Welcome Announcement Block - Edtech Style */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] shadow-none"
+            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] md:p-[32px] flex flex-col md:flex-row md:items-center justify-between gap-[24px]"
           >
-            <div className="max-w-2xl">
-              <span className="text-xs font-medium text-[#8B4513] uppercase tracking-wider block mb-[8px]">
-                Active Directives Status
-              </span>
-              <h1 className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F] mb-[16px]">
-                Greetings, {profile?.full_name?.split(' ')[0] || "Scholar"}.
+            <div className="space-y-[8px]">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px]">
+                  Academic term active
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#3D2B1F]">
+                Welcome back, {profile?.full_name?.split(' ')[0] || "Student"}! 👋
               </h1>
-              <p className="text-sm text-[#3D2B1F]/80 leading-[1.6]">
-                Your engineering track progress is strictly preserved and logged inside verifiable records. Select your active modules below to resume mechanical mastery.
+              <p className="text-xs text-[#3D2B1F]/80 max-w-xl leading-[1.6] font-medium">
+                Pick up exactly where you left off. Review assigned course videos, submit evaluated projects, and earn accredited institutional certificates.
               </p>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+              <Button asChild className="rounded-[8px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-bold text-xs h-10 px-4 shadow-none">
+                <Link href="/dashboard/internships">
+                  View My Classes <ArrowRight size={14} className="ml-1.5" />
+                </Link>
+              </Button>
             </div>
           </motion.div>
 
-          {/* Stats Grid */}
+          {/* Stats Grid - Productive Edtech badges */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]"
           >
             <StatCard 
-              label="Completed Directives" 
+              label="Completed Sessions" 
               value={`${userProgress.length} / ${courseLessons.length}`} 
-              icon={<ShieldCheck className="text-[#8B4513]" size={18} />} 
-              progress={(userProgress.length / Math.max(1, courseLessons.length)) * 100}
+              icon={<CheckCircle2 className="text-[#8B4513]" size={18} />} 
+              progress={Math.round((userProgress.length / Math.max(1, courseLessons.length)) * 100)}
             />
             <StatCard 
-              label="Credentials Validated" 
+              label="Certificates Earned" 
               value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
               icon={<Award className="text-[#8B4513]" size={18} />} 
             />
             <StatCard 
-              label="Primary Designation" 
-              value={profile?.departments?.name || "Foundational"} 
-              icon={<GraduationCap className="text-[#8B4513]" size={18} />} 
+              label="Core Department" 
+              value={profile?.departments?.name || "General Study"} 
+              icon={<Layers className="text-[#8B4513]" size={18} />} 
             />
             <StatCard 
-              label="Operational Track" 
-              value="Verified Candidate" 
+              label="Current Standing" 
+              value="Enrolled Member" 
               icon={<BadgeCheck className="text-[#8B4513]" size={18} />} 
             />
           </motion.div>
 
-          {/* Internship Tracks */}
-          <section className="space-y-[24px]">
-            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[16px]">
-              <h2 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Assigned Professional Modules</h2>
-              <Link href="/onboarding" className="relative text-xs font-medium text-[#8B4513] group py-1 px-2">
-                Reconfigure Discipline <ArrowRight size={12} className="inline ml-1" />
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-[#8B4513] transition-all duration-300 group-hover:w-full rounded-full" />
+          {/* Core Enrolled / Recommended Edtech Programs */}
+          <section className="space-y-[16px]">
+            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px]">
+              <div>
+                <h2 className="text-lg font-bold text-[#3D2B1F]">My Subscribed Programs</h2>
+                <p className="text-xs text-[#3D2B1F]/60">Structured pathways linked to your declared specialization</p>
+              </div>
+              <Link href="/onboarding" className="text-xs font-bold text-[#8B4513] hover:underline flex items-center gap-1">
+                Change Stream <ArrowRight size={12} />
               </Link>
             </div>
 
@@ -254,17 +273,18 @@ export default function DashboardPage() {
                 />
               ))}
               {recommendedCourses.length === 0 && (
-                <motion.div variants={cardVariants} className="col-span-full py-[48px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No specialized programs allocated for current discipline parameters.</p>
-                </motion.div>
+                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
+                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No active program courses are matching your profile stream setup yet.</p>
+                </div>
               )}
             </motion.div>
           </section>
 
-          {/* Other Tracks */}
-          <section className="space-y-[24px]">
-            <div className="border-b border-[#8B4513]/10 pb-[16px]">
-              <h2 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Alternate Engineering Directives</h2>
+          {/* Alternate Available Programs */}
+          <section className="space-y-[16px]">
+            <div className="border-b border-[#8B4513]/10 pb-[12px]">
+              <h2 className="text-lg font-bold text-[#3D2B1F]">Explore Additional Study Tracks</h2>
+              <p className="text-xs text-[#3D2B1F]/60">Expand your skills across parallel technology engineering sectors</p>
             </div>
             <motion.div 
               variants={containerVariants}
@@ -311,105 +331,109 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
+      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
         active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" 
+        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
         : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
       }`}
     >
-      <span className="text-[#8B4513]">{icon}</span>
-      {label}
+      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="truncate">{label}</span>
     </motion.button>
   );
 }
 
 function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
   return (
-    <motion.div 
-      variants={cardVariants}
-      className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] shadow-none flex flex-col justify-between hover:border-[#8B4513]/40 transition-colors"
-    >
-      <div className="flex items-start justify-between mb-[16px]">
-        <div className="w-10 h-10 rounded-[12px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center">
+    <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-[20px] flex flex-col justify-between hover:border-[#8B4513]/30 transition-colors">
+      <div className="flex items-start justify-between mb-[12px]">
+        <div className="w-9 h-9 rounded-[8px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center">
           {icon}
         </div>
         {progress !== undefined && (
-          <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
-            {Math.round(progress)}%
+          <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
+            {progress}%
           </span>
         )}
       </div>
       <div>
-        <p className="text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider mb-[4px]">{label}</p>
-        <p className="text-2xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{value}</p>
+        <p className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider mb-[2px]">{label}</p>
+        <p className="text-xl font-bold text-[#3D2B1F]">{value}</p>
       </div>
       {progress !== undefined && (
-        <div className="mt-[16px] h-1 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/10">
+        <div className="mt-[12px] h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
           <div className="h-full bg-[#8B4513]" style={{ width: `${progress}%` }} />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
 function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: any) {
   const isEnrolled = enrolled?.payment_status === 'completed';
-  const progressPercent = Math.round((progress.length / Math.max(1, lessons.length)) * 100);
+  const totalLessons = Math.max(1, lessons.length);
+  const progressPercent = Math.round((progress.length / totalLessons) * 100);
 
   return (
-    <motion.div 
-      variants={cardVariants}
-      className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] hover:border-[#8B4513]/40 transition-colors shadow-none group overflow-hidden"
-    >
+    <div className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors shadow-none overflow-hidden group">
       {course.video_url && (
-        <div className="h-40 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0] shrink-0">
+        <div className="h-40 w-full overflow-hidden relative bg-[#F9F5F0] border-b border-[#8B4513]/10 shrink-0">
           <img src={course.video_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10 flex items-center gap-1 text-[9px] font-bold text-[#3D2B1F]">
+            <Clock size={10} className="text-[#8B4513]" /> Self-Paced
+          </div>
         </div>
       )}
 
-      <div className="border-b border-[#8B4513]/10 pb-[16px] mb-[16px] flex items-center justify-between">
-        <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
-          {course.departments?.name || "Discipline"}
-        </span>
-        <BookOpen size={16} className="text-[#8B4513]/60" />
-      </div>
-      
-      <div className="flex flex-col flex-1">
-        <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F] mb-[8px]">
+      <div className="p-[20px] flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-[8px]">
+          <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
+            {course.departments?.name || "Program Stream"}
+          </span>
+          <span className="text-[10px] font-semibold text-[#3D2B1F]/50">
+            {lessons.length} Modules
+          </span>
+        </div>
+        
+        <h3 className="text-base font-bold text-[#3D2B1F] mb-[6px] group-hover:text-[#8B4513] transition-colors leading-tight">
           {course.title}
         </h3>
-        <p className="text-xs text-[#3D2B1F]/80 line-clamp-3 mb-[24px] leading-[1.6] flex-1">
+        <p className="text-xs text-[#3D2B1F]/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
           {course.description}
         </p>
         
-        {isEnrolled && (
-          <div className="mb-[24px] space-y-1">
-            <div className="flex justify-between text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider">
-              <span>Mechanical Completion</span>
-              <span>{progressPercent}%</span>
+        {isEnrolled ? (
+          <div className="mb-[16px] space-y-1.5 pt-2 border-t border-[#8B4513]/5">
+            <div className="flex justify-between text-[10px] font-bold text-[#3D2B1F]/60">
+              <span>Class Completion</span>
+              <span className="text-[#8B4513]">{progressPercent}%</span>
             </div>
-            <div className="h-1 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/10">
+            <div className="h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
               <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
+        ) : (
+          <div className="mb-[16px] flex items-center gap-1.5 text-[10px] font-bold text-[#8B4513]/80 pt-2 border-t border-[#8B4513]/5">
+            <PlayCircle size={12} /> Live stream repository support
+          </div>
         )}
 
-        <div className="space-y-[16px]">
-          <motion.div 
-            whileHover={{ scale: 1.01 }} 
-            whileTap={{ scale: 0.98 }} 
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
+        <div className="space-y-[12px] mt-auto">
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
             <Button 
-              className="w-full rounded-[12px] h-10 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" 
+              className="w-full rounded-[8px] h-9 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs flex items-center justify-center gap-1.5" 
               onClick={() => isEnrolled ? window.location.href = `/dashboard/courses/${course.id}` : onEnroll()}
             >
-              {isEnrolled ? "Resume Directives" : "Affirm Enrollment"}
+              {isEnrolled ? (
+                <>Resume Learning <ArrowRight size={12} /></>
+              ) : (
+                <>Subscribe Course</>
+              )}
             </Button>
           </motion.div>
 
           {isEnrolled && enrolled?.certification_status === 'approved' && (
-             <div className="pt-[8px] border-t border-[#8B4513]/10">
+             <div className="pt-2 border-t border-[#8B4513]/10">
                <CertificatePDF 
                   studentName={profile?.full_name || "Graduate"} 
                   courseName={course.title} 
@@ -421,6 +445,6 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: 
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
