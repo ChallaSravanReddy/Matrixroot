@@ -11,9 +11,11 @@ import {
   Circle, 
   ArrowLeft, 
   ShieldCheck, 
-  Award
+  Award,
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 interface Lesson {
   id: string;
@@ -47,6 +49,9 @@ export default function CourseDetailPage() {
   const [assignmentUrl, setAssignmentUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [openModuleId, setOpenModuleId] = useState<string | null>(null);
+  
+  // Custom video playback overlay state to conceal YouTube defaults
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -108,6 +113,8 @@ export default function CourseDetailPage() {
     if (!currentLesson) return;
     const rec = progressRecords.find(p => String(p.lesson_id) === String(currentLesson.id));
     setAssignmentUrl(rec?.assignment_url || "");
+    // Reset custom video overlay layer for target lesson stream
+    setIsPlaying(false);
   }, [currentLesson, progressRecords]);
 
   // Automatically sequence open module accordion state based on current lesson progression
@@ -207,13 +214,13 @@ export default function CourseDetailPage() {
             
             if (dbError) throw dbError;
             
-            alert("Enrollment Success!");
+            alert("Enrollment Signoff Committed!");
             setIsEnrolled(true);
             setShowPayment(false);
             setEnrollLoading(false);
           } catch (handlerErr: any) {
             console.error("Enrollment status confirmation error:", handlerErr);
-            alert(`Payment database mapping sync failed: ${handlerErr.message || "Unknown Error"}. Please contact administrators.`);
+            alert(`Payment database sync failed: ${handlerErr.message || "Unknown Error"}. Please contact administrators.`);
             setEnrollLoading(false);
           }
         },
@@ -225,7 +232,7 @@ export default function CourseDetailPage() {
           course_id: courseId,
           student_id: sessionUser?.id
         },
-        theme: { color: "#2563eb" },
+        theme: { color: "#8B4513" },
         modal: { 
           ondismiss: () => setEnrollLoading(false),
           escape: true
@@ -233,7 +240,7 @@ export default function CourseDetailPage() {
       };
 
       if (!razorpayKey || !(window as any).Razorpay) {
-        alert("Payment gateway communication link offline. Try re-opening momentarily.");
+        alert("Payment gateway offline. Retrying connection context.");
         setEnrollLoading(false);
         return;
       }
@@ -269,13 +276,22 @@ export default function CourseDetailPage() {
       }
     }
 
+    // Embed URL parsing to attach custom layout parameters hiding distractions
+    if (secureUrl.includes("youtube.com/embed/")) {
+      const separator = secureUrl.includes("?") ? "&" : "?";
+      secureUrl += `${separator}modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
+      if (isPlaying) {
+        secureUrl += `&autoplay=1`;
+      }
+    }
+
     if (secureUrl.endsWith('.mp4')) {
-      return <video src={secureUrl} controls className="w-full h-full object-cover rounded-2xl" />;
+      return <video src={secureUrl} controls className="w-full h-full object-cover absolute inset-0" />;
     } else {
       return (
         <iframe 
           src={secureUrl} 
-          className="w-full h-full rounded-2xl border-0" 
+          className="w-full h-full border-0 absolute inset-0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowFullScreen
           loading="lazy"
@@ -294,47 +310,47 @@ export default function CourseDetailPage() {
   const isCurrentLessonCompleted = currentLesson ? completedLessonIds.includes(currentLesson.id) : false;
 
   const renderSyllabus = () => (
-    <div className="bg-card text-card-foreground border border-border rounded-3xl p-6 shadow-sm space-y-6 font-sans">
-      <div className="border-b border-border pb-4 flex items-center justify-between font-sans">
-        <div className="font-sans">
-          <h2 className="text-base font-bold text-foreground font-sans">Curriculum Structure</h2>
-          <p className="text-xs text-muted-foreground mt-0.5 font-sans">{lessons.length} Planned Sessions</p>
+    <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] shadow-none space-y-[24px]">
+      <div className="border-b border-[#8B4513]/10 pb-[16px] flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-medium tracking-[-0.02em] text-[#3D2B1F]">Curriculum Topology</h2>
+          <p className="text-xs text-[#3D2B1F]/60 mt-0.5">{lessons.length} Defined Phases</p>
         </div>
         {!isEnrolled && (
-          <Button size="sm" onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl h-8 font-sans">
-            Enroll Track
-          </Button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+            <Button size="sm" onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] text-xs font-medium rounded-[12px] h-8 shadow-none">
+              Affirm Enrollment
+            </Button>
+          </motion.div>
         )}
       </div>
       
-      <div className="space-y-4 font-sans">
+      <div className="space-y-[16px]">
         {modules.map((mod) => {
           const modLessons = sortedLessons.filter(l => String(l.module_id) === String(mod.id));
           const isOpen = String(openModuleId) === String(mod.id);
           
           return (
-            <div key={mod.id} className="space-y-1.5 font-sans border-b border-border/40 pb-3 last:border-0">
+            <div key={mod.id} className="space-y-[8px] border-b border-[#8B4513]/5 pb-3 last:border-0">
               {/* Module Dropdown Trigger Header */}
               <button
                 onClick={() => toggleModule(mod.id)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-accent hover:bg-accent/80 text-accent-foreground rounded-xl transition-all font-sans text-left group"
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-[#F9F5F0]/50 hover:bg-[#F9F5F0] text-[#3D2B1F] rounded-[12px] transition-colors text-left group border border-[#8B4513]/5"
               >
-                <div className="flex items-center gap-2 min-w-0 pr-2 font-sans">
-                  <span className="text-xs font-bold truncate font-sans">{mod.title}</span>
-                  {mod.has_assessment && <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 shrink-0 font-sans">Assessment</span>}
+                <div className="flex items-center gap-2 min-w-0 pr-2">
+                  <span className="text-xs font-medium tracking-[-0.02em] text-[#3D2B1F] truncate">{mod.title}</span>
+                  {mod.has_assessment && <span className="text-[9px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.2 rounded-[8px] border border-[#8B4513]/10 shrink-0">Evaluated</span>}
                 </div>
-                <div className="shrink-0 transition-transform duration-200 font-sans" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+                <div className="shrink-0 transition-transform duration-200 text-[#8B4513]" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  <ChevronRight size={14} />
                 </div>
               </button>
               
               {/* Collapsible Dropdown Lessons Container */}
               {isOpen && (
-                <div className="space-y-1 pl-1.5 pt-1 font-sans animate-in fade-in-50 duration-200">
+                <div className="space-y-1 pl-2 pt-1 border-l border-[#8B4513]/10 ml-2 animate-in fade-in-50 duration-200">
                   {modLessons.length === 0 ? (
-                    <div className="text-[11px] text-muted-foreground italic px-2 py-1 font-sans">No lessons added.</div>
+                    <div className="text-[10px] text-[#3D2B1F]/40 italic px-2 py-1">Subsystem vacant.</div>
                   ) : (
                     modLessons.map((lesson) => {
                       const isActive = currentLesson?.id === lesson.id;
@@ -350,38 +366,38 @@ export default function CourseDetailPage() {
                               window.scrollTo({ top: 0, behavior: 'smooth' });
                             }
                           }}
-                          className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
+                          className={`w-full flex items-center gap-2.5 p-2 rounded-[8px] text-left transition-colors group ${
                             isActive 
-                              ? "bg-primary text-primary-foreground shadow-md font-semibold" 
+                              ? "bg-[#8B4513]/5 text-[#8B4513] font-semibold border border-[#8B4513]/10" 
                               : isLocked 
-                              ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
-                              : "hover:bg-accent/50 text-foreground font-medium"
+                              ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50" 
+                              : "hover:bg-white text-[#3D2B1F]/80 font-normal"
                           }`}
                         >
-                          <div className="shrink-0 font-sans">
+                          <div className="shrink-0">
                             {isLocked ? (
-                              <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
+                              <ShieldCheck size={12} className={isActive ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
                             ) : isDone ? (
-                              <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
+                              <CheckCircle2 size={12} className={isActive ? "text-[#8B4513]" : "text-emerald-800"} />
                             ) : isActive ? (
-                              <Play size={14} className="text-primary-foreground fill-current font-sans" />
+                              <Play size={12} className="text-[#8B4513] fill-current" />
                             ) : (
-                              <Circle size={14} className="text-muted-foreground/50 font-sans" />
+                              <Circle size={12} className="text-[#3D2B1F]/30" />
                             )}
                           </div>
 
-                          <div className="flex-1 min-w-0 pr-2 font-sans">
-                            <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
+                          <div className="flex-1 min-w-0 pr-2">
+                            <h4 className={`text-xs truncate ${isActive ? "text-[#8B4513] font-medium" : "text-[#3D2B1F]"}`}>
                               {lesson.title}
                             </h4>
-                            <div className="flex items-center gap-2 mt-0.5 font-sans">
-                              {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
-                              {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
-                              {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
-                              {(lesson.has_assignment || mod.has_assessment) && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {lesson.notes && <span className="text-[9px] text-[#3D2B1F]/40">📝 Docs</span>}
+                              {lesson.content_url && <span className="text-[9px] text-[#3D2B1F]/40">🎥 Stream</span>}
+                              {lesson.is_preview && <span className="text-[9px] font-medium text-[#8B4513]">Preview</span>}
+                              {(lesson.has_assignment || mod.has_assessment) && <span className="text-[9px] font-medium text-[#8B4513]">Task</span>}
                             </div>
                           </div>
-                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
+                          {isActive && <div className="w-1 h-1 rounded-full bg-[#8B4513] shrink-0"></div>}
                         </button>
                       );
                     })
@@ -399,21 +415,19 @@ export default function CourseDetailPage() {
           const isOpen = openModuleId === "general";
           
           return (
-            <div className="space-y-1.5 pt-2 border-t border-border font-sans">
+            <div className="space-y-[8px] pt-2 border-t border-[#8B4513]/10">
               <button
                 onClick={() => setOpenModuleId(prev => prev === "general" ? null : "general")}
-                className="w-full flex items-center justify-between px-3 py-2 bg-accent/40 hover:bg-accent/60 text-muted-foreground rounded-xl transition-all font-sans text-left"
+                className="w-full flex items-center justify-between px-3 py-2 bg-[#F9F5F0]/30 hover:bg-[#F9F5F0]/60 text-[#3D2B1F]/60 rounded-[12px] transition-colors text-left"
               >
-                <span className="text-[10px] font-black uppercase tracking-wider font-sans">General Curriculum</span>
-                <div className="shrink-0 transition-transform duration-200 font-sans" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+                <span className="text-[10px] font-medium uppercase tracking-wider">Unassigned Floating Nodes</span>
+                <div className="shrink-0 transition-transform duration-200 text-[#8B4513]" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  <ChevronRight size={14} />
                 </div>
               </button>
 
               {isOpen && (
-                <div className="space-y-1 pl-1.5 pt-1 font-sans animate-in fade-in-50 duration-200">
+                <div className="space-y-1 pl-2 pt-1 border-l border-[#8B4513]/10 ml-2 animate-in fade-in-50 duration-200">
                   {unassigned.map((lesson) => {
                     const isActive = currentLesson?.id === lesson.id;
                     const isLocked = !isEnrolled && !lesson.is_preview;
@@ -428,38 +442,38 @@ export default function CourseDetailPage() {
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }
                         }}
-                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group font-sans ${
+                        className={`w-full flex items-center gap-2.5 p-2 rounded-[8px] text-left transition-colors group ${
                           isActive 
-                            ? "bg-primary text-primary-foreground shadow-md font-semibold" 
+                            ? "bg-[#8B4513]/5 text-[#8B4513] font-semibold border border-[#8B4513]/10" 
                             : isLocked 
-                            ? "opacity-50 cursor-not-allowed hover:bg-transparent text-muted-foreground" 
-                            : "hover:bg-accent/50 text-foreground font-medium"
+                            ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50" 
+                            : "hover:bg-white text-[#3D2B1F]/80 font-normal"
                         }`}
                       >
-                        <div className="shrink-0 font-sans">
+                        <div className="shrink-0">
                           {isLocked ? (
-                            <ShieldCheck size={14} className={isActive ? "text-primary-foreground font-sans" : "text-muted-foreground font-sans"} />
+                            <ShieldCheck size={12} className={isActive ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
                           ) : isDone ? (
-                            <CheckCircle2 size={14} className={isActive ? "text-primary-foreground font-sans" : "text-emerald-500 font-sans"} />
+                            <CheckCircle2 size={12} className={isActive ? "text-[#8B4513]" : "text-emerald-800"} />
                           ) : isActive ? (
-                            <Play size={14} className="text-primary-foreground fill-current font-sans" />
+                            <Play size={12} className="text-[#8B4513] fill-current" />
                           ) : (
-                            <Circle size={14} className="text-muted-foreground/50 font-sans" />
+                            <Circle size={12} className="text-[#3D2B1F]/30" />
                           )}
                         </div>
 
-                        <div className="flex-1 min-w-0 pr-2 font-sans">
-                          <h4 className={`text-xs truncate font-sans ${isActive ? "text-primary-foreground font-bold" : "text-foreground"}`}>
+                        <div className="flex-1 min-w-0 pr-2">
+                          <h4 className={`text-xs truncate ${isActive ? "text-[#8B4513] font-medium" : "text-[#3D2B1F]"}`}>
                             {lesson.title}
                           </h4>
-                          <div className="flex items-center gap-2 mt-0.5 font-sans">
-                            {lesson.notes && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>📝 Notes</span>}
-                            {lesson.content_url && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>🎥 Video</span>}
-                            {lesson.is_preview && <span className={`text-[9px] font-black font-sans ${isActive ? "text-primary-foreground" : "text-sky-400"}`}>Preview</span>}
-                            {lesson.has_assignment && <span className={`text-[9px] font-sans ${isActive ? "text-primary-foreground font-bold" : "text-amber-500 font-semibold"}`}>Task</span>}
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {lesson.notes && <span className="text-[9px] text-[#3D2B1F]/40">📝 Docs</span>}
+                            {lesson.content_url && <span className="text-[9px] text-[#3D2B1F]/40">🎥 Stream</span>}
+                            {lesson.is_preview && <span className="text-[9px] font-medium text-[#8B4513]">Preview</span>}
+                            {lesson.has_assignment && <span className="text-[9px] font-medium text-[#8B4513]">Task</span>}
                           </div>
                         </div>
-                        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground shrink-0 font-sans"></div>}
+                        {isActive && <div className="w-1 h-1 rounded-full bg-[#8B4513] shrink-0"></div>}
                       </button>
                     );
                   })}
@@ -470,133 +484,138 @@ export default function CourseDetailPage() {
         })()}
 
         {lessons.length === 0 && (
-          <div className="text-xs text-muted-foreground italic text-center py-6 font-sans">No session entries mapped.</div>
+          <div className="text-xs text-[#3D2B1F]/40 italic text-center py-4">No directive sequences populated.</div>
         )}
       </div>
     </div>
   );
 
   const renderNotesAndAssessment = () => (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-[32px]">
       {/* Title & Metadata Section */}
-      <div className="space-y-3 border-b border-border pb-5 font-sans">
-        <div className="flex flex-wrap items-center justify-between gap-4 font-sans">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight font-sans">
+      <div className="space-y-[16px] border-b border-[#8B4513]/10 pb-[16px]">
+        <div className="flex flex-wrap items-center justify-between gap-[16px]">
+          <h1 className="text-xl md:text-2xl font-normal tracking-[-0.02em] text-[#3D2B1F] leading-tight">
             {currentLesson?.title}
           </h1>
           {isCurrentLessonCompleted && (
-            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 self-start font-sans">
-              <CheckCircle2 size={14} className="font-sans" />
-              Completed
+            <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-[12px] text-[10px] font-medium uppercase tracking-wider flex items-center gap-1 shrink-0 self-start">
+              <CheckCircle2 size={12} />
+              Verified Signoff
             </span>
           )}
         </div>
         
-        <div className="flex flex-wrap items-center gap-2.5 font-sans">
-          {currentLesson?.notes && <span className="text-xs font-semibold bg-accent text-accent-foreground px-2.5 py-0.5 rounded font-sans">📝 Text Notes Included</span>}
-          {requiresAssessment && <span className="text-xs font-semibold bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded border border-amber-500/20 font-sans">⚠️ Mandatory Assessment Link Required</span>}
+        <div className="flex flex-wrap items-center gap-[8px]">
+          {currentLesson?.notes && <span className="text-[10px] font-medium bg-[#8B4513]/5 text-[#8B4513] px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">📝 Accompanying Spec Available</span>}
+          {requiresAssessment && <span className="text-[10px] font-medium bg-[#8B4513]/5 text-[#8B4513] px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">⚠️ Assessment Signoff Protocol Active</span>}
         </div>
       </div>
 
-      {/* Comprehensive Text Notes Rendering with Absolute Document Hardcoded Inline Overrides */}
+      {/* Comprehensive Text Notes Rendering */}
       {currentLesson?.notes ? (
-        <div className="space-y-4 border border-border rounded-none p-8 md:p-12 shadow-md max-w-none font-sans" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-          <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-3 font-sans" style={{ color: '#64748b' }}>
-            <span>📄 Official Document & Lecture Notes</span>
+        <div className="space-y-[16px] bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] md:p-[32px] shadow-none max-w-none">
+          <h3 className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 flex items-center gap-2 border-b border-[#8B4513]/10 pb-2">
+            <span>📄 Scope Payload Briefing</span>
           </h3>
-          <div className="font-serif text-base md:text-lg leading-relaxed whitespace-pre-wrap selection:bg-blue-100 block font-normal font-serif" style={{ color: '#000000' }}>
+          <div className="text-xs md:text-sm leading-[1.6] whitespace-pre-wrap text-[#3D2B1F]/90 font-normal">
             {currentLesson.notes}
           </div>
         </div>
       ) : (
-        <div className="text-sm text-muted-foreground italic py-4 font-sans">No companion text notes provided for this lesson.</div>
+        <div className="text-xs text-[#3D2B1F]/50 italic py-2">No secondary raw text directives accompanying this module stream.</div>
       )}
 
       {/* Assignment / Assessment Submission Section */}
       {requiresAssessment && (
-        <div className="bg-card text-card-foreground border border-border rounded-3xl p-6 md:p-8 shadow-sm space-y-6 font-sans">
-          <h2 className="text-lg font-bold flex items-center gap-2.5 text-foreground border-b border-border pb-3 font-sans">
-            <Award className="w-5 h-5 text-primary shrink-0 font-sans" />
-            Required Assessment Submission
+        <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] md:p-[32px] shadow-none space-y-[24px]">
+          <h2 className="text-base font-medium tracking-[-0.02em] flex items-center gap-2 text-[#3D2B1F] border-b border-[#8B4513]/10 pb-2">
+            <Award className="w-4 h-4 text-[#8B4513] shrink-0" />
+            Evaluation Protocol Interface
           </h2>
           
-          <div className="space-y-5 font-sans">
-            <div className="space-y-2 font-sans">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block font-sans">
-                Task Submission Link {parentModule?.has_assessment ? "(Module Assessment)" : "(Lesson Assessment)"}
+          <div className="space-y-[16px]">
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-[#3D2B1F]/60 uppercase tracking-wider block">
+                Deliverable Link String {parentModule?.has_assessment ? "(Subsystem Stage)" : "(Atomic Phase)"}
               </label>
               <textarea 
                 value={assignmentUrl}
                 onChange={(e) => setAssignmentUrl(e.target.value)}
-                placeholder="Paste your accessible project output link (GitHub repository, deployed link, or Google Drive document)..."
-                className="w-full bg-background border border-border hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3.5 text-foreground placeholder:text-muted-foreground text-sm transition-all min-h-[90px] resize-y outline-none font-medium font-sans"
+                placeholder="Paste active pointer URI (GitHub branch, live node, or remote file store)..."
+                className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 focus:border-[#8B4513] rounded-[12px] p-3 text-[#3D2B1F] text-xs transition-all min-h-[80px] resize-y outline-none"
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1 font-sans">
-              <p className="text-xs text-muted-foreground max-w-xs leading-relaxed font-sans">
-                Submitting your project link saves your output for mentor evaluation and credit validation.
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] pt-1">
+              <p className="text-xs text-[#3D2B1F]/60 max-w-xs leading-[1.6]">
+                Committing output link forwards state variables directly to supervisory evaluation channels.
               </p>
               
-              <button 
-                onClick={() => handleCompleteLesson()}
-                disabled={submitting || !assignmentUrl.trim()} 
-                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-end sm:self-auto shrink-0 font-sans ${
-                  isCurrentLessonCompleted 
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md" 
-                    : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-md active:scale-[0.98]"
-                } disabled:opacity-40 disabled:cursor-not-allowed`}
-              >
-                {submitting ? (
-                  <span className="font-sans">Saving...</span>
-                ) : isCurrentLessonCompleted ? (
-                  <span className="font-sans">Update Submitted Task</span>
-                ) : (
-                  <span className="font-sans">Submit Assessment</span>
-                )}
-              </button>
+              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="self-end sm:self-auto shrink-0">
+                <Button 
+                  onClick={() => handleCompleteLesson()}
+                  disabled={submitting || !assignmentUrl.trim()} 
+                  className="px-5 h-10 rounded-[12px] font-medium text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none"
+                >
+                  {submitting ? (
+                    <span>Serializing...</span>
+                  ) : isCurrentLessonCompleted ? (
+                    <span>Update Link State</span>
+                  ) : (
+                    <span>Commit Output Evaluation</span>
+                  )}
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
       )}
 
       {/* Dedicated Lesson Cycling & Navigation Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-6 border-t border-border font-sans">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[16px] pt-[16px] border-t border-[#8B4513]/10">
         {prevLesson ? (
-          <button
-            onClick={() => {
-              setCurrentLesson(prevLesson);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="px-5 py-3 bg-card hover:bg-accent text-foreground border border-border font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs font-sans"
-          >
-            <ArrowLeft size={14} className="font-sans" />
-            <span className="truncate max-w-[180px] font-sans">Prev: {prevLesson.title}</span>
-          </button>
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCurrentLesson(prevLesson);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="px-4 h-9 border-[#8B4513]/20 font-medium text-xs rounded-[12px] shadow-none text-[#3D2B1F]/70"
+            >
+              <ArrowLeft size={12} className="mr-2 text-[#8B4513]" />
+              <span className="truncate max-w-[150px]">Revert: {prevLesson.title}</span>
+            </Button>
+          </motion.div>
         ) : <div />}
 
         {nextLesson ? (
-          <button
-            onClick={async () => {
-              if (!requiresAssessment && !isCurrentLessonCompleted) {
-                await handleCompleteLesson(currentLesson);
-              }
-              setCurrentLesson(nextLesson);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98] font-sans"
-          >
-            <span className="truncate max-w-[180px] font-sans">Next: {nextLesson.title}</span>
-            <Play size={10} className="fill-current font-sans" />
-          </button>
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+            <Button
+              onClick={async () => {
+                if (!requiresAssessment && !isCurrentLessonCompleted) {
+                  await handleCompleteLesson(currentLesson);
+                }
+                setCurrentLesson(nextLesson);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="px-6 h-9 bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-medium text-xs rounded-[12px] shadow-none"
+            >
+              <span className="truncate max-w-[150px] mr-2">Advance: {nextLesson.title}</span>
+              <Play size={10} className="fill-current text-[#3D2B1F]" />
+            </Button>
+          </motion.div>
         ) : (
-          <button
-            onClick={() => window.location.href = '/dashboard'}
-            className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md font-sans"
-          >
-            <CheckCircle2 size={14} className="font-sans" />
-            Finish Course Track
-          </button>
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+            <Button
+              onClick={() => window.location.href = '/dashboard'}
+              className="px-6 h-9 bg-[#8B4513]/10 hover:bg-[#8B4513]/20 text-[#8B4513] font-medium text-xs rounded-[12px] shadow-none border border-[#8B4513]/20"
+            >
+              <CheckCircle2 size={12} className="mr-2" />
+              Conclude Track Flow
+            </Button>
+          </motion.div>
         )}
       </div>
     </div>
@@ -606,69 +625,91 @@ export default function CourseDetailPage() {
   const isLocked = !isEnrolled && !currentLesson?.is_preview;
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground font-sans overflow-hidden font-sans">
+    <div className="flex flex-col h-screen bg-[#F9F5F0] text-[#3D2B1F] font-sans overflow-hidden">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       
       {/* Top Navigation Bar */}
-      <header className="flex-shrink-0 h-16 border-b border-border bg-card flex items-center px-6 justify-between z-10 shadow-xs font-sans">
-        <div className="flex items-center gap-4 font-sans">
-          <Button variant="ghost" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-xl hover:bg-accent text-foreground font-sans">
-            <ArrowLeft size={20} className="font-sans" />
-          </Button>
-          <div className="hidden sm:block h-4 w-px bg-border mx-2 font-sans" />
-          <h1 className="text-sm font-bold text-foreground truncate max-w-[250px] md:max-w-none font-sans">
-            {course?.title || "Course Player Studio"}
+      <header className="flex-shrink-0 h-16 border-b border-[#8B4513]/10 bg-white flex items-center px-6 justify-between z-10 shadow-none">
+        <div className="flex items-center gap-4">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+            <Button variant="outline" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-[12px] h-8 w-8 border-[#8B4513]/20 shadow-none">
+              <ArrowLeft size={16} className="text-[#8B4513]" />
+            </Button>
+          </motion.div>
+          <div className="hidden sm:block h-3 w-px bg-[#8B4513]/10 mx-1" />
+          <h1 className="text-xs font-semibold tracking-[-0.02em] text-[#3D2B1F] truncate max-w-[250px] md:max-w-none">
+            {course?.title || "Directive Execution Center"}
           </h1>
           {parentModule && (
             <>
-              <div className="hidden sm:block h-4 w-px bg-border mx-2 font-sans" />
-              <span className="hidden md:inline-flex text-xs font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20 truncate max-w-xs font-sans">
+              <div className="hidden sm:block h-3 w-px bg-[#8B4513]/10 mx-1" />
+              <span className="hidden md:inline-flex text-[10px] font-medium bg-[#8B4513]/5 text-[#8B4513] px-2.5 py-0.5 rounded-[12px] border border-[#8B4513]/10 truncate max-w-xs">
                 {parentModule.title}
               </span>
             </>
           )}
         </div>
-        <div className="flex items-center gap-4 font-sans">
-           <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground font-sans">
-             <ShieldCheck size={14} className="text-primary font-sans" />
-             Industrial Track
+        <div className="flex items-center gap-4">
+           <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+             <ShieldCheck size={12} />
+             Industrial Stage
            </div>
-           <Button size="sm" variant="outline" className="rounded-full px-4 h-9 border-border text-foreground font-bold text-xs font-sans">
-              Resources
-           </Button>
         </div>
       </header>
 
       {/* Main Studio Area */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-[1600px] w-full mx-auto font-sans">
+      <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] max-w-[1600px] w-full mx-auto pb-20">
         {!currentLesson ? (
-          <div className="py-20 text-center text-muted-foreground font-sans">Loading lesson studio workspace...</div>
+          <div className="py-20 text-center text-xs text-[#3D2B1F]/60 font-medium">Resolving active syllabus coordinates...</div>
         ) : hasVideo ? (
           /* SCENARIO A: Has Video */
-          <div className="grid lg:grid-cols-12 gap-8 items-start font-sans">
+          <div className="grid lg:grid-cols-12 gap-[32px] items-start">
             
             {/* Left Side: Video + Syllabus Below */}
-            <div className="lg:col-span-5 xl:col-span-5 space-y-6 font-sans">
-              <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-border font-sans">
+            <div className="lg:col-span-5 xl:col-span-5 space-y-[32px]">
+              {/* Wraps YouTube iframe in overflow: hidden container using absolute absolute inset layout */}
+              <div className="w-full aspect-video bg-[#F9F5F0] rounded-[12px] overflow-hidden border border-[#8B4513]/20 relative shadow-none shrink-0">
                 {isLocked ? (
-                  <div className="w-full h-full bg-card flex flex-col items-center justify-center p-6 text-center space-y-4 font-sans">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 font-sans">
-                      <ShieldCheck size={24} className="text-primary font-sans" />
+                  <div className="w-full h-full bg-white flex flex-col items-center justify-center p-6 text-center space-y-4 absolute inset-0 z-10">
+                    <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10">
+                      <ShieldCheck size={24} className="text-[#8B4513]" />
                     </div>
-                    <div className="font-sans">
-                      <h3 className="text-base font-bold text-foreground font-sans">Enrollment Required</h3>
-                      <p className="text-xs text-muted-foreground max-w-xs mx-auto mt-1 font-sans">Unlock all modules and study tasks instantly.</p>
+                    <div>
+                      <h3 className="text-base font-medium tracking-[-0.02em] text-[#3D2B1F]">Enrollment Required</h3>
+                      <p className="text-xs text-[#3D2B1F]/70 max-w-xs mx-auto mt-1 leading-[1.6]">Unlock all modules and study tasks instantly.</p>
                     </div>
                     <Button 
                       size="sm"
                       onClick={() => setShowPayment(true)}
-                      className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl shadow-xs font-sans"
+                      className="px-5 py-2 bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-medium text-xs rounded-[12px] shadow-none"
                     >
                       Enroll to Unlock
                     </Button>
                   </div>
                 ) : (
-                  renderVideoPlayer(currentLesson.content_url || "")
+                  <>
+                    {!isPlaying && (
+                      <div 
+                        onClick={() => setIsPlaying(true)}
+                        className="absolute inset-0 bg-[#3D2B1F] flex flex-col items-center justify-center p-6 text-center cursor-pointer group z-20 transition-all duration-300"
+                      >
+                        {/* Custom decorative inner stroke to match Quiet Luxury */}
+                        <div className="absolute inset-3 border border-[#8B4513]/20 rounded-[8px] pointer-events-none" />
+                        
+                        <div className="w-16 h-16 rounded-full bg-[#D2B48C] flex items-center justify-center text-[#3D2B1F] shadow-none group-hover:scale-105 transition-transform duration-300 mb-4">
+                          <Play size={28} className="fill-current ml-1 text-[#3D2B1F]" />
+                        </div>
+                        
+                        <h3 className="text-base font-medium tracking-[-0.02em] text-[#F9F5F0] max-w-md px-4 leading-tight group-hover:text-[#D2B48C] transition-colors line-clamp-2">
+                          {currentLesson?.title || "Lesson Directive"}
+                        </h3>
+                        <p className="text-[10px] font-medium tracking-wider uppercase text-[#D2B48C]/80 mt-2">
+                          Click to Initiate Stream
+                        </p>
+                      </div>
+                    )}
+                    {renderVideoPlayer(currentLesson.content_url || "")}
+                  </>
                 )}
               </div>
 
@@ -676,16 +717,18 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Right Side: Lesson Notes & Tasks */}
-            <div className="lg:col-span-7 xl:col-span-7 font-sans">
+            <div className="lg:col-span-7 xl:col-span-7">
               {isLocked ? (
-                <div className="bg-card text-card-foreground border border-border rounded-3xl p-12 text-center space-y-4 font-sans">
-                  <h3 className="text-lg font-bold text-foreground font-sans">{currentLesson.title}</h3>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto font-sans">
-                    This lesson contains comprehensive material, practical code notes, and evaluated assessments available to enrolled interns.
+                <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
+                  <h3 className="text-base font-medium text-[#3D2B1F]">{currentLesson.title}</h3>
+                  <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6]">
+                    This operational stage contains core lecture briefs, verified output notes, and execution checkpoints restricted to allocated staff.
                   </p>
-                  <Button onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl font-sans">
-                    Unlock Course Track
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                    <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-medium text-xs rounded-[12px] h-10 px-6 shadow-none">
+                      Affirm Enrollment Gate
+                    </Button>
+                  </motion.div>
                 </div>
               ) : (
                 renderNotesAndAssessment()
@@ -695,25 +738,27 @@ export default function CourseDetailPage() {
           </div>
         ) : (
           /* SCENARIO B: No Video */
-          <div className="max-w-4xl mx-auto space-y-10 font-sans">
+          <div className="max-w-4xl mx-auto space-y-[48px]">
             {isLocked ? (
-              <div className="bg-card text-card-foreground border border-border rounded-3xl p-12 text-center space-y-4 font-sans">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 mx-auto font-sans">
-                  <ShieldCheck size={24} className="text-primary font-sans" />
+              <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[48px] text-center space-y-[16px] shadow-none">
+                <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10 mx-auto">
+                  <ShieldCheck size={24} className="text-[#8B4513]" />
                 </div>
-                <h3 className="text-lg font-bold text-foreground font-sans">Premium Lesson Content Locked</h3>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto font-sans">
-                  Complete your program enrollment to access official lecture notes and task evaluations.
+                <h3 className="text-base font-medium text-[#3D2B1F]">Confidential Directives Gate Active</h3>
+                <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6]">
+                  Instantiate profile verification and programmatic track enrollment to pull internal specifications.
                 </p>
-                <Button onClick={() => setShowPayment(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-xl font-sans">
-                  Enroll Now
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                  <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-medium text-xs rounded-[12px] h-10 px-6 shadow-none">
+                    Execute Enrollment
+                  </Button>
+                </motion.div>
               </div>
             ) : (
               renderNotesAndAssessment()
             )}
 
-            <div className="pt-2 border-t border-border font-sans">
+            <div className="pt-2 border-t border-[#8B4513]/10">
               {renderSyllabus()}
             </div>
           </div>
