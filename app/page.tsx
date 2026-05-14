@@ -10,7 +10,8 @@ import {
   BookOpen,
   CheckCircle2,
   Users,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -35,7 +36,7 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative py-[64px] md:py-[112px] bg-[#F9F5F0] border-b border-[#8B4513]/10 overflow-hidden">
-      {/* Subtle educational backdrop wireframe patterns */}
+      {/* Subtle foundational wireframe backdrop grid patterns */}
       <div className="absolute inset-0 pointer-events-none opacity-5 flex items-center justify-center">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -48,25 +49,27 @@ function Hero() {
       </div>
 
       <div className="container relative mx-auto max-w-6xl px-4 text-center z-10">
+        {/* Trust Badge near Hero section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#8B4513]/5 border border-[#8B4513]/10 text-xs font-bold text-[#8B4513] mb-[32px]"
         >
-          <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-          VERIFIED ONLINE ACADEMY & INTERNSHIP PLATFORM
+          <ShieldCheck className="h-4 w-4 text-[#8B4513]" />
+          A Government Registered MSME Enterprise (UDYAM-TS-31-0053124)
         </motion.div>
         
+        {/* Trust-Building Hook Headline */}
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: 0.1 }}
           className="text-4xl md:text-6xl font-bold tracking-tight text-[#3D2B1F] leading-[1.15] mb-[24px] max-w-5xl mx-auto"
         >
-          Accelerate Your Engineering Career with <br />
+          Building Scalable Digital <br />
           <span className="text-[#8B4513] relative">
-            Practical Tech Programs
+            Infrastructure for the Future.
             <motion.span 
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
@@ -76,13 +79,14 @@ function Hero() {
           </span>
         </motion.h1>
 
+        {/* Actionable Sub-headline */}
         <motion.p 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: 0.2 }}
           className="text-base md:text-lg text-[#3D2B1F]/80 leading-[1.6] max-w-3xl mx-auto font-medium mb-[48px]"
         >
-          Master industry-aligned workflows, build functional GitHub deliverables, evaluate real tasks, and earn institutional grade credentials recognized by MSME.
+          We provide enterprise-grade web development, AI automation, and custom software solutions designed for business growth.
         </motion.p>
 
         <motion.div 
@@ -93,12 +97,12 @@ function Hero() {
         >
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}>
             <Button asChild size="lg" className="bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] rounded-[8px] px-[32px] h-[48px] font-bold text-sm shadow-none">
-              <Link href="/signup">Explore Courses</Link>
+              <Link href="/#services">Explore Services</Link>
             </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}>
             <Button asChild size="lg" variant="outline" className="border-[#8B4513]/20 bg-white text-[#3D2B1F] hover:bg-[#F9F5F0] rounded-[8px] px-[32px] h-[48px] font-bold text-sm shadow-none">
-              <Link href="/login">Student Dashboard</Link>
+              <Link href="/careers">Ecosystem & Careers</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -109,12 +113,12 @@ function Hero() {
 
 function PremiumTicker() {
   const tickerItems = [
-    "✦ INTERACTIVE VIDEO LECTURES",
-    "✦ PROJECT PORTFOLIO VERIFICATION",
-    "✦ MSME RECOGNIZED CERTIFICATES",
-    "✦ STRUCTURED ACADEMIC MODULES",
-    "✦ DEDICATED MENTOR EVALUATIONS",
-    "✦ INDUSTRY CAPSTONE TRACKS"
+    "✦ ENTERPRISE WEB PORTALS",
+    "✦ CUSTOM AI AGENTS",
+    "✦ BACKEND SYSTEM ARCHITECTURE",
+    "✦ SUPABASE & SQL SCHEMAS",
+    "✦ HIGH-PERFORMANCE INFRASTRUCTURE",
+    "✦ VERIFIABLE BUSINESS RESULTS"
   ];
 
   return (
@@ -137,11 +141,12 @@ function PremiumTicker() {
 }
 
 function Services() {
+  // Configured perfectly to list "The Results we deliver" as instructed under point 2 ("Services Page")
   const services = [
     { 
-      title: "Full-Stack Development", 
+      title: "Web & App Development", 
       icon: Globe, 
-      desc: "Learn robust responsive user interfaces, robust database integrations, and scalable client-server architectures.",
+      desc: "From MVPs to high-performance enterprise portals. We use Next.js and Vercel to ensure your business is fast, secure, and globally accessible.",
       graphic: (
         <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B4513]/10 stroke-current stroke-[1.5] fill-none">
           <circle cx="50" cy="50" r="40" strokeDasharray="4 4" />
@@ -151,9 +156,9 @@ function Services() {
       )
     },
     { 
-      title: "Artificial Intelligence & ML", 
+      title: "AI & Business Automation", 
       icon: Brain, 
-      desc: "Deep dive into model integration parameters, neural network structures, and applied engineering prompts.",
+      desc: "Eliminate manual grunt work. We build custom AI agents and automated workflows that help your team focus on high-value tasks.",
       graphic: (
         <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B4513]/10 stroke-current stroke-[1.5] fill-none">
           <polygon points="50,10 90,85 10,85" />
@@ -162,9 +167,9 @@ function Services() {
       )
     },
     { 
-      title: "Core Computer Systems", 
+      title: "Technical Consulting", 
       icon: Terminal, 
-      desc: "Master terminal commands, modern programming design patterns, and solid hardware engineering workflows.",
+      desc: "Architecting robust backend systems and database schemas (SQL/Supabase) to ensure your data is scalable and secure.",
       graphic: (
         <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B4513]/10 stroke-current stroke-[1.5] fill-none">
           <rect x="20" y="20" width="60" height="60" rx="8" />
@@ -186,10 +191,10 @@ function Services() {
           className="text-center max-w-2xl mx-auto mb-[64px]"
         >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#3D2B1F] mb-[16px]">
-            Comprehensive Study Programs
+            The Results We Deliver
           </h2>
           <p className="text-sm md:text-base text-[#3D2B1F]/80 leading-[1.6] font-medium">
-            Curated, practical video sequences covering foundational and specialized enterprise systems.
+            Robust deliverables architected to accelerate throughput and securely scale core digital interfaces.
           </p>
         </motion.div>
 
@@ -202,26 +207,28 @@ function Services() {
               viewport={{ once: true, amount: 0.1 }}
               transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: i * 0.1 }}
               whileHover={{ scale: 1.02, y: -4 }}
-              className="group relative bg-white border border-[#8B4513]/15 rounded-[12px] p-[32px] overflow-hidden hover:border-[#8B4513]/40 transition-colors shadow-none"
+              className="group relative bg-white border border-[#8B4513]/15 rounded-[12px] p-[32px] overflow-hidden hover:border-[#8B4513]/40 transition-colors shadow-none flex flex-col justify-between"
             >
               {/* Graphical animated vector background drawn on hover */}
               <div className="absolute -right-12 -bottom-12 w-48 h-48 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none transform group-hover:rotate-12 transition-transform">
                 {s.graphic}
               </div>
 
-              <div className="relative z-10">
+              <div className="relative z-10 flex-1">
                 <div className="h-10 w-10 rounded-[8px] bg-[#8B4513]/5 flex items-center justify-center text-[#8B4513] mb-[24px] group-hover:scale-105 transition-transform duration-300 font-bold">
                   <s.icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-lg font-bold text-[#3D2B1F] mb-[12px] group-hover:text-[#8B4513] transition-colors">
+                <h3 className="text-lg font-bold text-[#3D2B1F] mb-[12px] group-hover:text-[#8B4513] transition-colors leading-tight">
                   {s.title}
                 </h3>
                 <p className="text-xs text-[#3D2B1F]/80 leading-[1.6] font-medium">
                   {s.desc}
                 </p>
-                
-                {/* Micro line indicator expanding below card title */}
-                <div className="w-0 h-[2px] bg-[#8B4513] mt-[20px] transition-all duration-300 group-hover:w-12 rounded-full" />
+              </div>
+              
+              <div className="relative z-10 pt-[16px]">
+                {/* Micro line indicator expanding below card content */}
+                <div className="w-0 h-[2px] bg-[#8B4513] transition-all duration-300 group-hover:w-12 rounded-full" />
               </div>
             </motion.div>
           ))}
@@ -244,20 +251,20 @@ function CurriculumShowcase() {
             className="space-y-[24px]"
           >
             <div className="text-xs font-bold uppercase tracking-wider text-[#8B4513]">
-              The Learning Experience
+              Ecosystem Integration
             </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#3D2B1F] leading-[1.2]">
-              Interactive Modules & Real-World Projects
+              Join the Matrix Root Ecosystem
             </h2>
             <p className="text-xs md:text-sm text-[#3D2B1F]/80 leading-[1.6] font-medium">
-              We focus on outcome-oriented engineering education. Learn complex workflows through straightforward, structured visual players. Every syllabus item maps directly to a practical, submission-ready project brief evaluated by senior mentors.
+              We don&apos;t just teach; we integrate. Our 8-week internship tracks are designed to turn students into production-ready developers capable of deploying real full-stack interfaces and scalable AI automation.
             </p>
             <div className="pt-[8px]">
               <Link 
-                href="/signup" 
+                href="/careers" 
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8B4513] group py-1"
               >
-                Browse All Academy Courses 
+                Apply for Internship Tracks 
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
@@ -274,16 +281,16 @@ function CurriculumShowcase() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#8B4513]/5 rounded-bl-full pointer-events-none group-hover:scale-105 transition-transform duration-500" />
 
             <div className="border-b border-[#8B4513]/10 pb-[12px] flex items-center justify-between relative z-10">
-              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><BookOpen size={14} /> Course Structure</span>
-              <span className="text-xs font-bold text-[#3D2B1F]">Self-Paced Lessons</span>
+              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><BookOpen size={14} /> Full-Stack Track</span>
+              <span className="text-xs font-bold text-[#3D2B1F]">Modern Foundations</span>
             </div>
             <div className="border-b border-[#8B4513]/10 pb-[12px] flex items-center justify-between relative z-10">
-              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><Award size={14} /> Evaluation Metric</span>
-              <span className="text-xs font-bold text-[#3D2B1F]">Project Portfolio Submission</span>
+              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><Award size={14} /> AI Solutions Track</span>
+              <span className="text-xs font-bold text-[#3D2B1F]">Applied Automation</span>
             </div>
             <div className="flex items-center justify-between pt-[4px] relative z-10">
-              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><CheckCircle2 size={14} /> Recognition Status</span>
-              <span className="text-xs font-bold text-[#8B4513]">MSME Certified Program</span>
+              <span className="text-xs font-bold text-[#3D2B1F]/60 flex items-center gap-1.5"><CheckCircle2 size={14} /> Enterprise Standing</span>
+              <span className="text-xs font-bold text-[#8B4513]">Govt Registered MSME</span>
             </div>
           </motion.div>
         </div>
@@ -298,10 +305,10 @@ function ExcellenceSection() {
       <div className="container mx-auto max-w-6xl px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[24px]">
           {[
-            { label: "Institutional Recognition", value: "MSME Verified" },
-            { label: "Delivery Environment", value: "Video & Text Notes" },
-            { label: "Capstone Approach", value: "Real Github URI" },
-            { label: "Platform Access", value: "24/7 Unlimited" },
+            { label: "Government Registry", value: "MSME Certified" },
+            { label: "Target Outcomes", value: "Production-Ready" },
+            { label: "Architecture", value: "Next.js & Vercel" },
+            { label: "Automation Layer", value: "Custom AI Agents" },
           ].map((s, i) => (
             <motion.div 
               key={i} 
@@ -337,20 +344,20 @@ function CTASection() {
           className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[40px] md:p-[64px]"
         >
           <h2 className="text-2xl md:text-4xl font-bold text-[#3D2B1F] mb-[12px]">
-            Start Learning Now
+            Kickstart Business Integration
           </h2>
           <p className="text-xs md:text-sm text-[#3D2B1F]/80 leading-[1.6] max-w-lg mx-auto mb-[32px] font-medium">
-            Enroll today to unlock official engineering lecture libraries, step-by-step documentation, and verified institutional certificates.
+            Contact us today to deploy custom full-stack solutions or enroll talent directly into production-ready internship tracks.
           </p>
           <div className="flex flex-wrap justify-center gap-[16px]">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}>
               <Button asChild size="lg" className="bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] rounded-[8px] px-[32px] h-[44px] font-bold text-xs shadow-none">
-                <Link href="/signup">Register Free Account</Link>
+                <Link href="/careers">Apply for Internship</Link>
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}>
               <Button asChild size="lg" variant="outline" className="border-[#8B4513]/20 bg-white text-[#3D2B1F] hover:bg-[#F9F5F0] rounded-[8px] px-[32px] h-[44px] font-bold text-xs shadow-none">
-                <Link href="/login">Student Account Log In</Link>
+                <Link href="/login">Access Portal</Link>
               </Button>
             </motion.div>
           </div>
