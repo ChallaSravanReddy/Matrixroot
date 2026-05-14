@@ -356,7 +356,7 @@ export default function AdminPage() {
                        </select>
                        <input type="text" placeholder="Lesson Title" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.title} onChange={(e) => setNewLesson({...newLesson, title: e.target.value})} required />
                        <textarea placeholder="Text Notes / Study Material" className="w-full bg-background border border-border p-4 rounded-xl font-medium h-28" value={newLesson.notes} onChange={(e) => setNewLesson({...newLesson, notes: e.target.value})} />
-                       <input type="text" placeholder="Video URL (Optional)" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.content_url} onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})} />
+                       <input type="text" placeholder="Video URL (Optional - YouTube watch/shorts auto-embedded)" className="w-full bg-background border border-border p-4 rounded-xl font-medium" value={newLesson.content_url} onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})} />
                        <div className="flex flex-col gap-1">
                          <label className="flex items-center gap-3 p-2 cursor-pointer">
                             <input type="checkbox" className="w-5 h-5 rounded-md accent-primary" checked={newLesson.is_preview} onChange={(e) => setNewLesson({...newLesson, is_preview: e.target.checked})} />

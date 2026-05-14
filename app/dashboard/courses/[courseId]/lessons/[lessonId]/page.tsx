@@ -163,7 +163,23 @@ export default function LessonPage() {
     }
     
     // Simple check for MP4 vs embed (YouTube/Vimeo/Cloudinary)
-    const secureUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+    let secureUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+
+    // Automatically convert standard YouTube URLs to Embed format
+    if (secureUrl.includes("youtube.com/") || secureUrl.includes("youtu.be/")) {
+      let videoId = "";
+      if (secureUrl.includes("youtu.be/")) {
+        videoId = secureUrl.split("youtu.be/")[1]?.split(/[?#]/)[0]?.split("/")[0];
+      } else if (secureUrl.includes("youtube.com/watch")) {
+        const match = secureUrl.match(/[?&]v=([^&#]+)/);
+        if (match) videoId = match[1];
+      } else if (secureUrl.includes("youtube.com/shorts/")) {
+        videoId = secureUrl.split("youtube.com/shorts/")[1]?.split(/[?#]/)[0]?.split("/")[0];
+      }
+      if (videoId) {
+        secureUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
 
     if (secureUrl.endsWith('.mp4')) {
       return <video src={secureUrl} controls className="w-full h-full object-cover" />;
