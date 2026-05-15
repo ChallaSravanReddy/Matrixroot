@@ -4,6 +4,8 @@ import React, { useRef } from "react";
 import jsPDF from "jspdf";
 import { domToPng } from "modern-screenshot";
 
+import { getSiteUrl } from "@/lib/siteConfig";
+
 interface CertificateProps {
   studentName: string;
   courseName: string;
@@ -42,6 +44,8 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
     }
   };
 
+  const siteUrl = getSiteUrl();
+
   return (
     <div className="flex flex-col items-center gap-[24px]">
       {/* HIDDEN CERTIFICATE TEMPLATE */}
@@ -60,61 +64,63 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
           <div className="absolute top-0 left-0 w-32 h-32 border-t-4 border-l-4" style={{ borderColor: '#8B4513' }}></div>
           <div className="absolute bottom-0 right-0 w-32 h-32 border-b-4 border-r-4" style={{ borderColor: '#8B4513' }}></div>
 
-          <div className="flex flex-col items-center h-full justify-between text-center font-sans">
-            {/* Header */}
-            <div className="space-y-4">
-              <div className="mx-auto mb-4 flex items-center justify-center">
-                <img src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root" className="w-20 h-20 object-contain opacity-90" />
+          <div className="flex flex-col items-center h-full text-center font-sans">
+            {/* Header - Fixed Height Area to prevent overlap */}
+            <div className="h-[200px] flex flex-col justify-center items-center w-full shrink-0">
+              <div className="mb-6">
+                <img src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Matrix Root" className="w-24 h-24 object-contain" />
               </div>
-              <h1 className="text-4xl font-normal tracking-[-0.02em] uppercase font-serif" style={{ color: '#3D2B1F' }}>
+              <h1 className="text-[42px] font-normal tracking-[-0.01em] uppercase font-serif leading-none mb-4" style={{ color: '#3D2B1F' }}>
                 Certificate of Excellence
               </h1>
-              <p className="text-sm text-[#3D2B1F]/60 tracking-widest uppercase">
+              <p className="text-[12px] text-[#3D2B1F]/60 tracking-[0.2em] uppercase font-bold">
                 Matrix Root Professional Mastery
               </p>
             </div>
 
-            {/* Body */}
-            <div className="space-y-6">
-              <p className="text-lg italic text-[#3D2B1F]/80 font-serif">This document attests that</p>
-              <h2 className="text-5xl font-normal text-[#3D2B1F] font-serif border-b border-[#8B4513]/20 pb-4 max-w-xl mx-auto">
-                {studentName}
-              </h2>
-              <p className="text-base text-[#3D2B1F]/80 max-w-2xl mx-auto leading-relaxed font-light">
-                has fully satisfied the rigorous operational requirements of the <span className="font-medium text-[#8B4513]">{courseName}</span> program 
-                specializing in the <span className="font-medium text-[#3D2B1F]">{branch}</span> discipline.
+            {/* Body - Flexible middle area */}
+            <div className="flex-1 flex flex-col justify-center items-center w-full py-8">
+              <p className="text-xl italic text-[#3D2B1F]/80 font-serif mb-8">This document attests that</p>
+              <div className="w-full max-w-2xl border-b border-[#8B4513]/20 pb-4 mb-8">
+                <h2 className="text-[64px] font-normal text-[#3D2B1F] font-serif leading-tight">
+                  {studentName}
+                </h2>
+              </div>
+              <p className="text-lg text-[#3D2B1F]/80 max-w-3xl mx-auto leading-relaxed font-light px-12">
+                has fully satisfied the rigorous operational requirements of the <span className="font-bold text-[#8B4513]">{courseName}</span> program 
+                specializing in the <span className="font-bold text-[#3D2B1F]">{branch}</span> discipline.
               </p>
             </div>
 
-            {/* Footer Stats & Signatures */}
-            <div className="w-full flex justify-between items-end mt-12 px-12 border-t border-[#8B4513]/10 pt-6">
-              <div className="flex items-center gap-8">
+            {/* Footer - Fixed Height Area */}
+            <div className="h-[180px] w-full flex justify-between items-end px-12 border-t border-[#8B4513]/10 pt-8 shrink-0">
+              <div className="flex items-center gap-10">
                 {/* Performance Score */}
-                <div className="text-left space-y-1">
-                  <div className="p-3 rounded-[12px] border border-[#8B4513]/20 bg-[#F9F5F0] min-w-[140px]">
-                    <p className="text-[9px] font-medium uppercase text-[#8B4513]">Performance Rating</p>
-                    <p className="text-2xl font-semibold text-[#3D2B1F]">{score}%</p>
+                <div className="text-left space-y-2">
+                  <div className="p-4 rounded-[16px] border border-[#8B4513]/20 bg-[#F9F5F0] min-w-[160px] shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#8B4513] mb-1">Performance Rating</p>
+                    <p className="text-3xl font-black text-[#3D2B1F]">{score}%</p>
                   </div>
-                  <p className="text-[9px] text-[#3D2B1F]/40 tracking-tight">Authority ID: {certId?.substring(0, 13).toUpperCase()}</p>
+                  <p className="text-[10px] font-bold text-[#3D2B1F]/40 tracking-wider">Authority ID: {certId?.substring(0, 13).toUpperCase()}</p>
                 </div>
 
                 {/* QR Code Verification */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 bg-white border border-[#8B4513]/20 rounded-[12px]">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-3 bg-white border border-[#8B4513]/20 rounded-[16px] shadow-sm">
                     <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/verify/' + certId : '')}`} 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(siteUrl + '/verify/' + certId)}`} 
                       alt="Verify Certificate" 
-                      className="w-14 h-14"
+                      className="w-16 h-16"
                     />
                   </div>
-                  <p className="text-[7px] font-semibold uppercase tracking-widest text-[#8B4513]">Scan Validation</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.15em] text-[#8B4513]">Scan Validation</p>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center">
-                  <div className="w-40 h-px bg-[#8B4513]/40 mb-2"></div>
-                  <p className="text-sm font-medium text-[#3D2B1F]">Program Director</p>
-                  <p className="text-[10px] text-[#3D2B1F]/60">Matrix Root Institution</p>
+              <div className="flex flex-col items-center pb-2">
+                  <div className="w-48 h-[2px] bg-[#8B4513]/30 mb-3"></div>
+                  <p className="text-base font-bold text-[#3D2B1F]">Program Director</p>
+                  <p className="text-[11px] font-bold text-[#3D2B1F]/50 uppercase tracking-widest">Matrix Root Institution</p>
               </div>
             </div>
           </div>

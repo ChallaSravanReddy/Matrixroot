@@ -7,6 +7,8 @@ import Link from "next/link";
 import { ShieldCheck, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { getSiteUrl } from "@/lib/siteConfig";
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,8 +22,10 @@ export default function ForgotPasswordPage() {
     setMessage(null);
 
     try {
-      const redirectOrigin = typeof window !== "undefined" ? window.location.origin : "";
-      const targetRedirectUrl = `${redirectOrigin}/reset-password`;
+      const siteUrl = getSiteUrl();
+      const targetRedirectUrl = `${siteUrl}/reset-password`;
+      
+      console.log("Password Reset Redirect URL:", targetRedirectUrl);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: targetRedirectUrl,

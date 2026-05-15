@@ -12,7 +12,7 @@ import {
   Users,
   Sparkles,
   ShieldCheck
-} from "lucide-react";
+} from "@/components/icons";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";

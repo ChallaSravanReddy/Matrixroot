@@ -21,41 +21,48 @@ export default function VerificationPage() {
   const certId = params?.certId as string;
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVerificationData = async () => {
       if (!certId) return;
 
-      // Fetch enrollment joined with course and profile
-      // Note: We use the client-side supabase here, but in production, 
-      // you should ideally use a service-role client in a server component
-      // for public verification to bypass RLS.
-      const { data: enrollData, error } = await supabase
-        .from("enrollments")
-        .select(`
-          *,
-          courses:course_id (
-            title,
-            departments:dept_id (
-              name
+      try {
+        console.log("Starting verification for ID:", certId);
+        
+        const { data: enrollData, error } = await supabase
+          .from("enrollments")
+          .select(`
+            *,
+            courses:course_id (
+              title,
+              departments:dept_id (
+                name
+              )
+            ),
+            profiles:student_id (
+              full_name
             )
-          ),
-          profiles:student_id (
-            full_name
-          )
-        `)
-        .eq("id", certId)
-        .eq("certification_status", "approved")
-        .maybeSingle();
+          `)
+          .eq("id", certId)
+          .maybeSingle();
 
-      if (error) {
-        console.error("Verification Fetch Error:", error);
+        if (error) {
+          console.error("Verification DB Error:", error);
+          setErrorMsg(`Database error: ${error.message}`);
+        } else if (!enrollData) {
+          console.warn("No enrollment found for ID:", certId);
+          setErrorMsg("Certificate record not found in our registry.");
+        } else if (enrollData.certification_status !== 'approved') {
+          setErrorMsg("This certificate is pending approval and cannot be verified yet.");
+        } else {
+          setData(enrollData);
+        }
+      } catch (err: any) {
+        setErrorMsg(err.message || "An unexpected error occurred.");
+      } finally {
+        setLoading(false);
       }
-
-      if (enrollData) {
-        setData(enrollData);
-      }
-      setLoading(false);
     };
 
     fetchVerificationData();
@@ -75,10 +82,24 @@ export default function VerificationPage() {
         <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center text-destructive mb-6">
           <ShieldCheck size={40} />
         </div>
-        <h1 className="text-3xl font-black mb-4">Invalid Certificate</h1>
+        <h1 className="text-3xl font-black mb-4">Verification Error</h1>
         <p className="text-muted-foreground max-w-md mb-8">
-          The certificate ID you are looking for does not exist or has not been officially verified by Matrix Root.
+          {errorMsg || "The certificate ID you are looking for does not exist or has not been officially verified by Matrix Root."}
         </p>
+
+        {/* Diagnostic Debug Info */}
+        <div className="bg-muted p-4 rounded-xl text-left text-[10px] font-mono mb-8 max-w-md w-full border border-border">
+          <p className="text-muted-foreground uppercase font-bold mb-2">Diagnostic Data</p>
+          <p>Target ID: <span className="text-foreground">{certId}</span></p>
+          <p>Status: <span className="text-destructive">{errorMsg ? 'Fetch Failed' : 'No Data Found'}</span></p>
+        </div>
+
+        {errorMsg?.includes("policy") || errorMsg?.includes("Database") && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-800 text-xs font-medium mb-8 max-w-md">
+            <p className="font-bold mb-1">Administrator Action Required:</p>
+            This usually means the database permissions (RLS) are blocking public access. Please run the SQL fix provided.
+          </div>
+        )}
         <Button onClick={() => window.location.href = '/'}>Back to Home</Button>
       </div>
     );
