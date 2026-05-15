@@ -14,7 +14,10 @@ import {
   Award, 
   ShieldCheck, 
   Calendar,
-  CheckCircle2
+  CheckCircle2,
+  Menu,
+  X,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -126,6 +129,7 @@ export default function PerformanceReportCardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSemesterId, setActiveSemesterId] = useState("sem-5");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -256,11 +260,57 @@ export default function PerformanceReportCardPage() {
           </div>
         </nav>
       </aside>
+      
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <motion.aside 
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                  <GraduationCap size={20} />
+                </div>
+                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
+              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
+              <div className="pt-6">
+                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
+              </div>
+            </nav>
+          </motion.aside>
+        </div>
+      )}
 
       {/* Primary Analytics Content Dashboard */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+            >
+              <Menu size={20} />
+            </button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
               <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-[#8B4513]/20 shadow-none">
                 <ArrowLeft size={16} className="text-[#8B4513]" />

@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Advanced Training and Verifiable Excellence Platform",
 };
 
+import { AuthGuard } from "@/components/AuthGuard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,6 +30,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.razorpay.com" />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[#F9F5F0] text-[#3D2B1F]">
+        <AuthGuard />
         {children}
       </body>
     </html>

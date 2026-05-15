@@ -23,7 +23,9 @@ import {
   PlayCircle,
   Layers,
   CheckCircle2,
-  Clock
+  Clock,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
@@ -71,6 +73,7 @@ export default function DashboardPage() {
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -157,12 +160,58 @@ export default function DashboardPage() {
           </div>
         </div>
       </aside>
+      
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <motion.aside 
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                  <GraduationCap size={20} />
+                </div>
+                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
+              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
+              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
+              <div className="pt-6">
+                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
+              </div>
+            </nav>
+          </motion.aside>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header Navigation */}
         <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 lg:hidden text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+            >
+              <Menu size={20} />
+            </button>
             <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 px-2.5 py-1 rounded-[6px] border border-[#8B4513]/10">
               Edtech Studio Mode
             </span>

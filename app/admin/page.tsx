@@ -28,7 +28,9 @@ import {
   ExternalLink,
   Loader2,
   Trash2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -38,6 +40,7 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("courses");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Data States
   const [departments, setDepartments] = useState<any[]>([]);
@@ -222,11 +225,70 @@ export default function AdminPage() {
           </Button>
         </div>
       </aside>
+      
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div 
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+              <div className="flex items-center gap-3">
+                <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
+                <span className="font-medium text-lg text-[#3D2B1F]">Admin</span>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              {[
+                { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
+                { id: "lessons", label: "Curriculum Builder", icon: <PlusCircle size={18} /> },
+                { id: "students", label: "Scholar Directory", icon: <Users size={18} /> },
+                { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
+                { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); setIsSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
+                    activeTab === tab.id ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+                  }`}
+                >
+                  <span className="text-[#8B4513]">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+
+            <div className="p-4 border-t border-[#8B4513]/10">
+              <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-[#8B4513]/20 shadow-none" onClick={() => window.location.href='/dashboard'}>
+                <ArrowLeft size={14} className="mr-2 text-[#8B4513]" /> Exit to Portal
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">{activeTab} Supervision Node</h2>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+            >
+              <Menu size={20} />
+            </button>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">{activeTab} Supervision Node</h2>
+          </div>
           <div className="flex items-center gap-4">
              <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
                <ShieldCheck size={12} />

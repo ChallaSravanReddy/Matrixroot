@@ -63,7 +63,7 @@ export function Navbar() {
               href="/login" 
               className="relative text-xs font-bold tracking-tight text-[#3D2B1F] group py-1 px-2 hidden sm:block"
             >
-              Client Login
+              Student Login
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#8B4513] transition-all duration-300 group-hover:w-full rounded-full" />
             </Link>
             <Button asChild size="sm" className="rounded-[8px] px-5 h-9 font-bold text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] transition-colors shadow-none">
