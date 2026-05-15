@@ -34,13 +34,13 @@ export default function VerificationPage() {
           .from("enrollments")
           .select(`
             *,
-            courses:course_id (
+            courses (
               title,
-              departments:dept_id (
+              departments (
                 name
               )
             ),
-            profiles:student_id (
+            profiles (
               full_name
             )
           `)
