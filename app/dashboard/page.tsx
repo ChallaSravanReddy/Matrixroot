@@ -269,7 +269,7 @@ export default function DashboardPage() {
                   progress={userProgress.filter(p => p.course_id === course.id)}
                   lessons={courseLessons.filter(l => l.course_id === course.id)}
                   profile={profile}
-                  onEnroll={() => setSelectedCourse({id: course.id, title: course.title})}
+                  onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
                 />
               ))}
               {recommendedCourses.length === 0 && (
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                   progress={userProgress.filter(p => p.course_id === course.id)}
                   lessons={courseLessons.filter(l => l.course_id === course.id)}
                   profile={profile}
-                  onEnroll={() => setSelectedCourse({id: course.id, title: course.title})}
+                  onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
                 />
               ))}
             </motion.div>
@@ -309,17 +309,6 @@ export default function DashboardPage() {
       </main>
 
       {/* Enrollment Modal Integration */}
-      {selectedCourse && (
-        <EnrollmentModal 
-          open={!!selectedCourse} 
-          onOpenChange={(open) => !open && setSelectedCourse(null)}
-          courseTitle={selectedCourse.title}
-          onPay={() => {
-            window.location.href = `/dashboard/courses/${selectedCourse.id}`;
-          }}
-          loading={false}
-        />
-      )}
     </div>
   );
 }
