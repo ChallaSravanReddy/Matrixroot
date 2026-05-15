@@ -30,33 +30,43 @@ export default function VerificationPage() {
       try {
         console.log("Starting verification for ID:", certId);
         
-        const { data: enrollData, error } = await supabase
+        // Step 1: Fetch the core enrollment data
+        const { data: enrollData, error: enrollError } = await supabase
           .from("enrollments")
-          .select(`
-            *,
-            courses!course_id (
-              title,
-              departments (
-                name
-              )
-            ),
-            profiles!student_id (
-              full_name
-            )
-          `)
+          .select("*")
           .eq("id", certId)
           .maybeSingle();
 
-        if (error) {
-          console.error("Verification DB Error:", error);
-          setErrorMsg(`Database error: ${error.message}`);
-        } else if (!enrollData) {
-          console.warn("No enrollment found for ID:", certId);
+        if (enrollError) {
+          console.error("Enrollment DB Error:", enrollError);
+          setErrorMsg(`Database error: ${enrollError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        if (!enrollData) {
           setErrorMsg("Certificate record not found in our registry.");
-        } else if (enrollData.certification_status !== 'approved') {
+          setLoading(false);
+          return;
+        }
+
+        // Step 2: Fetch Profile and Course data separately to bypass missing FK relationships
+        const [profileRes, courseRes] = await Promise.all([
+          supabase.from("profiles").select("full_name").eq("id", enrollData.student_id).maybeSingle(),
+          supabase.from("courses").select("title, departments(name)").eq("id", enrollData.course_id).maybeSingle()
+        ]);
+
+        // Combine the data
+        const combinedData = {
+          ...enrollData,
+          profiles: profileRes.data,
+          courses: courseRes.data
+        };
+
+        if (combinedData.certification_status !== 'approved') {
           setErrorMsg("This certificate is pending approval and cannot be verified yet.");
         } else {
-          setData(enrollData);
+          setData(combinedData);
         }
       } catch (err: any) {
         setErrorMsg(err.message || "An unexpected error occurred.");
