@@ -5,12 +5,12 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Script from "next/script";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
-import { 
-  Play, 
-  CheckCircle2, 
-  Circle, 
-  ArrowLeft, 
-  ShieldCheck, 
+import {
+  Play,
+  CheckCircle2,
+  Circle,
+  ArrowLeft,
+  ShieldCheck,
   Award,
   ChevronRight,
   BookOpen,
@@ -33,7 +33,7 @@ interface Lesson {
 export default function CourseDetailPage() {
   const params = useParams();
   const courseId = params?.courseId as string;
-  
+
   const [course, setCourse] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -51,14 +51,14 @@ export default function CourseDetailPage() {
   const [assignmentUrl, setAssignmentUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [openModuleId, setOpenModuleId] = useState<string | null>(null);
-  
+
   // Custom video playback overlay state to conceal YouTube defaults
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!courseId) return;
-      
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         window.location.href = "/login";
@@ -74,7 +74,7 @@ export default function CourseDetailPage() {
         supabase.from("user_progress").select("*").eq("user_id", session.user.id).eq("course_id", courseId),
         supabase.from("profiles").select("full_name").eq("id", session.user.id).maybeSingle()
       ]);
-        
+
       if (courseRes.data) setCourse(courseRes.data);
       if (moduleRes?.data) setModules(moduleRes.data);
       if (profileRes?.data) setProfile(profileRes.data);
@@ -97,13 +97,13 @@ export default function CourseDetailPage() {
         setLessons(loadedLessons);
         setCurrentLesson(loadedLessons[0]);
       }
-      
+
       const hasPaid = allEnrollsRes.data?.some(e => String(e.course_id) === String(courseId) && (e.payment_status === "completed" || e.payment_status === "success"));
-      
+
       if (hasPaid) {
         setIsEnrolled(true);
       }
-      
+
       setLoading(false);
     };
 
@@ -213,9 +213,9 @@ export default function CourseDetailPage() {
                 });
               dbError = error;
             }
-            
+
             if (dbError) throw dbError;
-            
+
             alert("Enrollment Successful! Access Unlocked.");
             setIsEnrolled(true);
             setShowPayment(false);
@@ -235,7 +235,7 @@ export default function CourseDetailPage() {
           student_id: sessionUser?.id
         },
         theme: { color: "#8B4513" },
-        modal: { 
+        modal: {
           ondismiss: () => setEnrollLoading(false),
           escape: true
         }
@@ -291,10 +291,10 @@ export default function CourseDetailPage() {
       return <video src={secureUrl} controls className="w-full h-full object-cover absolute inset-0" />;
     } else {
       return (
-        <iframe 
-          src={secureUrl} 
-          className="w-full h-full border-0 absolute inset-0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        <iframe
+          src={secureUrl}
+          className="w-full h-full border-0 absolute inset-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           loading="lazy"
         ></iframe>
@@ -302,7 +302,7 @@ export default function CourseDetailPage() {
     }
   };
 
-  const sortedLessons = [...lessons].sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+  const sortedLessons = [...lessons].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
   const currentIndex = sortedLessons.findIndex(l => l.id === currentLesson?.id);
   const prevLesson = currentIndex > 0 ? sortedLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < sortedLessons.length - 1 ? sortedLessons[currentIndex + 1] : null;
@@ -326,12 +326,12 @@ export default function CourseDetailPage() {
           </motion.div>
         )}
       </div>
-      
+
       <div className="space-y-[16px]">
         {modules.map((mod) => {
           const modLessons = sortedLessons.filter(l => String(l.module_id) === String(mod.id));
           const isOpen = String(openModuleId) === String(mod.id);
-          
+
           return (
             <div key={mod.id} className="space-y-[8px] border-b border-[#8B4513]/5 pb-3 last:border-0">
               {/* Module Dropdown Trigger Header */}
@@ -347,7 +347,7 @@ export default function CourseDetailPage() {
                   <ChevronRight size={14} />
                 </div>
               </button>
-              
+
               {/* Collapsible Dropdown Lessons Container */}
               {isOpen && (
                 <div className="space-y-1 pl-2 pt-1 border-l border-[#8B4513]/10 ml-2 animate-in fade-in-50 duration-200">
@@ -358,7 +358,7 @@ export default function CourseDetailPage() {
                       const isActive = currentLesson?.id === lesson.id;
                       const isLocked = !isEnrolled && !lesson.is_preview;
                       const isDone = completedLessonIds.includes(lesson.id);
-                      
+
                       return (
                         <button
                           key={lesson.id}
@@ -368,13 +368,12 @@ export default function CourseDetailPage() {
                               window.scrollTo({ top: 0, behavior: 'smooth' });
                             }
                           }}
-                          className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${
-                            isActive 
-                              ? "bg-[#8B4513]/5 text-[#8B4513] font-bold border border-[#8B4513]/10" 
-                              : isLocked 
-                              ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50" 
-                              : "hover:bg-white text-[#3D2B1F]/80 font-medium"
-                          }`}
+                          className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
+                              ? "bg-[#8B4513]/5 text-[#8B4513] font-bold border border-[#8B4513]/10"
+                              : isLocked
+                                ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50"
+                                : "hover:bg-white text-[#3D2B1F]/80 font-medium"
+                            }`}
                         >
                           <div className="shrink-0">
                             {isLocked ? (
@@ -415,7 +414,7 @@ export default function CourseDetailPage() {
           const unassigned = sortedLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id)));
           if (unassigned.length === 0) return null;
           const isOpen = openModuleId === "general";
-          
+
           return (
             <div className="space-y-[8px] pt-2 border-t border-[#8B4513]/10">
               <button
@@ -434,7 +433,7 @@ export default function CourseDetailPage() {
                     const isActive = currentLesson?.id === lesson.id;
                     const isLocked = !isEnrolled && !lesson.is_preview;
                     const isDone = completedLessonIds.includes(lesson.id);
-                    
+
                     return (
                       <button
                         key={lesson.id}
@@ -444,13 +443,12 @@ export default function CourseDetailPage() {
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }
                         }}
-                        className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${
-                          isActive 
-                            ? "bg-[#8B4513]/5 text-[#8B4513] font-bold border border-[#8B4513]/10" 
-                            : isLocked 
-                            ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50" 
-                            : "hover:bg-white text-[#3D2B1F]/80 font-medium"
-                        }`}
+                        className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
+                            ? "bg-[#8B4513]/5 text-[#8B4513] font-bold border border-[#8B4513]/10"
+                            : isLocked
+                              ? "opacity-40 cursor-not-allowed text-[#3D2B1F]/50"
+                              : "hover:bg-white text-[#3D2B1F]/80 font-medium"
+                          }`}
                       >
                         <div className="shrink-0">
                           {isLocked ? (
@@ -507,7 +505,7 @@ export default function CourseDetailPage() {
             </span>
           )}
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-[8px]">
           {currentLesson?.notes && <span className="text-[10px] font-bold bg-[#8B4513]/5 text-[#8B4513] px-2.5 py-0.5 rounded-[6px] border border-[#8B4513]/10 flex items-center gap-1"><FileText size={10} /> Reading Notes Available</span>}
           {requiresAssessment && <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded-[6px] border border-amber-200 flex items-center gap-1">⚠️ Required Project Assignment</span>}
@@ -536,13 +534,13 @@ export default function CourseDetailPage() {
             <Award className="w-4 h-4 text-[#8B4513] shrink-0" />
             Project Assignment Submission
           </h2>
-          
+
           <div className="space-y-[16px]">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-[#3D2B1F]/70 block">
                 Deliverable Link URL {parentModule?.has_assessment ? "(Module Task)" : "(Lesson Task)"}
               </label>
-              <textarea 
+              <textarea
                 value={assignmentUrl}
                 onChange={(e) => setAssignmentUrl(e.target.value)}
                 placeholder="Paste your active solution link (GitHub repo, live deployed site, or code sandbox)..."
@@ -554,11 +552,11 @@ export default function CourseDetailPage() {
               <p className="text-xs text-[#3D2B1F]/60 max-w-xs leading-[1.6] font-medium">
                 Submitting your output commits variables to the active study tracker to update course grading markers.
               </p>
-              
+
               <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="self-end sm:self-auto shrink-0">
-                <Button 
+                <Button
                   onClick={() => handleCompleteLesson()}
-                  disabled={submitting || !assignmentUrl.trim()} 
+                  disabled={submitting || !assignmentUrl.trim()}
                   className="px-5 h-10 rounded-[8px] font-bold text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none"
                 >
                   {submitting ? (
@@ -630,7 +628,7 @@ export default function CourseDetailPage() {
   return (
     <div className="flex flex-col h-screen bg-[#F9F5F0] text-[#3D2B1F] font-sans overflow-hidden">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
-      
+
       {/* Top Navigation Bar */}
       <header className="flex-shrink-0 h-16 border-b border-[#8B4513]/10 bg-white flex items-center px-6 justify-between z-10 shadow-none">
         <div className="flex items-center gap-4">
@@ -653,23 +651,23 @@ export default function CourseDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-4">
-           <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2.5 py-0.5 rounded-[6px]">
-             <ShieldCheck size={12} />
-             Verified Academy Course
-           </div>
+          <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2.5 py-0.5 rounded-[6px]">
+            <ShieldCheck size={12} />
+            Verified Academy Course
+          </div>
         </div>
       </header>
 
       {/* Main Studio Area */}
-      <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] max-w-[1600px] w-full mx-auto pb-20">
+      <div className="flex-1 overflow-hidden p-[24px] md:p-[40px] md:pt-[24px] max-w-[1600px] w-full mx-auto">
         {!currentLesson ? (
           <div className="py-20 text-center text-xs text-[#3D2B1F]/60 font-bold">Resolving active syllabus coordinates...</div>
         ) : hasVideo ? (
           /* SCENARIO A: Has Video */
-          <div className="grid lg:grid-cols-12 gap-[32px] items-start">
-            
+          <div className="grid lg:grid-cols-12 gap-[32px] items-start h-full">
+
             {/* Left Side: Video + Syllabus Below */}
-            <div className="lg:col-span-5 xl:col-span-5 space-y-[24px]">
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col h-full space-y-[24px] min-h-0">
               {/* Wraps YouTube iframe in overflow: hidden container using absolute absolute inset layout */}
               <div className="w-full aspect-video bg-[#F9F5F0] rounded-[12px] overflow-hidden border border-[#8B4513]/20 relative shadow-none shrink-0">
                 {isLocked ? (
@@ -681,7 +679,7 @@ export default function CourseDetailPage() {
                       <h3 className="text-base font-bold text-[#3D2B1F]">Course Access Locked</h3>
                       <p className="text-xs text-[#3D2B1F]/70 max-w-xs mx-auto mt-1 leading-[1.6] font-medium">Unlock full lecture recordings and study projects instantly.</p>
                     </div>
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => setShowPayment(true)}
                       className="px-5 py-2 bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-bold text-xs rounded-[8px] shadow-none"
@@ -692,17 +690,17 @@ export default function CourseDetailPage() {
                 ) : (
                   <>
                     {!isPlaying && (
-                      <div 
+                      <div
                         onClick={() => setIsPlaying(true)}
                         className="absolute inset-0 bg-[#3D2B1F] flex flex-col items-center justify-center p-6 text-center cursor-pointer group z-20 transition-all duration-300"
                       >
                         {/* Custom decorative inner stroke to match Quiet Luxury */}
                         <div className="absolute inset-3 border border-[#8B4513]/20 rounded-[8px] pointer-events-none" />
-                        
+
                         <div className="w-16 h-16 rounded-full bg-[#D2B48C] flex items-center justify-center text-[#3D2B1F] shadow-none group-hover:scale-105 transition-transform duration-300 mb-4">
                           <Play size={28} className="fill-current ml-1 text-[#3D2B1F]" />
                         </div>
-                        
+
                         <h3 className="text-base font-bold text-[#F9F5F0] max-w-md px-4 leading-tight group-hover:text-[#D2B48C] transition-colors line-clamp-2">
                           {currentLesson?.title || "Lesson Stream"}
                         </h3>
@@ -716,11 +714,13 @@ export default function CourseDetailPage() {
                 )}
               </div>
 
-              {renderSyllabus()}
+              <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
+                {renderSyllabus()}
+              </div>
             </div>
 
             {/* Right Side: Lesson Notes & Tasks */}
-            <div className="lg:col-span-7 xl:col-span-7">
+            <div className="lg:col-span-7 xl:col-span-7 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent min-h-0 pb-20">
               {isLocked ? (
                 <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
                   <h3 className="text-base font-bold text-[#3D2B1F]">{currentLesson.title}</h3>
@@ -741,7 +741,7 @@ export default function CourseDetailPage() {
           </div>
         ) : (
           /* SCENARIO B: No Video */
-          <div className="max-w-4xl mx-auto space-y-[32px]">
+          <div className="max-w-4xl mx-auto space-y-[32px] h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent pb-20">
             {isLocked ? (
               <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[48px] text-center space-y-[16px] shadow-none">
                 <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10 mx-auto">
@@ -769,8 +769,8 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Enrollment Modal Integration */}
-      <EnrollmentModal 
-        open={showPayment} 
+      <EnrollmentModal
+        open={showPayment}
         onOpenChange={setShowPayment}
         courseTitle={course?.title || "Program"}
         onPay={handlePayNow}

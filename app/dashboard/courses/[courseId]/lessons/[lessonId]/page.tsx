@@ -20,13 +20,13 @@ export default function LessonPage() {
   const params = useParams();
   const courseId = params?.courseId as string;
   const lessonId = params?.lessonId as string;
-  
+
   const [course, setCourse] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Assignment and Progress state
   const [assignmentUrl, setAssignmentUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +37,7 @@ export default function LessonPage() {
   useEffect(() => {
     const fetchLessonData = async () => {
       if (!courseId || !lessonId) return;
-      
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         window.location.href = "/login";
@@ -51,7 +51,7 @@ export default function LessonPage() {
         .select("title")
         .eq("id", courseId)
         .single();
-      
+
       if (courseData) setCourse(courseData);
 
       // 1.5 Fetch Course Modules
@@ -68,7 +68,7 @@ export default function LessonPage() {
         .select("*")
         .eq("course_id", courseId)
         .order("order_index", { ascending: true });
-        
+
       if (lessonsData) {
         setAllLessons(lessonsData);
         const active = lessonsData.find(l => l.id === lessonId);
@@ -84,11 +84,11 @@ export default function LessonPage() {
         .eq("user_id", session.user.id)
         .eq("lesson_id", lessonId)
         .maybeSingle();
-        
+
       if (progressError) {
         console.error("Progress Fetch Error:", progressError);
       }
-        
+
       if (progressData) {
         setIsCompleted(true);
         if (progressData.assignment_url) {
@@ -101,7 +101,7 @@ export default function LessonPage() {
         .from("enrollments")
         .select("*")
         .eq("student_id", session.user.id);
-      
+
       if (allEnrolls && allEnrolls.some(e => String(e.course_id) === String(courseId) && (e.payment_status === "completed" || e.payment_status === "success"))) {
         setIsEnrolled(true);
       }
@@ -161,7 +161,7 @@ export default function LessonPage() {
         </div>
       );
     }
-    
+
     // Simple check for MP4 vs embed (YouTube/Vimeo/Cloudinary)
     let secureUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
 
@@ -186,10 +186,10 @@ export default function LessonPage() {
     } else {
       // Assuming it's an embeddable iframe URL (like YouTube embed)
       return (
-        <iframe 
-          src={secureUrl} 
-          className="w-full h-full" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        <iframe
+          src={secureUrl}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
           loading="lazy"
         ></iframe>
@@ -209,35 +209,34 @@ export default function LessonPage() {
           <p className="text-xs text-slate-500 mt-0.5">{allLessons.length} Planned Sessions</p>
         </div>
       </div>
-      
+
       <div className="space-y-6">
         {/* Group lessons by module */}
         {modules.map((mod) => {
-          const modLessons = allLessons.filter(l => String(l.module_id) === String(mod.id)).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
-          
+          const modLessons = allLessons.filter(l => String(l.module_id) === String(mod.id)).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+
           return (
             <div key={mod.id} className="space-y-2">
               <div className="flex items-center justify-between px-3 py-2 bg-slate-100 rounded-xl">
                 <span className="text-xs font-bold text-slate-700 truncate">{mod.title}</span>
                 {mod.has_assessment && <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Assessment</span>}
               </div>
-              
+
               <div className="space-y-1 pl-1">
                 {modLessons.length === 0 ? (
                   <div className="text-[11px] text-slate-400 italic px-2 py-1">No lessons added.</div>
                 ) : (
                   modLessons.map((lesson) => {
                     const isActive = lesson.id === lessonId;
-                    
+
                     return (
                       <button
                         key={lesson.id}
                         onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
-                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${
-                          isActive 
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold" 
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
                             : "hover:bg-slate-50 text-slate-700"
-                        }`}
+                          }`}
                       >
                         <div className="flex-1 min-w-0 pr-2">
                           <h4 className={`text-xs truncate ${isActive ? "text-white font-bold" : "text-slate-800 font-medium"}`}>
@@ -261,9 +260,9 @@ export default function LessonPage() {
 
         {/* Legacy/Unassigned lessons */}
         {(() => {
-          const unassigned = allLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id))).sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+          const unassigned = allLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id))).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
           if (unassigned.length === 0) return null;
-          
+
           return (
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="px-3 py-1">
@@ -272,16 +271,15 @@ export default function LessonPage() {
               <div className="space-y-1 pl-1">
                 {unassigned.map((lesson) => {
                   const isActive = lesson.id === lessonId;
-                  
+
                   return (
                     <button
                       key={lesson.id}
                       onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${
-                        isActive 
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold" 
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
                           : "hover:bg-slate-50 text-slate-700"
-                      }`}
+                        }`}
                     >
                       <div className="flex-1 min-w-0 pr-2">
                         <h4 className={`text-xs truncate ${isActive ? "text-white font-bold" : "text-slate-800 font-medium"}`}>
@@ -312,7 +310,7 @@ export default function LessonPage() {
   // Reusable component block for Lesson Notes & Assessment Submission
   const renderNotesAndAssessment = () => {
     // Find neighbors for next/previous navigation buttons
-    const sortedLessons = [...allLessons].sort((a,b) => (a.order_index || 0) - (b.order_index || 0));
+    const sortedLessons = [...allLessons].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
     const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
     const prevLesson = currentIndex > 0 ? sortedLessons[currentIndex - 1] : null;
     const nextLesson = currentIndex < sortedLessons.length - 1 ? sortedLessons[currentIndex + 1] : null;
@@ -334,7 +332,7 @@ export default function LessonPage() {
               </span>
             )}
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2.5">
             {currentLesson?.notes && <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded">📝 Text Notes Included</span>}
             {requiresAssessment && <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">⚠️ Mandatory Assessment Link Required</span>}
@@ -364,13 +362,13 @@ export default function LessonPage() {
               </svg>
               Required Assessment Submission
             </h2>
-            
+
             <div className="space-y-5">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
                   Task Submission Link {parentModule?.has_assessment ? "(Module Assessment)" : "(Lesson Assessment)"}
                 </label>
-                <textarea 
+                <textarea
                   value={assignmentUrl}
                   onChange={(e) => setAssignmentUrl(e.target.value)}
                   placeholder="Paste your accessible project output link (GitHub repository, deployed link, or Google Drive document)..."
@@ -382,15 +380,14 @@ export default function LessonPage() {
                 <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
                   Submitting your project link saves your output for mentor evaluation and credit validation.
                 </p>
-                
-                <button 
+
+                <button
                   onClick={handleCompleteLesson}
-                  disabled={submitting || !assignmentUrl.trim()} 
-                  className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-end sm:self-auto shrink-0 ${
-                    isCompleted 
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/10" 
+                  disabled={submitting || !assignmentUrl.trim()}
+                  className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-end sm:self-auto shrink-0 ${isCompleted
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/10"
                       : "bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 active:scale-[0.98]"
-                  } disabled:opacity-40 disabled:cursor-not-allowed`}
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   {submitting ? (
                     <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -458,12 +455,12 @@ export default function LessonPage() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans overflow-hidden">
-      
+
       {/* Top Navigation Bar */}
       <header className="flex-shrink-0 h-16 border-b border-slate-200 bg-white flex items-center px-6 justify-between z-10 shadow-xs">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => window.location.href = `/dashboard/courses/${courseId}`} 
+          <button
+            onClick={() => window.location.href = `/dashboard/courses/${courseId}`}
             className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -485,16 +482,16 @@ export default function LessonPage() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-[1600px] w-full mx-auto">
+      <div className="flex-1 overflow-hidden p-6 md:p-10 max-w-[1600px] w-full mx-auto">
         {!currentLesson ? (
           <div className="py-20 text-center text-slate-400">Lesson not found</div>
         ) : hasVideo ? (
           /* SCENARIO A: Has Video */
           /* Video on Left (Reduced size), Course Modules below Video, Notes on Right side */
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-            
+          <div className="grid lg:grid-cols-12 gap-8 items-start h-full">
+
             {/* Left Side: Video + Modules Below */}
-            <div className="lg:col-span-5 xl:col-span-5 space-y-6">
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col h-full space-y-6 min-h-0">
               {/* Reduced size Video Container */}
               <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-slate-200/80">
                 {(!currentLesson.is_preview && !isEnrolled) ? (
@@ -508,7 +505,7 @@ export default function LessonPage() {
                       <h3 className="text-base font-bold text-slate-900">Enrollment Required</h3>
                       <p className="text-xs text-slate-600 max-w-xs mx-auto mt-1">Unlock premium course content to watch.</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => window.location.href = `/dashboard/courses/${courseId}`}
                       className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all shadow-sm"
                     >
@@ -521,11 +518,13 @@ export default function LessonPage() {
               </div>
 
               {/* Course Modules and Lessons below Video */}
-              {renderSyllabus()}
+              <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                {renderSyllabus()}
+              </div>
             </div>
 
             {/* Right Side: Lesson Notes */}
-            <div className="lg:col-span-7 xl:col-span-7">
+            <div className="lg:col-span-7 xl:col-span-7 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20 min-h-0">
               {renderNotesAndAssessment()}
             </div>
 
@@ -533,7 +532,7 @@ export default function LessonPage() {
         ) : (
           /* SCENARIO B: No Video */
           /* Only Document/Notes on Top, under that Modules and Lessons */
-          <div className="max-w-4xl mx-auto space-y-10">
+          <div className="max-w-4xl mx-auto space-y-10 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20">
             {/* Notes & Submission Block on Top */}
             {renderNotesAndAssessment()}
 
