@@ -14,6 +14,7 @@ import {
   createModuleAction,
   deleteModuleAction
 } from "./actions";
+import { getYouTubeThumbnail } from "@/lib/utils";
 import Image from "next/image";
 import { 
   LayoutDashboard, 
@@ -336,7 +337,7 @@ export default function AdminPage() {
                         <div>
                           {c.video_url && (
                             <div className="h-32 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0]">
-                              <img src={c.video_url} alt={c.title} className="w-full h-full object-cover" />
+                              <img src={getYouTubeThumbnail(c.video_url)} alt={c.title} className="w-full h-full object-cover" />
                             </div>
                           )}
                           <div className="flex items-center justify-between mb-[8px]">

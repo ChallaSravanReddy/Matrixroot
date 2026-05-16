@@ -185,7 +185,7 @@ export default function CourseDetailPage() {
         name: "Matrix Root",
         description: `Enrollment: ${course?.title}`,
         retry: { enabled: false },
-        timeout: 60,
+        timeout: 600,
         handler: async function (response: any) {
           try {
             const { data: existing } = await supabase
