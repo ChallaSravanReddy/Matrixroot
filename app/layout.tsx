@@ -8,8 +8,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Matrix Root | Premium Educational Institution",
-  description: "Advanced Training and Verifiable Excellence Platform",
+  title: "Matrix Root | Enterprise Software Solutions & IT Internships",
+  description: "Matrix Root is an MSME-registered institution providing advanced web development solutions and professional 8-week IT training tracks with verifiable certification.",
+  keywords: ["Matrixroot", "Matrix Root", "Matrix Root Internship", "IT Training", "Web Development", "MSME Registered"],
+  verification: {
+    google: "GOOGLE_VERIFICATION_PLACEHOLDER",
+  },
 };
 
 import { AuthGuard } from "@/components/AuthGuard";

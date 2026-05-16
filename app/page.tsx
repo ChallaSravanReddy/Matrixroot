@@ -67,7 +67,7 @@ function Hero() {
           transition={{ type: "spring" as const, stiffness: 400, damping: 25, delay: 0.1 }}
           className="text-4xl md:text-6xl font-bold tracking-tight text-[#3D2B1F] leading-[1.15] mb-[24px] max-w-5xl mx-auto"
         >
-          Building Scalable Digital <br />
+          Matrix Root | Building Scalable Digital <br />
           <span className="text-[#8B4513] relative">
             Infrastructure for the Future.
             <motion.span 
