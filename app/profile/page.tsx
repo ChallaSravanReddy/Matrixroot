@@ -36,6 +36,7 @@ export default function ProfilePage() {
     department_slug: "",
     github_url: "",
     linkedin_url: "",
+    phone: "",
   });
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function ProfilePage() {
           department_slug: data.department_slug || "",
           github_url: data.github_url || "",
           linkedin_url: data.linkedin_url || "",
+          phone: data.phone || "",
         });
       }
       setFetching(false);
@@ -72,7 +74,8 @@ export default function ProfilePage() {
         full_name: formData.full_name,
         department_slug: formData.department_slug,
         github_url: formData.github_url,
-        linkedin_url: formData.linkedin_url
+        linkedin_url: formData.linkedin_url,
+        phone: formData.phone
       }).eq("id", userId);
       setSuccessMsg("Profile identity keys synchronized successfully!");
       setTimeout(() => setSuccessMsg(null), 3000);
@@ -232,6 +235,20 @@ export default function ProfilePage() {
                         placeholder="https://linkedin.com/in/..."
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 block">Verified Contact Node (Phone)</label>
+                  <div className="relative">
+                    <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-3.5 w-3.5" />
+                    <input 
+                      type="tel" 
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-xs text-[#3D2B1F]"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      placeholder="e.g. 9876543210"
+                    />
                   </div>
                 </div>
 

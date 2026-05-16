@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Permissions-Policy",
-            value: "accelerometer=(self \"https://api.razorpay.com\"), gyroscope=(self \"https://api.razorpay.com\"), camera=(), microphone=(), geolocation=()",
+            value: "payment=*, accelerometer=(self https://api.razorpay.com https://checkout.razorpay.com), gyroscope=(self https://api.razorpay.com https://checkout.razorpay.com), camera=(), microphone=(), geolocation=()",
           },
         ],
       },

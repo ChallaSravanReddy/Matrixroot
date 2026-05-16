@@ -168,6 +168,11 @@ export default function CourseDetailPage() {
     }
   };
 
+  const cleanPhone = (p: string) => {
+    if (!p) return "";
+    return p.replace(/\D/g, '').slice(-10);
+  };
+
   const handlePayNow = async () => {
     setEnrollLoading(true);
     try {
@@ -228,11 +233,19 @@ export default function CourseDetailPage() {
         },
         prefill: {
           name: profile?.full_name || "",
-          email: sessionUser?.email || ""
+          email: sessionUser?.email || "",
+          contact: cleanPhone(profile?.phone || "")
         },
         notes: {
           course_id: courseId,
           student_id: sessionUser?.id
+        },
+        config: {
+          display: {
+            preferences: {
+              show_default_blocks: true
+            }
+          }
         },
         theme: { color: "#8B4513" },
         modal: {
@@ -248,6 +261,8 @@ export default function CourseDetailPage() {
       }
 
       const rzp = new (window as any).Razorpay(options);
+      setShowPayment(false);
+      rzp.open();
       rzp.on('payment.failed', function (response: any) {
         alert(`Transaction declined: ${response.error.description}`);
         setEnrollLoading(false);
@@ -659,15 +674,15 @@ export default function CourseDetailPage() {
       </header>
 
       {/* Main Studio Area */}
-      <div className="flex-1 overflow-hidden p-[24px] md:p-[40px] md:pt-[24px] max-w-[1600px] w-full mx-auto">
+      <div className="flex-1 lg:overflow-hidden p-[24px] md:p-[40px] md:pt-[24px] max-w-[1600px] w-full mx-auto overflow-y-auto">
         {!currentLesson ? (
           <div className="py-20 text-center text-xs text-[#3D2B1F]/60 font-bold">Resolving active syllabus coordinates...</div>
         ) : hasVideo ? (
           /* SCENARIO A: Has Video */
-          <div className="grid lg:grid-cols-12 gap-[32px] items-start h-full">
+          <div className="grid lg:grid-cols-12 gap-[32px] items-start lg:h-full">
 
             {/* Left Side: Video + Syllabus Below */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col h-full space-y-[24px] min-h-0">
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col lg:h-full space-y-[24px] min-h-0">
               {/* Wraps YouTube iframe in overflow: hidden container using absolute absolute inset layout */}
               <div className="w-full aspect-video bg-[#F9F5F0] rounded-[12px] overflow-hidden border border-[#8B4513]/20 relative shadow-none shrink-0">
                 {isLocked ? (
@@ -714,13 +729,13 @@ export default function CourseDetailPage() {
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
+              <div className="lg:flex-1 lg:overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
                 {renderSyllabus()}
               </div>
             </div>
 
             {/* Right Side: Lesson Notes & Tasks */}
-            <div className="lg:col-span-7 xl:col-span-7 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent min-h-0 pb-20">
+            <div className="lg:col-span-7 xl:col-span-7 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent min-h-0 pb-20">
               {isLocked ? (
                 <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
                   <h3 className="text-base font-bold text-[#3D2B1F]">{currentLesson.title}</h3>
@@ -741,7 +756,7 @@ export default function CourseDetailPage() {
           </div>
         ) : (
           /* SCENARIO B: No Video */
-          <div className="max-w-4xl mx-auto space-y-[32px] h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent pb-20">
+          <div className="max-w-4xl mx-auto space-y-[32px] lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent pb-20">
             {isLocked ? (
               <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[48px] text-center space-y-[16px] shadow-none">
                 <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10 mx-auto">

@@ -482,16 +482,16 @@ export default function LessonPage() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden p-6 md:p-10 max-w-[1600px] w-full mx-auto">
+      <div className="flex-1 lg:overflow-hidden p-6 md:p-10 max-w-[1600px] w-full mx-auto overflow-y-auto">
         {!currentLesson ? (
           <div className="py-20 text-center text-slate-400">Lesson not found</div>
         ) : hasVideo ? (
           /* SCENARIO A: Has Video */
           /* Video on Left (Reduced size), Course Modules below Video, Notes on Right side */
-          <div className="grid lg:grid-cols-12 gap-8 items-start h-full">
+          <div className="grid lg:grid-cols-12 gap-8 items-start lg:h-full">
 
             {/* Left Side: Video + Modules Below */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col h-full space-y-6 min-h-0">
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col lg:h-full space-y-6 min-h-0">
               {/* Reduced size Video Container */}
               <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-slate-200/80">
                 {(!currentLesson.is_preview && !isEnrolled) ? (
@@ -518,13 +518,13 @@ export default function LessonPage() {
               </div>
 
               {/* Course Modules and Lessons below Video */}
-              <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+              <div className="lg:flex-1 lg:overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                 {renderSyllabus()}
               </div>
             </div>
 
             {/* Right Side: Lesson Notes */}
-            <div className="lg:col-span-7 xl:col-span-7 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20 min-h-0">
+            <div className="lg:col-span-7 xl:col-span-7 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20 min-h-0">
               {renderNotesAndAssessment()}
             </div>
 
@@ -532,7 +532,7 @@ export default function LessonPage() {
         ) : (
           /* SCENARIO B: No Video */
           /* Only Document/Notes on Top, under that Modules and Lessons */
-          <div className="max-w-4xl mx-auto space-y-10 h-full overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20">
+          <div className="max-w-4xl mx-auto space-y-10 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20">
             {/* Notes & Submission Block on Top */}
             {renderNotesAndAssessment()}
 

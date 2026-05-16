@@ -11,6 +11,7 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function SignupPage() {
           id: data.user.id, 
           has_accepted_terms: true,
           full_name: fullName, 
+          phone: phone,
           role: 'student'
         });
         window.location.href = "/onboarding";
@@ -105,6 +107,22 @@ export default function SignupPage() {
                     className="w-full pl-12 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
                     placeholder="Minimum 6 characters"
                     minLength={6}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Contact Number</label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 text-xs font-bold">+91</div>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                    placeholder="9876543210"
+                    pattern="[0-9]{10}"
                   />
                 </div>
               </div>
