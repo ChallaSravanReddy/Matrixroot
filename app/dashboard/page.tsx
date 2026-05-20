@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
+import OfferLetterPDF from "@/components/OfferLetterPDF";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -22,6 +23,7 @@ import {
   Award,
   PlayCircle,
   Layers,
+  Calendar,
   CheckCircle2,
   Clock,
   Menu,
@@ -75,6 +77,7 @@ export default function DashboardPage() {
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sessionUser, setSessionUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -83,6 +86,7 @@ export default function DashboardPage() {
         router.push("/login");
         return;
       }
+      setSessionUser(session.user);
 
       try {
         const [profileRes, courseRes, enrollRes, progressRes, lessonRes] = await Promise.all([
@@ -320,6 +324,7 @@ export default function DashboardPage() {
                   lessons={courseLessons.filter(l => l.course_id === course.id)}
                   profile={profile}
                   onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
+                  sessionUser={sessionUser}
                 />
               ))}
               {recommendedCourses.length === 0 && (
@@ -351,6 +356,7 @@ export default function DashboardPage() {
                   lessons={courseLessons.filter(l => l.course_id === course.id)}
                   profile={profile}
                   onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
+                  sessionUser={sessionUser}
                 />
               ))}
             </motion.div>
@@ -408,8 +414,8 @@ function StatCard({ label, value, icon, progress }: { label: string, value: stri
   );
 }
 
-function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: any) {
-  const isEnrolled = enrolled?.payment_status === 'completed';
+function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, sessionUser }: any) {
+  const isEnrolled = enrolled?.payment_status === 'completed' || enrolled?.payment_status === 'success';
   const totalLessons = Math.max(1, lessons.length);
   const progressPercent = Math.round((progress.length / totalLessons) * 100);
 
@@ -470,6 +476,18 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll }: 
               )}
             </Button>
           </motion.div>
+
+          {isEnrolled && (
+            <div className="pt-1 border-t border-[#8B4513]/10">
+              <OfferLetterPDF 
+                studentName={profile?.full_name || "Intern"}
+                email={sessionUser?.email || ""}
+                courseName={course.title}
+                enrolledAt={enrolled.enrolled_at}
+                enrollId={enrolled.id}
+              />
+            </div>
+          )}
 
           {isEnrolled && enrolled?.certification_status === 'approved' && (
              <div className="pt-2 border-t border-[#8B4513]/10">

@@ -34,6 +34,7 @@ import {
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import RichTextEditor from "@/components/RichTextEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -410,7 +411,14 @@ export default function AdminPage() {
                          })()}
                        </select>
                        <input type="text" placeholder="Directive Definition Identifier" className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" value={newLesson.title} onChange={(e) => setNewLesson({...newLesson, title: e.target.value})} required />
-                       <textarea placeholder="Operational Briefing / Payload Documentation" className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs h-20 focus:outline-none focus:border-[#8B4513]" value={newLesson.notes} onChange={(e) => setNewLesson({...newLesson, notes: e.target.value})} />
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-medium text-[#3D2B1F]/60">Operational Briefing / Payload Documentation</label>
+                         <RichTextEditor 
+                           value={newLesson.notes} 
+                           onChange={(val) => setNewLesson({...newLesson, notes: val})} 
+                           placeholder="Enter rich text notes here..." 
+                         />
+                       </div>
                        <input type="text" placeholder="Video Stream Pointer URI" className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" value={newLesson.content_url} onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})} />
                        <div className="flex flex-col gap-2 pt-1">
                          <label className="flex items-center gap-2 cursor-pointer">

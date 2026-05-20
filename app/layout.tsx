@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthGuard } from "@/components/AuthGuard";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 export default function RootLayout({
   children,
@@ -33,9 +34,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://api.razorpay.com" />
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-[#F9F5F0] text-[#3D2B1F]">
-        <AuthGuard />
-        {children}
+      <body className="min-h-full flex flex-col font-sans bg-[#F9F5F0] text-[#3D2B1F]" suppressHydrationWarning>
+        <NotificationProvider>
+          <AuthGuard />
+          {children}
+        </NotificationProvider>
       </body>
     </html>
   );

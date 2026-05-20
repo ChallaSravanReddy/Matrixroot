@@ -17,10 +17,12 @@ import {
   LogOut,
   GraduationCap,
   Menu,
-  X
+  X,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CertificatePDF from "@/components/CertificatePDF";
+import OfferLetterPDF from "@/components/OfferLetterPDF";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -53,6 +55,7 @@ export default function MyInternshipsPage() {
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sessionUser, setSessionUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchMyData = async () => {
@@ -61,10 +64,11 @@ export default function MyInternshipsPage() {
         router.push("/login");
         return;
       }
+      setSessionUser(session.user);
 
       const [profileRes, enrollRes, progressRes, lessonRes] = await Promise.all([
         supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
-        supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).eq("payment_status", "completed"),
+        supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
         supabase.from("user_progress").select("*").eq("user_id", session.user.id),
         supabase.from("lessons").select("id, course_id")
       ]);
@@ -228,6 +232,16 @@ export default function MyInternshipsPage() {
                             Resume Lessons
                           </Button>
                         </motion.div>
+                        
+                        <div className="pt-1">
+                          <OfferLetterPDF 
+                            studentName={profile?.full_name || "Intern"}
+                            email={sessionUser?.email || ""}
+                            courseName={enroll.courses?.title || "Internship"}
+                            enrolledAt={enroll.enrolled_at}
+                            enrollId={enroll.id}
+                          />
+                        </div>
                         
                         {enroll.certification_status === 'approved' && (
                           <div className="pt-2">
