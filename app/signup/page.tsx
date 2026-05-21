@@ -39,7 +39,7 @@ export default function SignupPage() {
           phone: phone,
           role: 'student'
         });
-        window.location.href = "/onboarding";
+        window.location.href = "/dashboard";
       } else {
         setError("Success! Check your email for a verification link.");
       }
@@ -58,7 +58,7 @@ export default function SignupPage() {
             <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={40} height={40} className="object-contain" />
             <span className="font-medium text-xl tracking-tight text-[#3D2B1F]">Matrix Root</span>
           </Link>
-          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Institution Enrollment</h2>
+          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]"> Enrollment</h2>
           <p className="text-sm text-[#3D2B1F]/80 mt-1">Foundational membership & curriculum access</p>
         </div>
 
@@ -138,7 +138,7 @@ export default function SignupPage() {
                 className="mt-0.5 w-4 h-4 rounded-[4px] border-[#8B4513]/20 text-[#8B4513] focus:ring-0"
               />
               <label htmlFor="terms" className="text-xs text-[#3D2B1F] font-normal leading-relaxed cursor-pointer">
-                I bind myself to the <span className="font-medium text-[#8B4513]">Matrix Root directives</span> and academic confidentiality agreements.
+                I agree to <span className="font-medium text-[#8B4513]">Terms and Conditions</span>
               </label>
             </div>
 
@@ -157,7 +157,7 @@ export default function SignupPage() {
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-[#8B4513]" />
               ) : (
-                <>Submit Identity Affirmation <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
+                <>Submit Identity <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
               )}
             </Button>
           </form>

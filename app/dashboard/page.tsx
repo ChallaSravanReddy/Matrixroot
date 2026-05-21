@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
+import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { getYouTubeThumbnail } from "@/lib/utils";
 
 interface Course {
@@ -78,6 +79,7 @@ export default function DashboardPage() {
   const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<any>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -97,7 +99,14 @@ export default function DashboardPage() {
           supabase.from("lessons").select("id, course_id")
         ]);
 
-        if (profileRes.data) setProfile(profileRes.data);
+        if (profileRes.data) {
+          setProfile(profileRes.data);
+          if (!profileRes.data.department_slug || !profileRes.data.year_of_study || !profileRes.data.college_name || !profileRes.data.phone) {
+            setShowProfileModal(true);
+          }
+        } else {
+          setShowProfileModal(true);
+        }
         if (courseRes.data) setAllCourses(courseRes.data as Course[]);
         if (enrollRes.data) setEnrollments(enrollRes.data);
         if (progressRes.data) setUserProgress(progressRes.data);
@@ -365,6 +374,17 @@ export default function DashboardPage() {
       </main>
 
       {/* Enrollment Modal Integration */}
+      
+      {showProfileModal && (
+        <ProfileCompletionModal
+          userId={sessionUser?.id}
+          initialData={profile}
+          onComplete={() => {
+            setShowProfileModal(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

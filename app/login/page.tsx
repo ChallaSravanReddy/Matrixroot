@@ -32,13 +32,7 @@ export default function LoginPage() {
       if (data.user) {
         await supabase.from("profiles").update({ has_accepted_terms: true }).eq("id", data.user.id);
         
-        const { data: profile } = await supabase.from("profiles").select("department_slug").eq("id", data.user.id).single();
-          
-        if (!profile?.department_slug) {
-          window.location.href = "/onboarding";
-        } else {
-          window.location.href = "/dashboard";
-        }
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       setError(err.message || "Invalid credentials. Please try again.");
@@ -55,7 +49,7 @@ export default function LoginPage() {
             <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={40} height={40} className="object-contain" />
             <span className="font-medium text-xl tracking-tight text-[#3D2B1F]">Matrix Root</span>
           </Link>
-          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Member Affirmation</h2>
+          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Student Login</h2>
           <p className="text-sm text-[#3D2B1F]/80 mt-1">Authenticate access to verified ledgers</p>
         </div>
 
@@ -80,7 +74,7 @@ export default function LoginPage() {
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-medium text-[#3D2B1F]/60">Secure Passphrase</label>
-                  <Link href="/forgot-password" className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider hover:underline">Reset</Link>
+                  <Link href="/forgot-password" className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider hover:underline">Reset Passphrase</Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
@@ -106,7 +100,7 @@ export default function LoginPage() {
                 className="mt-0.5 w-4 h-4 rounded-[4px] border-[#8B4513]/20 text-[#8B4513] focus:ring-0"
               />
               <label htmlFor="terms" className="text-xs text-[#3D2B1F] font-normal leading-relaxed cursor-pointer">
-                I re-verify adherence to <span className="font-medium text-[#8B4513]">institution operational boundaries</span>.
+                I agree to <span className="font-medium text-[#8B4513]">Terms and Conditions</span>.
               </label>
             </div>
 
@@ -125,14 +119,14 @@ export default function LoginPage() {
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-[#8B4513]" />
               ) : (
-                <>Establish Session <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
+                <>Access portal <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
               )}
             </Button>
           </form>
 
           <div className="mt-[32px] text-center border-t border-[#8B4513]/10 pt-[24px]">
             <p className="text-xs text-[#3D2B1F]/60">
-              Require institutional credentials?{' '}
+              Require credentials?{' '}
               <Link href="/signup" className="text-[#8B4513] font-medium hover:underline">
                 Enroll Identity
               </Link>
