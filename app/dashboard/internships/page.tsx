@@ -18,7 +18,8 @@ import {
   GraduationCap,
   Menu,
   X,
-  Calendar
+  Calendar,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CertificatePDF from "@/components/CertificatePDF";
@@ -91,6 +92,24 @@ export default function MyInternshipsPage() {
     );
   }
 
+  const activeEnrollment = enrollments[0];
+  const navigateToWorkspace = () => {
+    if (!activeEnrollment) {
+      alert("Please enroll in a course to unlock your Workspace Hub.");
+      return;
+    }
+    const lessonsForActiveCourse = courseLessons.filter(l => l.course_id === activeEnrollment.course_id);
+    const completedForActiveCourse = userProgress.filter(p => p.course_id === activeEnrollment.course_id);
+    const isCompleted = lessonsForActiveCourse.length > 0 && completedForActiveCourse.length >= lessonsForActiveCourse.length;
+
+    if (!isCompleted) {
+      alert("Your Internship Workspace is locked. Please complete all course lessons in the Courses page to unlock it!");
+      router.push(`/dashboard/courses/${activeEnrollment.course_id}`);
+      return;
+    }
+    router.push(`/workspace/${activeEnrollment.course_id}`);
+  };
+
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
       {/* Sidebar - Friendly Edtech layout */}
@@ -105,6 +124,8 @@ export default function MyInternshipsPage() {
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
           <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
+          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" active />
           <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
           
@@ -145,6 +166,8 @@ export default function MyInternshipsPage() {
             
             <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
+              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
               <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" active />
               <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
               <div className="pt-6">

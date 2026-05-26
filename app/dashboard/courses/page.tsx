@@ -19,18 +19,13 @@ import {
   TrendingUp,
   Search,
   Sparkles,
-  BadgeCheck,
-  Award,
   PlayCircle,
   Layers,
-  Calendar,
-  CheckCircle2,
   Clock,
   Menu,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EnrollmentModal } from "@/components/EnrollmentModal";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { getYouTubeThumbnail } from "@/lib/utils";
 
@@ -68,7 +63,7 @@ const cardVariants = {
   },
 };
 
-export default function DashboardPage() {
+export default function CoursesPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
@@ -76,14 +71,12 @@ export default function DashboardPage() {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [weeklyUpdates, setWeeklyUpdates] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchCoursesPageData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push("/login");
@@ -92,13 +85,12 @@ export default function DashboardPage() {
       setSessionUser(session.user);
 
       try {
-        const [profileRes, courseRes, enrollRes, progressRes, lessonRes, updatesRes] = await Promise.all([
+        const [profileRes, courseRes, enrollRes, progressRes, lessonRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("courses").select("*, departments(name, slug)"),
           supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id),
           supabase.from("user_progress").select("*").eq("user_id", session.user.id),
-          supabase.from("lessons").select("id, course_id"),
-          supabase.from("weekly_updates").select("*").eq("student_id", session.user.id)
+          supabase.from("lessons").select("id, course_id")
         ]);
 
         if (profileRes.data) {
@@ -113,23 +105,20 @@ export default function DashboardPage() {
         if (enrollRes.data) setEnrollments(enrollRes.data);
         if (progressRes.data) setUserProgress(progressRes.data);
         if (lessonRes.data) setCourseLessons(lessonRes.data);
-        if (updatesRes.data) setWeeklyUpdates(updatesRes.data);
       } catch (error) {
-        console.error("Dashboard Load Error:", error);
+        console.error("Courses Page Load Error:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    fetchCoursesPageData();
   }, [router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/login";
   };
-
-
 
   if (loading) {
     return (
@@ -139,27 +128,9 @@ export default function DashboardPage() {
     );
   }
 
-  const activeEnrollment = enrollments.find(e => e.payment_status === "completed" || e.payment_status === "success");
   const departmentSlug = profile?.department_slug;
   const recommendedCourses = allCourses.filter(course => course.departments?.slug === departmentSlug);
   const otherCourses = allCourses.filter(course => course.departments?.slug !== departmentSlug);
-
-  const navigateToWorkspace = () => {
-    if (!activeEnrollment) {
-      alert("Please enroll in a course to unlock your Workspace Hub.");
-      return;
-    }
-    const lessonsForActiveCourse = courseLessons.filter(l => l.course_id === activeEnrollment.course_id);
-    const completedForActiveCourse = userProgress.filter(p => p.course_id === activeEnrollment.course_id);
-    const isCompleted = lessonsForActiveCourse.length > 0 && completedForActiveCourse.length >= lessonsForActiveCourse.length;
-
-    if (!isCompleted) {
-      alert("Your Internship Workspace is locked. Please complete all course lessons in the Courses page to unlock it!");
-      router.push(`/dashboard/courses/${activeEnrollment.course_id}`);
-      return;
-    }
-    router.push(`/workspace/${activeEnrollment.course_id}`);
-  };
 
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
@@ -174,8 +145,8 @@ export default function DashboardPage() {
         
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
           <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
@@ -199,7 +170,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </aside>
-      
+
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -228,8 +199,8 @@ export default function DashboardPage() {
             </div>
             
             <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
-              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
+              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }} />
+              <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
               <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
               <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
               <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
@@ -257,179 +228,16 @@ export default function DashboardPage() {
               Edtech Studio Mode
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
-              <input 
-                type="text" 
-                placeholder="Search courses, classes, lessons..." 
-                className="pl-9 pr-4 py-1.5 bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[8px] text-xs focus:outline-none focus:border-[#8B4513] w-64 text-[#3D2B1F] font-medium"
-              />
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8B4513] bg-[#8B4513]/5 px-3 py-1.5 rounded-[8px] border border-[#8B4513]/10">
-              <Sparkles size={12} /> Live Support
-            </div>
-          </div>
         </header>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] space-y-[32px] pb-20 max-w-7xl mx-auto w-full">
-          {/* Welcome Announcement Block - Edtech Style */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] md:p-[32px] flex flex-col md:flex-row md:items-center justify-between gap-[24px]"
-          >
-            <div className="space-y-[8px]">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px]">
-                  Academic term active
-                </span>
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#3D2B1F]">
-                Welcome back, {profile?.full_name?.split(' ')[0] || "Student"}! 👋
-              </h1>
-              <p className="text-xs text-[#3D2B1F]/80 max-w-xl leading-[1.6] font-medium">
-                Pick up exactly where you left off. Review assigned course videos, submit evaluated projects, and earn accredited institutional certificates.
-              </p>
-            </div>
-            <div className="shrink-0 flex items-center gap-2">
-              <Button asChild className="rounded-[8px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-bold text-xs h-10 px-4 shadow-none">
-                <Link href="/dashboard/internships">
-                  View My Classes <ArrowRight size={14} className="ml-1.5" />
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
-
-          {/* Stats Grid - Productive Edtech badges */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]"
-          >
-            <StatCard 
-              label="Completed Sessions" 
-              value={`${userProgress.length} / ${courseLessons.length}`} 
-              icon={<CheckCircle2 className="text-[#8B4513]" size={18} />} 
-              progress={Math.round((userProgress.length / Math.max(1, courseLessons.length)) * 100)}
-            />
-            <StatCard 
-              label="Certificates Earned" 
-              value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
-              icon={<Award className="text-[#8B4513]" size={18} />} 
-            />
-            <StatCard 
-              label="Core Department" 
-              value={profile?.departments?.name || "General Study"} 
-              icon={<Layers className="text-[#8B4513]" size={18} />} 
-            />
-            <StatCard 
-              label="Current Standing" 
-              value="Enrolled Member" 
-              icon={<BadgeCheck className="text-[#8B4513]" size={18} />} 
-            />
-          </motion.div>
-
-          {/* Internship Progress Widget */}
-          {activeEnrollment && (() => {
-            const courseUpdates = weeklyUpdates.filter(u => u.course_id === activeEnrollment.course_id);
-            const approvedWeeks = courseUpdates.filter(u => u.status === "approved").length;
-            const submittedWeeks = courseUpdates.length;
-            const totalWeeks = activeEnrollment.courses?.timeline_weeks ?? 8;
-            const activeBlueprint = activeEnrollment.selected_problem_statement;
-
-            return (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] space-y-[20px] shadow-none"
-              >
-                <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px]">
-                  <div className="flex items-center gap-[8px]">
-                    <Layers className="text-[#8B4513]" size={18} />
-                    <h3 className="text-sm font-bold text-[#3D2B1F]">Internship Progress Monitor</h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-[#8B4513] uppercase bg-[#8B4513]/5 border border-[#8B4513]/10 px-2.5 py-1 rounded-[6px]">
-                    Track: {activeEnrollment.courses?.title || "Active Internship"}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
-                  <div className="space-y-[8px] md:col-span-2">
-                    <p className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider">Active Problem Blueprint</p>
-                    {activeBlueprint ? (
-                      <p className="text-xs text-[#3D2B1F]/80 font-mono bg-[#F9F5F0]/50 border border-[#8B4513]/10 p-[12px] rounded-[8px] line-clamp-2">
-                        {activeBlueprint}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-[#8B4513] italic font-medium bg-amber-500/5 border border-amber-500/10 p-[12px] rounded-[8px]">
-                        Project blueprint selection pending. Enter the workspace hub to choose your assignment.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-[12px]">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider">Timeline Submission</span>
-                        <span className="text-xs font-bold text-[#8B4513]">{submittedWeeks} / {totalWeeks} Weeks Logs</span>
-                      </div>
-                      <div className="h-2 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-                        <div className="h-full bg-[#8B4513]" style={{ width: `${Math.min(100, Math.round((submittedWeeks / totalWeeks) * 100))}%` }} />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#3D2B1F]/70">
-                      <span>Approved: {approvedWeeks} Weeks</span>
-                      <Button size="sm" onClick={() => router.push(`/workspace/${activeEnrollment.course_id}`)} className="h-8 px-4 bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] text-[10px] font-bold rounded-[6px] shadow-none">
-                        Open Workspace Hub
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })()}
-
-          {/* Enrolled Courses Grid */}
-          <section className="space-y-[16px]">
-            <div className="border-b border-[#8B4513]/10 pb-[12px]">
-              <h2 className="text-lg font-bold text-[#3D2B1F]">My Enrolled Tracks</h2>
-              <p className="text-xs text-[#3D2B1F]/60">Your active subscribed training & internship channels</p>
-            </div>
-            <motion.div 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
-            >
-              {enrollments.map(enroll => {
-                const course = enroll.courses;
-                if (!course) return null;
-                return (
-                  <CourseCard 
-                    key={course.id} 
-                    course={course} 
-                    enrolled={enroll} 
-                    progress={userProgress.filter(p => p.course_id === course.id)}
-                    lessons={courseLessons.filter(l => l.course_id === course.id)}
-                    profile={profile}
-                    onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
-                    sessionUser={sessionUser}
-                  />
-                );
-              })}
-              {enrollments.length === 0 && (
-                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">You have not subscribed to any tracks yet.</p>
-                </div>
-              )}
-            </motion.div>
-          </section>
+        {/* Content View */}
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#3D2B1F] flex items-center gap-2">
+              <BookOpen className="text-[#8B4513]" size={24} /> Matrix Root Catalog
+            </h1>
+            <p className="text-xs text-[#3D2B1F]/60 mt-1">Explore all study tracks and specialization programs.</p>
+          </div>
 
           {/* Specialization / Branch Courses */}
           <section className="space-y-[16px]">
@@ -468,11 +276,41 @@ export default function DashboardPage() {
               )}
             </motion.div>
           </section>
+
+          {/* Alternate Study Tracks */}
+          <section className="space-y-[16px]">
+            <div className="border-b border-[#8B4513]/10 pb-[12px]">
+              <h2 className="text-lg font-bold text-[#3D2B1F]">Explore Parallel Study Tracks</h2>
+              <p className="text-xs text-[#3D2B1F]/60">Expand your skills across other technology sectors</p>
+            </div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
+            >
+              {otherCourses.map(course => (
+                <CourseCard 
+                  key={course.id} 
+                  course={course} 
+                  enrolled={enrollments.find(e => e.course_id === course.id)}
+                  progress={userProgress.filter(p => p.course_id === course.id)}
+                  lessons={courseLessons.filter(l => l.course_id === course.id)}
+                  profile={profile}
+                  onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
+                  sessionUser={sessionUser}
+                />
+              ))}
+              {otherCourses.length === 0 && (
+                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
+                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No alternate courses available.</p>
+                </div>
+              )}
+            </motion.div>
+          </section>
         </div>
       </main>
 
-      {/* Enrollment Modal Integration */}
-      
       {showProfileModal && (
         <ProfileCompletionModal
           userId={sessionUser?.id}
@@ -506,33 +344,7 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
   );
 }
 
-function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
-  return (
-    <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-[20px] flex flex-col justify-between hover:border-[#8B4513]/30 transition-colors">
-      <div className="flex items-start justify-between mb-[12px]">
-        <div className="w-9 h-9 rounded-[8px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center">
-          {icon}
-        </div>
-        {progress !== undefined && (
-          <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
-            {progress}%
-          </span>
-        )}
-      </div>
-      <div>
-        <p className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider mb-[2px]">{label}</p>
-        <p className="text-xl font-bold text-[#3D2B1F]">{value}</p>
-      </div>
-      {progress !== undefined && (
-        <div className="mt-[12px] h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-          <div className="h-full bg-[#8B4513]" style={{ width: `${progress}%` }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, sessionUser }: any) {
+function CourseCard({ course, enrolled, progress, lessons, profile, sessionUser }: any) {
   const isEnrolled = enrolled?.payment_status === 'completed' || enrolled?.payment_status === 'success';
   const totalLessons = Math.max(1, lessons.length);
   const progressPercent = Math.round((progress.length / totalLessons) * 100);

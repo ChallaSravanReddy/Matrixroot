@@ -344,10 +344,10 @@ function CTASection() {
           className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[40px] md:p-[64px]"
         >
           <h2 className="text-2xl md:text-4xl font-bold text-[#3D2B1F] mb-[12px]">
-            Kickstart Business Integration
+            Kickstart Your Practical Internship
           </h2>
           <p className="text-xs md:text-sm text-[#3D2B1F]/80 leading-[1.6] max-w-lg mx-auto mb-[32px] font-medium">
-            Contact us today to deploy custom full-stack solutions or enroll talent directly into production-ready internship tracks.
+            Enter our token-driven portal to access your 30-day full-stack engineering blueprint. Submit screenshot evidence logs for manual code verification and certification.
           </p>
           <div className="flex flex-wrap justify-center gap-[16px]">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring" as const, stiffness: 400, damping: 25 }}>

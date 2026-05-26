@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import Script from "next/script";
 import { useNotification } from "@/components/NotificationProvider";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
 import {
@@ -35,6 +34,20 @@ interface Lesson {
   has_assignment?: boolean;
 }
 
+const loadRazorpayScript = () => {
+  return new Promise<boolean>((resolve) => {
+    if (typeof window !== "undefined" && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function CourseDetailPage() {
   const params = useParams();
   const courseId = params?.courseId as string;
@@ -60,16 +73,6 @@ export default function CourseDetailPage() {
 
   // Custom video playback overlay state to conceal YouTube defaults
   const [isPlaying, setIsPlaying] = useState(false);
-
-  // Weekly updates states
-  const [weeklyUpdates, setWeeklyUpdates] = useState<any[]>([]);
-  const [showWeeklyModal, setShowWeeklyModal] = useState(false);
-  const [weeklyWeekNum, setWeeklyWeekNum] = useState<number>(1);
-  const [weeklyText, setWeeklyText] = useState("");
-  const [weeklyFile, setWeeklyFile] = useState<File | null>(null);
-  const [weeklyPreview, setWeeklyPreview] = useState<string | null>(null);
-  const [weeklySubmitting, setWeeklySubmitting] = useState(false);
-  const [showWeeklyDrawer, setShowWeeklyDrawer] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -118,13 +121,6 @@ export default function CourseDetailPage() {
 
       if (hasPaid) {
         setIsEnrolled(true);
-        const { data: updatesData } = await supabase
-          .from("weekly_updates")
-          .select("*")
-          .eq("student_id", session.user.id)
-          .eq("course_id", courseId)
-          .order("week_number", { ascending: true });
-        if (updatesData) setWeeklyUpdates(updatesData);
       }
 
       setLoading(false);
@@ -199,11 +195,19 @@ export default function CourseDetailPage() {
   const handlePayNow = async () => {
     setEnrollLoading(true);
     try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        showNotification("Failed to load payment gateway script. Please verify your internet connection.", "error");
+        setEnrollLoading(false);
+        return;
+      }
+
       const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      const targetPrice = course?.price ?? 500;
 
       const options = {
         key: razorpayKey,
-        amount: 50000,
+        amount: targetPrice * 100,
         currency: "INR",
         name: "Matrix Root",
         description: `Enrollment: ${course?.title}`,
@@ -296,101 +300,8 @@ export default function CourseDetailPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setWeeklyFile(file);
-      
-      const reader = new FileReader();
-      reader.onload = () => {
-        setWeeklyPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const readFileAsDataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
-  const handleSubmitWeeklyUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!weeklyFile || !weeklyText.trim()) {
-      showNotification("Please fill out all fields and select a screenshot.", "error");
-      return;
-    }
-
-    setWeeklySubmitting(true);
-    showNotification("Uploading screenshot...", "info");
-
-    try {
-      const studentId = sessionUser?.id;
-      if (!studentId) throw new Error("No active session");
-      let screenshotUrl = "";
-
-      try {
-        const fileExt = weeklyFile.name.split(".").pop();
-        const filePath = `${studentId}/${courseId}/week-${weeklyWeekNum}-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("weekly-screenshots")
-          .upload(filePath, weeklyFile, { cacheControl: "3600", upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("weekly-screenshots")
-          .getPublicUrl(filePath);
-          
-        screenshotUrl = publicUrl;
-      } catch (storageError) {
-        console.warn("Storage upload failed, falling back to Base64 data URL representation:", storageError);
-        screenshotUrl = await readFileAsDataURL(weeklyFile);
-      }
-
-      const { error: dbError } = await supabase
-        .from("weekly_updates")
-        .upsert({
-          student_id: studentId,
-          course_id: courseId,
-          week_number: weeklyWeekNum,
-          improvement_text: weeklyText,
-          screenshot_url: screenshotUrl,
-          status: "submitted",
-          feedback: null
-        }, {
-          onConflict: "student_id,course_id,week_number"
-        });
-
-      if (dbError) throw dbError;
-
-      showNotification(`Week ${weeklyWeekNum} update submitted successfully!`, "success");
-      
-      setWeeklyText("");
-      setWeeklyFile(null);
-      setWeeklyPreview(null);
-      setShowWeeklyModal(false);
-      
-      const { data: refreshedData } = await supabase
-        .from("weekly_updates")
-        .select("*")
-        .eq("student_id", studentId)
-        .eq("course_id", courseId)
-        .order("week_number", { ascending: true });
-        
-      if (refreshedData) setWeeklyUpdates(refreshedData);
-    } catch (err: any) {
-      console.error("Submission failed:", err);
-      showNotification(`Failed to submit update: ${err.message || "Unknown error"}`, "error");
-    } finally {
-      setWeeklySubmitting(false);
-    }
-  };
 
   const renderVideoPlayer = (url: string) => {
     if (!url) return null;
@@ -714,7 +625,6 @@ export default function CourseDetailPage() {
 
   return (
     <div className="flex flex-col h-screen bg-[#F9F5F0] text-[#3D2B1F] font-sans overflow-hidden">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
       {/* Top Navigation Bar */}
       <header className="flex-shrink-0 h-16 border-b border-[#8B4513]/10 bg-white flex items-center px-6 justify-between z-10 shadow-none">
@@ -738,18 +648,7 @@ export default function CourseDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          {isEnrolled && (
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <Button
-                onClick={() => setShowWeeklyDrawer(true)}
-                className="bg-[#8B4513]/5 hover:bg-[#8B4513]/10 text-[#3D2B1F] border border-[#8B4513]/20 font-bold text-xs rounded-[8px] h-9 px-4 shadow-none flex items-center gap-1.5"
-              >
-                <Calendar size={14} className="text-[#8B4513]" />
-                <span className="hidden sm:inline">Weekly Reports</span>
-                <span className="sm:hidden">Reports</span>
-              </Button>
-            </motion.div>
-          )}
+
 
           <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2.5 py-0.5 rounded-[6px]">
             <ShieldCheck size={12} />
@@ -872,26 +771,12 @@ export default function CourseDetailPage() {
       {currentLesson && (
         <div className="flex-shrink-0 h-20 border-t border-[#8B4513]/10 bg-white flex items-center justify-between px-6 md:px-12 z-20 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
           <div className="hidden md:flex flex-col justify-center">
-            <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-wider">Currently Studying</span>
             <h4 className="text-xs font-bold text-[#3D2B1F] mt-0.5 line-clamp-1 max-w-sm">
               {currentLesson.title}
             </h4>
           </div>
           
           <div className="flex items-center justify-between w-full md:w-auto gap-3">
-            {isEnrolled && (
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-                <Button
-                  onClick={() => setShowWeeklyDrawer(true)}
-                  className="px-4 h-10 bg-[#8B4513]/5 hover:bg-[#8B4513]/10 border border-[#8B4513]/25 font-bold text-xs rounded-[8px] shadow-none text-[#3D2B1F] flex items-center gap-1.5"
-                >
-                  <Calendar size={14} className="text-[#8B4513]" />
-                  <span className="hidden sm:inline">Weekly Reports</span>
-                  <span className="sm:hidden">Reports</span>
-                </Button>
-              </motion.div>
-            )}
-
             {prevLesson ? (
               <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
                 <Button
@@ -931,11 +816,16 @@ export default function CourseDetailPage() {
             ) : (
               <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
                 <Button
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={async () => {
+                    if (!requiresAssessment && !isCurrentLessonCompleted && currentLesson) {
+                      await handleCompleteLesson(currentLesson);
+                    }
+                    window.location.href = `/workspace/${courseId}`;
+                  }}
                   className="px-6 h-10 bg-[#8B4513]/10 hover:bg-[#8B4513]/20 text-[#8B4513] font-bold text-xs rounded-[8px] shadow-none border border-[#8B4513]/20 flex items-center gap-1.5"
                 >
                   <CheckCircle2 size={12} />
-                  <span>Complete Program</span>
+                  <span>Start Internship</span>
                 </Button>
               </motion.div>
             )}
@@ -948,296 +838,11 @@ export default function CourseDetailPage() {
         open={showPayment}
         onOpenChange={setShowPayment}
         courseTitle={course?.title || "Program"}
+        price={course?.price ?? 500}
         onPay={handlePayNow}
         loading={enrollLoading}
       />
 
-      {/* Weekly Update Submission Modal */}
-      <AnimatePresence>
-        {showWeeklyModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div 
-              className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm"
-              onClick={() => setShowWeeklyModal(false)}
-            />
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white border border-[#8B4513]/20 w-full max-w-lg rounded-[12px] p-6 shadow-xl relative z-10 space-y-5"
-            >
-              <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-3">
-                <h3 className="text-base font-bold text-[#3D2B1F]">
-                  Submit Weekly Progress Log
-                </h3>
-                <button 
-                  onClick={() => setShowWeeklyModal(false)}
-                  className="p-1.5 hover:bg-[#F9F5F0] rounded-full text-[#3D2B1F]/40 hover:text-[#3D2B1F] transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmitWeeklyUpdate} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#3D2B1F]/70 block">
-                    Target Week
-                  </label>
-                  <select
-                    value={weeklyWeekNum}
-                    onChange={(e) => setWeeklyWeekNum(Number(e.target.value))}
-                    className="w-full bg-[#F9F5F0] border border-[#8B4513]/20 rounded-[8px] p-2.5 text-[#3D2B1F] text-xs outline-none focus:border-[#8B4513] font-medium"
-                  >
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        Week {i + 1} {weeklyUpdates.some(u => u.week_number === i + 1) ? "(Resubmit)" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#3D2B1F]/70 block">
-                    What did you improve/accomplish this week?
-                  </label>
-                  <textarea
-                    value={weeklyText}
-                    onChange={(e) => setWeeklyText(e.target.value)}
-                    required
-                    placeholder="Describe your progress, learnings, challenges faced, or key accomplishments..."
-                    className="w-full bg-[#F9F5F0] border border-[#8B4513]/20 focus:border-[#8B4513] rounded-[8px] p-3 text-[#3D2B1F] text-xs transition-all min-h-[100px] resize-y outline-none font-medium"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#3D2B1F]/70 block">
-                    Screenshot / Proof of Work
-                  </label>
-                  
-                  <div className="border-2 border-dashed border-[#8B4513]/20 rounded-[8px] p-4 bg-[#F9F5F0]/30 hover:bg-[#F9F5F0]/60 transition-colors flex flex-col items-center justify-center text-center cursor-pointer relative group">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      required={!weeklyPreview}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                    
-                    {weeklyPreview ? (
-                      <div className="space-y-2">
-                        <img 
-                          src={weeklyPreview} 
-                          alt="Screenshot preview" 
-                          className="max-h-36 rounded-[6px] object-contain mx-auto border border-[#8B4513]/10"
-                        />
-                        <p className="text-[10px] text-[#3D2B1F]/60 font-medium">Click or drag to replace image</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 py-2">
-                        <div className="w-10 h-10 rounded-full bg-[#8B4513]/5 flex items-center justify-center mx-auto text-[#8B4513]">
-                          <Upload size={18} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#3D2B1F]/80">Upload Screenshot</p>
-                          <p className="text-[10px] text-[#3D2B1F]/40 mt-0.5">Drag & drop or click to browse image</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowWeeklyModal(false)}
-                    className="border-[#8B4513]/20 hover:bg-[#F9F5F0] rounded-[8px] text-xs font-bold text-[#3D2B1F]/80 shadow-none h-9 px-4"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={weeklySubmitting}
-                    className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] rounded-[8px] text-xs font-bold shadow-none h-9 px-5"
-                  >
-                    {weeklySubmitting ? "Submitting..." : "Submit Log"}
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Weekly Progress Reports Sliding Drawer */}
-      <AnimatePresence>
-        {showWeeklyDrawer && (
-          <div className="fixed inset-0 z-50 flex justify-end animate-in fade-in duration-200">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm"
-              onClick={() => setShowWeeklyDrawer(false)}
-            />
-            
-            {/* Slide-over Panel */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full sm:w-[460px] bg-white border-l border-[#8B4513]/25 shadow-2xl relative z-10 flex flex-col h-full"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-[#8B4513]/10 flex-shrink-0">
-                <div>
-                  <h3 className="text-base font-bold text-[#3D2B1F] flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-[#8B4513]" />
-                    Weekly Progress Reports
-                  </h3>
-                  <p className="text-[10px] text-[#3D2B1F]/50 mt-0.5 font-semibold">
-                    Internship log updates & feedback tracker.
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowWeeklyDrawer(false)}
-                  className="p-1.5 hover:bg-[#F9F5F0] rounded-full text-[#3D2B1F]/40 hover:text-[#3D2B1F] transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
-                
-                {/* 8 Weeks Grid */}
-                <div className="bg-[#F9F5F0]/40 border border-[#8B4513]/10 rounded-[12px] p-4 space-y-3">
-                  <h4 className="text-xs font-bold text-[#8B4513] uppercase tracking-wider">
-                    Internship Timeline
-                  </h4>
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => {
-                      const weekNum = i + 1;
-                      const update = weeklyUpdates.find(u => u.week_number === weekNum);
-                      
-                      let statusColor = "bg-[#F9F5F0] border-[#8B4513]/10 text-[#3D2B1F]/40";
-                      let statusText = "Pending";
-                      
-                      if (update) {
-                        if (update.status === "approved") {
-                          statusColor = "bg-emerald-50 border-emerald-200 text-emerald-800";
-                          statusText = "Approved";
-                        } else if (update.status === "rejected") {
-                          statusColor = "bg-rose-50 border-rose-200 text-rose-800";
-                          statusText = "Req. Change";
-                        } else {
-                          statusColor = "bg-blue-50 border-blue-200 text-blue-800";
-                          statusText = "Submitted";
-                        }
-                      }
-
-                      return (
-                        <div 
-                          key={weekNum}
-                          className={`border rounded-[8px] p-2 flex flex-col items-center justify-center text-center transition-all ${statusColor}`}
-                        >
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-[#3D2B1F]/60">W{weekNum}</span>
-                          <span className="text-[9px] font-extrabold mt-0.5">{statusText}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Submission Prompt Button */}
-                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                  <Button
-                    onClick={() => {
-                      const completedWeeks = weeklyUpdates.map(u => u.week_number);
-                      let nextWeek = 1;
-                      for (let w = 1; w <= 8; w++) {
-                        if (!completedWeeks.includes(w)) {
-                          nextWeek = w;
-                          break;
-                        }
-                      }
-                      setWeeklyWeekNum(nextWeek);
-                      setShowWeeklyModal(true);
-                    }}
-                    className="w-full bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 shadow-none flex items-center justify-center gap-1.5"
-                  >
-                    <Plus size={14} />
-                    Submit Weekly Update
-                  </Button>
-                </motion.div>
-
-                {/* Detailed Logs History */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-[#8B4513] uppercase tracking-wider border-b border-[#8B4513]/10 pb-1">
-                    Activity Logs History
-                  </h4>
-                  
-                  {weeklyUpdates.length === 0 ? (
-                    <div className="text-center text-xs text-[#3D2B1F]/50 italic py-6">
-                      No logs submitted yet. Click above to submit your first week update.
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {weeklyUpdates.map((update) => (
-                        <div 
-                          key={update.id}
-                          className="p-4 bg-[#F9F5F0]/40 border border-[#8B4513]/10 rounded-[8px] space-y-3"
-                        >
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <span className="text-xs font-bold text-[#3D2B1F]">
-                              Week {update.week_number} Update
-                            </span>
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                              update.status === "approved"
-                                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                                : update.status === "rejected"
-                                  ? "bg-rose-50 border-rose-200 text-rose-800"
-                                  : "bg-blue-50 border-blue-200 text-blue-800"
-                            }`}>
-                              {update.status.toUpperCase()}
-                            </span>
-                          </div>
-
-                          <p className="text-xs text-[#3D2B1F]/80 leading-relaxed whitespace-pre-wrap font-medium">
-                            {update.improvement_text}
-                          </p>
-
-                          {update.screenshot_url && (
-                            <div className="relative w-full aspect-video rounded-[6px] overflow-hidden border border-[#8B4513]/10 group">
-                              <img 
-                                src={update.screenshot_url} 
-                                alt={`Week ${update.week_number} screenshot`}
-                                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                                onClick={() => window.open(update.screenshot_url, "_blank")}
-                              />
-                            </div>
-                          )}
-
-                          {update.feedback && (
-                            <div className="p-3 bg-amber-50/50 border border-amber-200/50 rounded-[6px] text-xs space-y-1">
-                              <span className="font-bold text-amber-900">Mentor Feedback:</span>
-                              <p className="text-[#3D2B1F]/80 font-medium">{update.feedback}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

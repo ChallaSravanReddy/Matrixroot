@@ -13,7 +13,11 @@ import {
   Save, 
   Loader2,
   ShieldCheck,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen,
+  TrendingUp,
+  LogOut,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -29,6 +33,7 @@ export default function ProfilePage() {
   const [fetching, setFetching] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -48,16 +53,23 @@ export default function ProfilePage() {
       }
       setUserId(session.user.id);
 
-      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
-      if (data) {
+      const [profileRes, enrollRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", session.user.id).single(),
+        supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"])
+      ]);
+
+      if (profileRes.data) {
         setFormData({
-          full_name: data.full_name || "",
+          full_name: profileRes.data.full_name || "",
           email: session.user.email || "",
-          department_slug: data.department_slug || "",
-          github_url: data.github_url || "",
-          linkedin_url: data.linkedin_url || "",
-          phone: data.phone || "",
+          department_slug: profileRes.data.department_slug || "",
+          github_url: profileRes.data.github_url || "",
+          linkedin_url: profileRes.data.linkedin_url || "",
+          phone: profileRes.data.phone || "",
         });
+      }
+      if (enrollRes.data) {
+        setEnrollments(enrollRes.data);
       }
       setFetching(false);
     };
@@ -88,31 +100,40 @@ export default function ProfilePage() {
 
   if (fetching) return <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center"><Loader2 className="animate-spin text-[#8B4513]" /></div>;
 
+  const activeEnrollment = enrollments[0];
+  const navigateToWorkspace = () => {
+    if (activeEnrollment) {
+      window.location.href = `/workspace/${activeEnrollment.course_id}`;
+    } else {
+      alert("Please enroll in a course to unlock your Workspace Hub.");
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar */}
+      {/* Sidebar - Friendly Edtech layout */}
       <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
         <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
+          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+            <GraduationCap size={20} />
+          </div>
+          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button variant="ghost" className="w-full justify-start font-medium min-h-[40px] text-xs text-[#3D2B1F]/70 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5" onClick={() => window.location.href = '/dashboard'}>
-              <LayoutDashboard size={16} className="mr-3 text-[#8B4513]" /> Dashboard Overview
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button variant="default" className="w-full justify-start font-medium min-h-[40px] text-xs bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold shadow-none hover:bg-[#8B4513]/10">
-              <User size={16} className="mr-3 text-[#8B4513]" /> Active Identity Config
-            </Button>
-          </motion.div>
+        
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => window.location.href = '/dashboard'} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => window.location.href = '/dashboard/courses'} />
+          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => window.location.href = '/workspace'} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => window.location.href = '/dashboard/internships'} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => window.location.href = '/dashboard/performance'} />
+          
+          <div className="pt-6">
+            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <SidebarItem icon={<User size={18} />} label="Profile Setup" active />
+            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => window.location.href = '/login')} />
+          </div>
         </nav>
-        <div className="p-4 border-t border-[#8B4513]/10">
-          <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-[#8B4513]/20 shadow-none text-[#3D2B1F]/70" onClick={() => window.location.href = '/dashboard'}>
-            <ArrowLeft size={14} className="mr-2 text-[#8B4513]" /> Portal Workspace
-          </Button>
-        </div>
       </aside>
 
       {/* Main Content */}
@@ -267,5 +288,24 @@ export default function ProfilePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
+  return (
+    <motion.button 
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      onClick={onClick}
+      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors text-left ${
+        active 
+        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
+        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+      }`}
+    >
+      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="truncate">{label}</span>
+    </motion.button>
   );
 }

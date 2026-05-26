@@ -18,7 +18,7 @@ export async function fetchAdminData(activeTab: string) {
   }
 
   try {
-    if (activeTab === "courses") {
+    if (activeTab === "courses" || activeTab === "internship_tasks") {
       const { data: depts, error: deptsErr } = await supabaseAdmin.from("departments").select("*");
       if (deptsErr) console.error("Depts Error:", deptsErr);
       result.departments = depts || [];
@@ -26,6 +26,16 @@ export async function fetchAdminData(activeTab: string) {
       const { data: crs, error: crsErr } = await supabaseAdmin.from("courses").select("*, departments(name)");
       if (crsErr) console.error("Courses Error:", crsErr);
       result.courses = crs || [];
+      
+      if (activeTab === "internship_tasks") {
+        const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name");
+        const { data: weeklyUpdates, error: weeklyErr } = await supabaseAdmin
+          .from("weekly_updates")
+          .select("*")
+          .order("created_at", { ascending: false });
+        result.profiles = profiles || [];
+        result.weeklyUpdates = weeklyUpdates || [];
+      }
     }
 
     if (activeTab === "lessons") {
@@ -41,6 +51,11 @@ export async function fetchAdminData(activeTab: string) {
       const { data: lsns, error: lsnsErr } = await supabaseAdmin.from("lessons").select("*").order("order_index", { ascending: true });
       if (lsnsErr) console.error("Lessons Fetch Error:", lsnsErr);
       result.lessons = lsns || [];
+
+      // Fetch departments for base track initialization mapping
+      const { data: depts, error: deptsErr } = await supabaseAdmin.from("departments").select("*");
+      if (deptsErr) console.error("Depts Fetch Error:", deptsErr);
+      result.departments = depts || [];
     }
 
     if (activeTab === "students") {
@@ -58,14 +73,22 @@ export async function fetchAdminData(activeTab: string) {
 
       const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name");
       const { data: lessons } = await supabaseAdmin.from("lessons").select("id, title, course_id");
-      const { data: allCourses } = await supabaseAdmin.from("courses").select("id, title");
+      const { data: allCourses } = await supabaseAdmin.from("courses").select("id, title, weekly_tasks, timeline_weeks");
       const { data: enrolls } = await supabaseAdmin.from("enrollments").select("*");
+
+      // Fetch weekly internship submissions
+      const { data: weeklyUpdates, error: weeklyErr } = await supabaseAdmin
+        .from("weekly_updates")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (weeklyErr) console.error("Weekly Updates Error:", weeklyErr);
 
       result.progressData = progressData || [];
       result.profiles = profiles || [];
       result.lessons = lessons || [];
       result.allCourses = allCourses || [];
       result.enrolls = enrolls || [];
+      result.weeklyUpdates = weeklyUpdates || [];
     }
 
     return result;
@@ -210,3 +233,42 @@ export async function deleteModuleAction(moduleId: string) {
     return { success: false, error: err.message };
   }
 }
+
+export async function updateCoursePriceAction(courseId: string, price: number) {
+  const { error } = await supabaseAdmin
+    .from("courses")
+    .update({ price })
+    .eq("id", courseId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function updateCourseWorkspaceAction(courseId: string, payload: {
+  problem_statements?: string[];
+  project_tasks?: string[];
+  weekly_tasks?: string[];
+  problem_statement_file_url?: string;
+}) {
+  const { error } = await supabaseAdmin
+    .from("courses")
+    .update(payload)
+    .eq("id", courseId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function gradeWeeklyUpdateAction(updateId: string, status: "approved" | "rejected", feedback: string) {
+  try {
+    const { error } = await supabaseAdmin
+      .from("weekly_updates")
+      .update({ status, feedback })
+      .eq("id", updateId);
+      
+    if (error) throw error;
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error grading weekly update:", error);
+    return { success: false, error: error.message };
+  }
+}
+

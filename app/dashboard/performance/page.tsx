@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Menu,
   X,
-  GraduationCap
+  GraduationCap,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -130,6 +131,9 @@ export default function PerformanceReportCardPage() {
   const [loading, setLoading] = useState(true);
   const [activeSemesterId, setActiveSemesterId] = useState("sem-5");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [userProgress, setUserProgress] = useState<any[]>([]);
+  const [courseLessons, setCourseLessons] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -139,13 +143,17 @@ export default function PerformanceReportCardPage() {
         return;
       }
 
-      const { data: profileRes } = await supabase
-        .from("profiles")
-        .select("*, departments(name)")
-        .eq("id", session.user.id)
-        .single();
+      const [profileRes, enrollRes, progressRes, lessonRes] = await Promise.all([
+        supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
+        supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
+        supabase.from("user_progress").select("*").eq("user_id", session.user.id),
+        supabase.from("lessons").select("id, course_id")
+      ]);
 
-      if (profileRes) setProfile(profileRes);
+      if (profileRes.data) setProfile(profileRes.data);
+      if (enrollRes.data) setEnrollments(enrollRes.data);
+      if (progressRes.data) setUserProgress(progressRes.data);
+      if (lessonRes.data) setCourseLessons(lessonRes.data);
       setLoading(false);
     };
 
@@ -240,6 +248,24 @@ export default function PerformanceReportCardPage() {
     </motion.div>
   );
 
+  const activeEnrollment = enrollments[0];
+  const navigateToWorkspace = () => {
+    if (!activeEnrollment) {
+      alert("Please enroll in a course to unlock your Workspace Hub.");
+      return;
+    }
+    const lessonsForActiveCourse = courseLessons.filter(l => l.course_id === activeEnrollment.course_id);
+    const completedForActiveCourse = userProgress.filter(p => p.course_id === activeEnrollment.course_id);
+    const isCompleted = lessonsForActiveCourse.length > 0 && completedForActiveCourse.length >= lessonsForActiveCourse.length;
+
+    if (!isCompleted) {
+      alert("Your Internship Workspace is locked. Please complete all course lessons in the Courses page to unlock it!");
+      router.push(`/dashboard/courses/${activeEnrollment.course_id}`);
+      return;
+    }
+    router.push(`/workspace/${activeEnrollment.course_id}`);
+  };
+
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
       {/* Sidebar Navigation Pane */}
@@ -251,6 +277,8 @@ export default function PerformanceReportCardPage() {
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" onClick={() => router.push('/dashboard')} />
+          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
+          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
           
@@ -290,6 +318,8 @@ export default function PerformanceReportCardPage() {
             
             <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
+              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
+              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
               <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
               <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
               <div className="pt-6">
