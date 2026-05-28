@@ -18,6 +18,14 @@ export async function fetchAdminData(activeTab: string) {
   }
 
   try {
+    if (activeTab === "branches") {
+      const { data: depts, error: deptsErr } = await supabaseAdmin.from("departments").select("*").order("name", { ascending: true });
+      if (deptsErr) console.error("Branches Fetch Error:", deptsErr);
+      result.departments = depts || [];
+      const { data: crs } = await supabaseAdmin.from("courses").select("id, title, dept_id");
+      result.courses = crs || [];
+    }
+
     if (activeTab === "courses" || activeTab === "internship_tasks") {
       const { data: depts, error: deptsErr } = await supabaseAdmin.from("departments").select("*");
       if (deptsErr) console.error("Depts Error:", deptsErr);
@@ -163,6 +171,23 @@ export async function createCourseAction(course: any) {
   return { success: true };
 }
 
+export async function updateCourseAction(courseId: string, payload: {
+  title?: string;
+  description?: string;
+  video_url?: string;
+  dept_id?: string;
+  dept_ids?: string[];
+  price?: number;
+}) {
+  const { error } = await supabaseAdmin
+    .from("courses")
+    .update(payload)
+    .eq("id", courseId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+
 export async function createLessonAction(lesson: any) {
   // If no order_index is provided, you might want to fetch max order_index or just let DB default it, 
   // but it's fine as we can reorder it later.
@@ -272,3 +297,21 @@ export async function gradeWeeklyUpdateAction(updateId: string, status: "approve
   }
 }
 
+export async function createBranchAction(branch: { name: string; slug: string; description?: string }) {
+  const { error } = await supabaseAdmin.from("departments").insert([branch]);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function updateBranchAction(id: string, payload: { name?: string; slug?: string; description?: string }) {
+  const { error } = await supabaseAdmin.from("departments").update(payload).eq("id", id);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function deleteBranchAction(id: string) {
+  await supabaseAdmin.from("courses").update({ dept_id: null }).eq("dept_id", id);
+  const { error } = await supabaseAdmin.from("departments").delete().eq("id", id);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}

@@ -345,9 +345,11 @@ export default function LessonPage() {
             <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-3 font-sans" style={{ color: '#64748b' }}>
               <span>📄 Official Document & Lecture Notes</span>
             </h3>
-            <div className="font-serif text-base md:text-lg leading-relaxed whitespace-pre-wrap selection:bg-blue-100 block font-normal" style={{ color: '#000000' }}>
-              {currentLesson.notes}
-            </div>
+            <div 
+              className="rich-text-content selection:bg-blue-100 block font-normal" 
+              style={{ color: '#000000' }}
+              dangerouslySetInnerHTML={{ __html: currentLesson.notes }}
+            />
           </div>
         ) : (
           <div className="text-sm text-slate-400 italic py-4">No companion text notes provided for this lesson.</div>

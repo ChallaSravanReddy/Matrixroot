@@ -101,6 +101,9 @@ export default function WorkspacePage() {
   const [weekFiles, setWeekFiles] = useState<Record<number, File>>({});
   const [weekPreviews, setWeekPreviews] = useState<Record<number, string>>({});
 
+  // Document workspace modal state
+  const [showDocModal, setShowDocModal] = useState(false);
+
 
 
   useEffect(() => {
@@ -593,16 +596,12 @@ export default function WorkspacePage() {
                     <div className="bg-[#F9F5F0]/50 border border-[#8B4513]/15 rounded-[8px] p-3 text-xs leading-relaxed text-[#3D2B1F] whitespace-pre-wrap font-mono">
                       {enrollment.selected_problem_statement}
                     </div>
-                    {course?.problem_statement_file_url && (
-                      <a 
-                        href={course.problem_statement_file_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="flex items-center justify-center gap-2 text-xs text-white bg-[#8B4513] hover:bg-[#723910] font-bold p-2.5 rounded-[8px] mt-2 transition-colors shadow-xs"
-                      >
-                        <FileText size={14} /> Download Official Project Document
-                      </a>
-                    )}
+                    <button
+                      onClick={() => setShowDocModal(true)}
+                      className="flex items-center justify-center gap-2 text-xs text-white bg-[#8B4513] hover:bg-[#723910] font-bold p-2.5 rounded-[8px] mt-2 transition-colors shadow-xs w-full"
+                    >
+                      <FileText size={14} /> View Official Project Document
+                    </button>
                   </div>
                   
                   <div className="text-[10px] text-[#3D2B1F]/60 leading-relaxed pt-4 border-t border-[#8B4513]/10 flex items-center gap-1.5">
@@ -617,25 +616,21 @@ export default function WorkspacePage() {
                     <span>Select and activate one of the deployed problem statements below to initialize your internship project workspace. Once activated, the selection is permanent.</span>
                   </div>
 
-                  {course?.problem_statement_file_url && (
-                    <div className="p-4 bg-white border border-[#8B4513]/15 rounded-[12px] flex items-center justify-between shadow-xs">
-                      <div className="flex items-center gap-2">
-                        <FileText size={18} className="text-[#8B4513] shrink-0" />
-                        <div>
-                          <p className="text-xs font-bold text-[#3D2B1F]">Official Assignment Guidelines</p>
-                          <p className="text-[9px] text-[#3D2B1F]/60">Download official project guidelines document</p>
-                        </div>
+                  <div className="p-4 bg-white border border-[#8B4513]/15 rounded-[12px] flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <FileText size={18} className="text-[#8B4513] shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-[#3D2B1F]">Official Assignment Guidelines</p>
+                        <p className="text-[9px] text-[#3D2B1F]/60">View official project guidelines document</p>
                       </div>
-                      <a 
-                        href={course.problem_statement_file_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-[10px] font-bold text-white bg-[#8B4513] hover:bg-[#723910] px-3 py-1.5 rounded-[8px] flex items-center gap-1 shadow-xs transition-colors"
-                      >
-                        Download
-                      </a>
                     </div>
-                  )}
+                    <button
+                      onClick={() => setShowDocModal(true)}
+                      className="text-[10px] font-bold text-white bg-[#8B4513] hover:bg-[#723910] px-3 py-1.5 rounded-[8px] flex items-center gap-1 shadow-xs transition-colors"
+                    >
+                      <FileText size={12} /> View
+                    </button>
+                  </div>
 
                   <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
                     {course?.problem_statements && course.problem_statements.length > 0 ? (
@@ -748,27 +743,23 @@ export default function WorkspacePage() {
               ) : (
                 <div className="space-y-6">
                   {/* Guidelines Document Card */}
-                  {course.problem_statement_file_url && (
-                    <div className="bg-[#F9F5F0]/50 border border-[#8B4513]/15 rounded-[12px] p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#8B4513]/10 rounded-[8px] text-[#8B4513]">
-                          <FileText size={18} />
-                        </div>
-                        <div>
-                          <h5 className="text-xs font-bold text-[#3D2B1F]">Curriculum guidelines & resources</h5>
-                          <p className="text-[10px] text-[#3D2B1F]/50">Refer to the official document for assignment specs.</p>
-                        </div>
+                  <div className="bg-[#F9F5F0]/50 border border-[#8B4513]/15 rounded-[12px] p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#8B4513]/10 rounded-[8px] text-[#8B4513]">
+                        <FileText size={18} />
                       </div>
-                      <a 
-                        href={course.problem_statement_file_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="px-3 py-1.5 text-[10px] font-bold bg-[#8B4513] text-white rounded-[6px] hover:bg-[#72360f] transition-all"
-                      >
-                        Download PDF
-                      </a>
+                      <div>
+                        <h5 className="text-xs font-bold text-[#3D2B1F]">Curriculum guidelines & resources</h5>
+                        <p className="text-[10px] text-[#3D2B1F]/50">Refer to the official document for assignment specs.</p>
+                      </div>
                     </div>
-                  )}
+                    <button
+                      onClick={() => setShowDocModal(true)}
+                      className="px-3 py-1.5 text-[10px] font-bold bg-[#8B4513] text-white rounded-[6px] hover:bg-[#72360f] transition-all flex items-center gap-1"
+                    >
+                      <FileText size={11} /> Open
+                    </button>
+                  </div>
 
                   <div className="space-y-4 max-h-[750px] overflow-y-auto pr-1">
                     {Array.from({ length: course.timeline_weeks || 8 }, (_, i) => {
@@ -939,6 +930,150 @@ export default function WorkspacePage() {
         onPay={handlePayNow}
         loading={enrollLoading}
       />
+
+      {/* Document Workspace Modal */}
+      {showDocModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDocModal(false); }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            className="w-full max-w-2xl max-h-[88vh] bg-white rounded-[20px] shadow-2xl flex flex-col overflow-hidden border border-[#8B4513]/15"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#8B4513]/10 shrink-0 bg-[#F9F5F0]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#8B4513]/10 rounded-[10px]">
+                  <FileText size={18} className="text-[#8B4513]" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Official Document Workspace</span>
+                  <h2 className="text-sm font-bold text-[#3D2B1F]">{course?.title}</h2>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {course?.problem_statement_file_url && (
+                  <a
+                    href={course.problem_statement_file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-[#8B4513] border border-[#8B4513]/25 px-3 py-1.5 rounded-[8px] hover:bg-[#8B4513]/5 transition-all"
+                  >
+                    <ExternalLink size={12} /> Download PDF
+                  </a>
+                )}
+                <button
+                  onClick={() => setShowDocModal(false)}
+                  className="p-1.5 text-[#3D2B1F]/40 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5 rounded-[8px] transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body — Scrollable */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+
+              {/* Workspace Goal Section */}
+              {enrollment?.selected_problem_statement && (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <CheckCircle2 size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Active Workspace Goal</span>
+                  </div>
+                  <div className="bg-emerald-50/60 border border-emerald-200/70 rounded-[10px] p-4 text-xs leading-relaxed text-[#3D2B1F] whitespace-pre-wrap font-mono">
+                    {enrollment.selected_problem_statement}
+                  </div>
+                </section>
+              )}
+
+              {/* Course Description / Overview */}
+              {course?.description && (
+                <section className="space-y-2">
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Course Overview</span>
+                  <div className="bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[10px] p-4 text-xs leading-relaxed text-[#3D2B1F]/80 font-medium">
+                    {course.description}
+                  </div>
+                </section>
+              )}
+
+              {/* Curriculum Guidelines — All Problem Statements */}
+              {course?.problem_statements && course.problem_statements.length > 0 && (
+                <section className="space-y-2">
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Curriculum Guidelines & Project Blueprints</span>
+                  <div className="space-y-3">
+                    {course.problem_statements.map((stmt: string, i: number) => (
+                      <div key={i} className="bg-white border border-[#8B4513]/10 rounded-[10px] p-4 space-y-1">
+                        <span className="text-[8px] font-bold text-[#8B4513]/70 uppercase tracking-widest">Blueprint Option {i + 1}</span>
+                        <p className="text-xs text-[#3D2B1F]/80 leading-relaxed font-mono whitespace-pre-wrap">{stmt}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Weekly Task Plan */}
+              {course?.weekly_tasks && course.weekly_tasks.length > 0 && (
+                <section className="space-y-2">
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Weekly Execution Plan</span>
+                  <div className="space-y-2">
+                    {course.weekly_tasks.map((task: string, i: number) => (
+                      <div key={i} className="flex gap-3 items-start bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[8px] p-3">
+                        <span className="shrink-0 w-6 h-6 bg-[#8B4513]/10 rounded-full flex items-center justify-center text-[9px] font-bold text-[#8B4513]">
+                          {i + 1}
+                        </span>
+                        <div>
+                          <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block mb-0.5">Week {i + 1}</span>
+                          <p className="text-xs text-[#3D2B1F]/80 leading-relaxed font-medium">{task}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Project Tasks Reference */}
+              {course?.project_tasks && course.project_tasks.length > 0 && (
+                <section className="space-y-2">
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Project Deliverable Checklist</span>
+                  <div className="space-y-1.5">
+                    {course.project_tasks.map((task: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2.5 p-2.5 bg-white border border-[#8B4513]/10 rounded-[8px]">
+                        <div className="w-3.5 h-3.5 mt-0.5 shrink-0 rounded-full border-2 border-[#8B4513]/40" />
+                        <p className="text-xs text-[#3D2B1F]/80 leading-relaxed font-medium">{task}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Fallback if nothing to show */}
+              {!enrollment?.selected_problem_statement && !course?.problem_statements?.length && !course?.weekly_tasks?.length && (
+                <div className="text-center py-10 text-xs text-[#3D2B1F]/50 italic">
+                  No document content has been configured for this course yet. Please contact your program administrator.
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="shrink-0 border-t border-[#8B4513]/10 px-6 py-4 bg-[#F9F5F0] flex items-center justify-between">
+              <p className="text-[9px] text-[#3D2B1F]/40 font-medium">
+                {course?.departments?.name || "Matrix Root Academy"} · Official Program Document
+              </p>
+              <button
+                onClick={() => setShowDocModal(false)}
+                className="text-xs font-bold text-[#3D2B1F]/60 hover:text-[#3D2B1F] px-4 py-1.5 rounded-[8px] hover:bg-[#8B4513]/5 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

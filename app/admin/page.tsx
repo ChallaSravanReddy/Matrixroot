@@ -15,7 +15,11 @@ import {
   deleteModuleAction,
   updateCoursePriceAction,
   updateCourseWorkspaceAction,
-  gradeWeeklyUpdateAction
+  gradeWeeklyUpdateAction,
+  createBranchAction,
+  updateBranchAction,
+  deleteBranchAction,
+  updateCourseAction
 } from "./actions";
 
 import { getYouTubeThumbnail } from "@/lib/utils";
@@ -39,7 +43,10 @@ import {
   X,
   Sparkles,
   FileText,
-  Calendar
+  Calendar,
+  GitBranch,
+  Pencil,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -107,6 +114,15 @@ export default function AdminPage() {
   const [allProfilesMeta, setAllProfilesMeta] = useState<any[]>([]);
   const [gradingFeedback, setGradingFeedback] = useState<Record<string, string>>({});
 
+  // Branch management state
+  const [newBranch, setNewBranch] = useState({ name: "", slug: "", description: "" });
+  const [editingBranch, setEditingBranch] = useState<any | null>(null);
+  const [branchSaving, setBranchSaving] = useState(false);
+
+  // Course editing state
+  const [editingCourse, setEditingCourse] = useState<any | null>(null);
+  const [editCourseSaving, setEditCourseSaving] = useState(false);
+
   useEffect(() => {
     checkAdmin();
   }, []);
@@ -170,6 +186,10 @@ export default function AdminPage() {
         if (wu) setWeeklyUpdates(wu);
         if (profiles) setAllProfilesMeta(profiles);
         if (allCourses) setAllCoursesMeta(allCourses);
+      }
+      if (activeTab === "branches" && data.departments) {
+        setDepartments(data.departments);
+        if (data.courses) setCourses(data.courses);
       }
     } catch (err) {
       console.error("Fetch Data Error:", err);
@@ -294,6 +314,84 @@ export default function AdminPage() {
     } else {
       alert("Update error: " + res.error);
     }
+  };
+
+  const handleCreateBranch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBranch.name.trim() || !newBranch.slug.trim()) return;
+    setBranchSaving(true);
+    const res = await createBranchAction({
+      name: newBranch.name.trim(),
+      slug: newBranch.slug.trim().toLowerCase().replace(/\s+/g, "-"),
+      description: newBranch.description.trim() || undefined
+    });
+    setBranchSaving(false);
+    if (res.success) {
+      setNewBranch({ name: "", slug: "", description: "" });
+      fetchData();
+    } else {
+      alert("Error creating branch: " + res.error);
+    }
+  };
+
+  const handleUpdateBranch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBranch) return;
+    setBranchSaving(true);
+    const res = await updateBranchAction(editingBranch.id, {
+      name: editingBranch.name,
+      slug: editingBranch.slug.toLowerCase().replace(/\s+/g, "-"),
+      description: editingBranch.description || ""
+    });
+    setBranchSaving(false);
+    if (res.success) {
+      setEditingBranch(null);
+      fetchData();
+    } else {
+      alert("Error updating branch: " + res.error);
+    }
+  };
+
+  const handleDeleteBranch = async (id: string, name: string) => {
+    if (!confirm(`Delete branch "${name}"? All courses assigned to it will become unassigned.`)) return;
+    const res = await deleteBranchAction(id);
+    if (res.success) {
+      fetchData();
+    } else {
+      alert("Error deleting branch: " + res.error);
+    }
+  };
+
+  const handleUpdateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCourse) return;
+    setEditCourseSaving(true);
+    // Primary dept_id is first selected branch (or empty)
+    const primaryDeptId = editingCourse.dept_ids?.[0] || editingCourse.dept_id || null;
+    const res = await updateCourseAction(editingCourse.id, {
+      title: editingCourse.title,
+      description: editingCourse.description,
+      video_url: editingCourse.video_url,
+      dept_id: primaryDeptId,
+      dept_ids: editingCourse.dept_ids || [],
+      price: editingCourse.price,
+    });
+    setEditCourseSaving(false);
+    if (res.success) {
+      setEditingCourse(null);
+      fetchData();
+    } else {
+      alert("Error saving course: " + res.error);
+    }
+  };
+
+  const toggleEditCourseBranch = (deptId: string) => {
+    if (!editingCourse) return;
+    const current: string[] = editingCourse.dept_ids || [];
+    const updated = current.includes(deptId)
+      ? current.filter((id: string) => id !== deptId)
+      : [...current, deptId];
+    setEditingCourse({ ...editingCourse, dept_ids: updated });
   };
 
   const handleCreateCourse = async (e: React.FormEvent) => {
@@ -436,12 +534,13 @@ export default function AdminPage() {
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {[
-            { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
+                      { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
             { id: "lessons", label: "Curriculum Builder", icon: <PlusCircle size={18} /> },
             { id: "internship_tasks", label: "Internship Task List", icon: <Layers size={18} /> },
             { id: "students", label: "Scholar Directory", icon: <Users size={18} /> },
             { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
-            { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> }
+            { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
+            { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -486,12 +585,13 @@ export default function AdminPage() {
             
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
               {[
-                { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
+                                { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
                 { id: "lessons", label: "Curriculum Builder", icon: <PlusCircle size={18} /> },
                 { id: "internship_tasks", label: "Internship Task List", icon: <Layers size={18} /> },
                 { id: "students", label: "Scholar Directory", icon: <Users size={18} /> },
                 { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
-                { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> }
+                { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
+                { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -589,14 +689,36 @@ export default function AdminPage() {
                         <div>
                           {c.video_url && (
                             <div className="h-32 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0]">
-                              <img src={getYouTubeThumbnail(c.video_url)} alt={c.title} className="w-full h-full object-cover" />
+                              <img
+                                src={getYouTubeThumbnail(c.video_url)}
+                                alt={c.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
                             </div>
                           )}
                           <div className="flex items-center justify-between mb-[8px]">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
-                                {c.departments?.name || "Foundational"}
-                              </span>
+                              {/* Show all branches if dept_ids exists, else fallback to single dept */}
+                              {c.dept_ids && c.dept_ids.length > 0 ? (
+                                c.dept_ids.slice(0, 2).map((did: string) => {
+                                  const dpt = departments.find((d: any) => String(d.id) === String(did));
+                                  return dpt ? (
+                                    <span key={did} className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                      {dpt.name}
+                                    </span>
+                                  ) : null;
+                                })
+                              ) : (
+                                <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                  {c.departments?.name || "Foundational"}
+                                </span>
+                              )}
+                              {c.dept_ids && c.dept_ids.length > 2 && (
+                                <span className="text-[9px] font-bold text-[#8B4513]/60 bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                  +{c.dept_ids.length - 2} more
+                                </span>
+                              )}
                               <span className="text-[9px] font-bold text-gray-500 bg-gray-100 border border-gray-200/60 px-2 py-0.5 rounded-[12px]">
                                 {c.timeline_weeks ?? 8} Weeks
                               </span>
@@ -643,6 +765,21 @@ export default function AdminPage() {
                           </div>
 
                           <div className="mt-3 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditingCourse({
+                                id: c.id,
+                                title: c.title,
+                                description: c.description || "",
+                                video_url: c.video_url || "",
+                                dept_id: c.dept_id || "",
+                                dept_ids: c.dept_ids?.length ? c.dept_ids : (c.dept_id ? [c.dept_id] : []),
+                                price: c.price ?? 500,
+                              })}
+                              className="flex-1 py-1.5 text-center text-[10px] font-bold bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/15 rounded-[8px] hover:bg-[#8B4513]/10 transition-colors flex items-center justify-center gap-1"
+                            >
+                              <Pencil size={11} /> Edit Course
+                            </button>
                             <button
                               type="button"
                               onClick={() => setEditingWorkspaceCourse({
@@ -1327,9 +1464,200 @@ export default function AdminPage() {
                         </div>
                      </div>
                    ))}
+                 </div>
+              </div>
+           )}
+
+          {activeTab === "branches" && (
+            <div className="grid lg:grid-cols-[380px_1fr] gap-[32px]">
+              
+              {/* Left: Add / Edit Branch Form */}
+              <div className="space-y-[24px]">
+                <div>
+                  <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">
+                    {editingBranch ? "Edit Branch" : "Add New Branch"}
+                  </h3>
+                  <p className="text-xs text-[#3D2B1F]/50 mt-1">
+                    Branches are department categories that courses are assigned to.
+                  </p>
                 </div>
-             </div>
+
+                <form
+                  onSubmit={editingBranch ? handleUpdateBranch : handleCreateBranch}
+                  className="space-y-[14px] p-[24px] bg-white border border-[#8B4513]/20 rounded-[16px] shadow-none"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Branch Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Computer Science"
+                      required
+                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                      value={editingBranch ? editingBranch.name : newBranch.name}
+                      onChange={(e) => editingBranch
+                        ? setEditingBranch({ ...editingBranch, name: e.target.value })
+                        : setNewBranch({ ...newBranch, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Slug (URL Key)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. computer-science"
+                      required
+                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-mono"
+                      value={editingBranch ? editingBranch.slug : newBranch.slug}
+                      onChange={(e) => editingBranch
+                        ? setEditingBranch({ ...editingBranch, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })
+                        : setNewBranch({ ...newBranch, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })
+                      }
+                    />
+                    <p className="text-[9px] text-[#3D2B1F]/40 font-medium">Auto-generated from name. Only lowercase letters, numbers, hyphens.</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Description <span className="text-[#3D2B1F]/40 normal-case font-normal">(optional)</span></label>
+                    <textarea
+                      placeholder="Brief description of this branch..."
+                      rows={3}
+                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium resize-none"
+                      value={editingBranch ? editingBranch.description || "" : newBranch.description}
+                      onChange={(e) => editingBranch
+                        ? setEditingBranch({ ...editingBranch, description: e.target.value })
+                        : setNewBranch({ ...newBranch, description: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    {editingBranch && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEditingBranch(null)}
+                        className="flex-1 h-10 rounded-[10px] text-xs font-bold border-[#8B4513]/20 text-[#3D2B1F]/70 hover:text-[#3D2B1F] shadow-none"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      type="submit"
+                      disabled={branchSaving}
+                      className="flex-1 h-10 rounded-[10px] font-bold text-xs bg-[#8B4513] text-white hover:bg-[#72360f] shadow-none"
+                    >
+                      {branchSaving ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : editingBranch ? (
+                        <><Check size={14} className="mr-1.5" /> Save Changes</>
+                      ) : (
+                        <><GitBranch size={14} className="mr-1.5" /> Add Branch</>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+
+                {/* Stats summary */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-4 text-center">
+                    <p className="text-2xl font-bold text-[#8B4513]">{departments.length}</p>
+                    <p className="text-[10px] font-bold text-[#3D2B1F]/50 uppercase tracking-wider mt-0.5">Total Branches</p>
+                  </div>
+                  <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-4 text-center">
+                    <p className="text-2xl font-bold text-[#8B4513]">{courses.length}</p>
+                    <p className="text-[10px] font-bold text-[#3D2B1F]/50 uppercase tracking-wider mt-0.5">Total Courses</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Branches List */}
+              <div className="space-y-[20px]">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">All Branches</h3>
+                  <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-3 py-1 rounded-[8px]">
+                    {departments.length} branch{departments.length !== 1 ? "es" : ""}
+                  </span>
+                </div>
+
+                {departments.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-24 bg-white border border-dashed border-[#8B4513]/20 rounded-[16px] text-center space-y-3">
+                    <GitBranch size={40} className="text-[#8B4513]/20" />
+                    <p className="text-sm font-semibold text-[#3D2B1F]/40">No branches yet</p>
+                    <p className="text-xs text-[#3D2B1F]/30">Add your first branch using the form on the left.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-[12px]">
+                    {departments.map((dept) => {
+                      const branchCourses = courses.filter((c: any) => String(c.dept_id) === String(dept.id));
+                      const isEditing = editingBranch?.id === dept.id;
+                      return (
+                        <div
+                          key={dept.id}
+                          className={`bg-white border rounded-[14px] p-5 transition-all shadow-none ${isEditing ? "border-[#8B4513]/50 ring-2 ring-[#8B4513]/10" : "border-[#8B4513]/15 hover:border-[#8B4513]/30"}`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <div className="p-1.5 bg-[#8B4513]/8 rounded-[8px] text-[#8B4513]">
+                                  <GitBranch size={14} />
+                                </div>
+                                <h4 className="text-sm font-bold text-[#3D2B1F] truncate">{dept.name}</h4>
+                                <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/8 border border-[#8B4513]/15 px-2 py-0.5 rounded-[6px] font-mono tracking-wide shrink-0">
+                                  /{dept.slug}
+                                </span>
+                              </div>
+
+                              {dept.description && (
+                                <p className="text-xs text-[#3D2B1F]/60 leading-relaxed font-medium line-clamp-2">{dept.description}</p>
+                              )}
+
+                              <div className="flex items-center gap-3 pt-1">
+                                <span className="text-[10px] font-bold text-[#3D2B1F]/50 flex items-center gap-1">
+                                  <BookOpen size={10} />
+                                  {branchCourses.length} course{branchCourses.length !== 1 ? "s" : ""}
+                                </span>
+                                {branchCourses.length > 0 && (
+                                  <div className="flex gap-1 flex-wrap">
+                                    {branchCourses.slice(0, 3).map((c: any) => (
+                                      <span key={c.id} className="text-[9px] bg-[#F9F5F0] border border-[#8B4513]/10 text-[#3D2B1F]/60 px-2 py-0.5 rounded-[4px] truncate max-w-[120px]">
+                                        {c.title}
+                                      </span>
+                                    ))}
+                                    {branchCourses.length > 3 && (
+                                      <span className="text-[9px] text-[#3D2B1F]/40 font-bold">+{branchCourses.length - 3} more</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={() => setEditingBranch({ id: dept.id, name: dept.name, slug: dept.slug, description: dept.description || "" })}
+                                className="p-2 text-[#3D2B1F]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px] transition-all"
+                                title="Edit branch"
+                              >
+                                <Pencil size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBranch(dept.id, dept.name)}
+                                className="p-2 text-[#3D2B1F]/40 hover:text-red-600 hover:bg-red-50 rounded-[8px] transition-all"
+                                title="Delete branch"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
+
         </div>
       </main>
 
@@ -1629,6 +1957,174 @@ export default function AdminPage() {
                   className="rounded-[12px] bg-[#8B4513] hover:bg-[#72360f] text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
                 >
                   Save Blueprints
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Course Modal ── */}
+      {editingCourse && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingCourse(null); }}
+        >
+          <div
+            className="w-full max-w-lg bg-white border border-[#8B4513]/20 rounded-[20px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#8B4513]/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#8B4513]/8 rounded-[10px]">
+                  <Pencil size={16} className="text-[#8B4513]" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Edit Internship</span>
+                  <h3 className="text-sm font-bold text-[#3D2B1F] line-clamp-1">{editingCourse.title}</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingCourse(null)}
+                className="p-1.5 text-[#3D2B1F]/40 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5 rounded-[8px] transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <form onSubmit={handleUpdateCourse} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Internship / Course Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Full Stack Web Development"
+                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  value={editingCourse.title}
+                  onChange={(e) => setEditingCourse({ ...editingCourse, title: e.target.value })}
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Description</label>
+                <textarea
+                  rows={3}
+                  placeholder="Brief description of the internship..."
+                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] resize-none transition-colors"
+                  value={editingCourse.description}
+                  onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })}
+                />
+              </div>
+
+              {/* Cover Image URL */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block flex items-center gap-1.5">
+                  <ImageIcon size={11} /> Cover Image URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. /img/cover.png or https://images.unsplash.com/..."
+                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  value={editingCourse.video_url}
+                  onChange={(e) => setEditingCourse({ ...editingCourse, video_url: e.target.value })}
+                />
+                {editingCourse.video_url && (
+                  <div className="h-24 rounded-[8px] overflow-hidden border border-[#8B4513]/15 mt-2">
+                    <img
+                      src={getYouTubeThumbnail(editingCourse.video_url)}
+                      alt="preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Price */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Price (INR)</label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  placeholder="e.g. 500"
+                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  value={editingCourse.price}
+                  onChange={(e) => setEditingCourse({ ...editingCourse, price: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              {/* Multi-Branch Selection */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">
+                  Branches <span className="text-[#3D2B1F]/40 normal-case font-normal">(select all that apply)</span>
+                </label>
+                {departments.length === 0 ? (
+                  <p className="text-xs text-[#3D2B1F]/40 italic">No branches available. Add branches first.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {departments.map((dept) => {
+                      const isSelected = (editingCourse.dept_ids || []).includes(dept.id);
+                      return (
+                        <label
+                          key={dept.id}
+                          className={`flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer transition-all group ${
+                            isSelected
+                              ? "bg-[#8B4513]/5 border-[#8B4513]/30 text-[#8B4513]"
+                              : "bg-[#F9F5F0]/40 border-[#8B4513]/10 hover:border-[#8B4513]/25 text-[#3D2B1F]/70"
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-all ${
+                            isSelected ? "bg-[#8B4513] border-[#8B4513]" : "border-[#8B4513]/30 group-hover:border-[#8B4513]/60"
+                          }`}>
+                            {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={isSelected}
+                            onChange={() => toggleEditCourseBranch(dept.id)}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-bold block">{dept.name}</span>
+                            <span className="text-[9px] font-mono text-[#3D2B1F]/40">/{dept.slug}</span>
+                          </div>
+                          {isSelected && (
+                            <span className="text-[8px] font-bold text-[#8B4513] bg-[#8B4513]/10 px-2 py-0.5 rounded-full shrink-0">Selected</span>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {(editingCourse.dept_ids || []).length === 0 && (
+                  <p className="text-[9px] text-amber-600 font-medium flex items-center gap-1">
+                    ⚠️ No branch selected. The course will appear under all or no filter.
+                  </p>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-2 pt-2 border-t border-[#8B4513]/10 sticky bottom-0 bg-white pb-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingCourse(null)}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold border-[#8B4513]/20 shadow-none text-[#3D2B1F]/70"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={editCourseSaving}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold bg-[#8B4513] text-white hover:bg-[#72360f] shadow-none"
+                >
+                  {editCourseSaving ? <Loader2 size={14} className="animate-spin" /> : <><Check size={13} className="mr-1.5" /> Save Changes</>}
                 </Button>
               </div>
             </form>

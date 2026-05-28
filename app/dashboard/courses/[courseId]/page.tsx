@@ -564,9 +564,10 @@ export default function CourseDetailPage() {
             <BookOpen size={14} />
             <span>Lecture Notes & Class References</span>
           </h3>
-          <div className="text-xs md:text-sm leading-[1.6] whitespace-pre-wrap text-[#3D2B1F]/90 font-medium">
-            {currentLesson.notes}
-          </div>
+          <div 
+            className="rich-text-content leading-[1.6]"
+            dangerouslySetInnerHTML={{ __html: currentLesson.notes }}
+          />
         </div>
       ) : (
         <div className="text-xs text-[#3D2B1F]/50 italic py-2 font-medium">No accompanying text study guides loaded for this video stream.</div>
