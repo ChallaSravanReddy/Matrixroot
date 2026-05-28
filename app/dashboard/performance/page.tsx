@@ -4,305 +4,125 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { 
-  TrendingUp, 
-  LayoutDashboard, 
-  BookOpen, 
-  User, 
-  LogOut, 
-  ArrowLeft, 
-  Award, 
-  ShieldCheck, 
-  Calendar,
-  CheckCircle2,
-  Menu,
-  X,
-  GraduationCap,
-  Layers
+import {
+  TrendingUp, LayoutDashboard, BookOpen, User, LogOut,
+  ArrowLeft, Award, ShieldCheck, CheckCircle2, Menu, X,
+  GraduationCap, Layers, BookMarked, Clock, BarChart2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-// Static reference data representation reproducing dense historical semestral performance metrics
-const RCD = [
-  {
-    id: "sem-5",
-    term: "Semester 5",
-    academicYear: "Autumn 2026",
-    sgpa: "9.72",
-    cgpa: "9.35",
-    creditsCleared: "22 / 22",
-    attendance: "96%",
-    evaluationStatus: "Outstanding",
-    subjects: [
-      { code: "CS501", title: "Deep Generative Models & Vision", credits: 4, internalMarks: "48/50", externalGrade: "A+", points: 10 },
-      { code: "CS502", title: "Reinforcement Learning Systems", credits: 4, internalMarks: "47/50", externalGrade: "A+", points: 10 },
-      { code: "CS503", title: "High-Scale Microservices Cloud Ops", credits: 4, internalMarks: "46/50", externalGrade: "A", points: 9 },
-      { code: "CS504", title: "Advanced Natural Language Systems", credits: 4, internalMarks: "49/50", externalGrade: "A+", points: 10 },
-      { code: "CS505P", title: "Technical Master Thesis & Output Evaluation", credits: 6, internalMarks: "95/100", externalGrade: "A+", points: 10 },
-    ]
-  },
-  {
-    id: "sem-4",
-    term: "Semester 4",
-    academicYear: "Spring 2025",
-    sgpa: "9.55",
-    cgpa: "9.23",
-    creditsCleared: "24 / 24",
-    attendance: "95%",
-    evaluationStatus: "Excellent",
-    subjects: [
-      { code: "CS401", title: "Applied Machine Learning Engineering", credits: 4, internalMarks: "48/50", externalGrade: "A+", points: 10 },
-      { code: "CS402", title: "Cryptography & Systems Security", credits: 4, internalMarks: "45/50", externalGrade: "A", points: 9 },
-      { code: "CS403", title: "Distributed Parallel Computing Core", credits: 4, internalMarks: "47/50", externalGrade: "A+", points: 10 },
-      { code: "CS404", title: "Software Engineering Lifecycle Protocol", credits: 4, internalMarks: "46/50", externalGrade: "A+", points: 10 },
-      { code: "CS405P", title: "Industrial Capstone Protocol II", credits: 8, internalMarks: "92/100", externalGrade: "A+", points: 10 },
-    ]
-  },
-  {
-    id: "sem-3",
-    term: "Semester 3",
-    academicYear: "Autumn 2025",
-    sgpa: "9.40",
-    cgpa: "9.12",
-    creditsCleared: "25 / 25",
-    attendance: "94%",
-    evaluationStatus: "Excellent",
-    subjects: [
-      { code: "CS301", title: "Operating Systems Internals & Design", credits: 4, internalMarks: "46/50", externalGrade: "A+", points: 10 },
-      { code: "CS302", title: "Theory of Automata & Computation", credits: 4, internalMarks: "44/50", externalGrade: "A", points: 9 },
-      { code: "CS303", title: "Artificial Intelligence Foundations", credits: 4, internalMarks: "48/50", externalGrade: "A+", points: 10 },
-      { code: "CS304", title: "Quantitative Systems Architecture", credits: 4, internalMarks: "45/50", externalGrade: "A", points: 9 },
-      { code: "CS305P", title: "Industrial Capstone Protocol I", credits: 9, internalMarks: "90/100", externalGrade: "A+", points: 10 },
-    ]
-  },
-  {
-    id: "sem-2",
-    term: "Semester 2",
-    academicYear: "Spring 2024",
-    sgpa: "9.15",
-    cgpa: "8.98",
-    creditsCleared: "26 / 26",
-    attendance: "89%",
-    evaluationStatus: "Very Good",
-    subjects: [
-      { code: "CS201", title: "Advanced Database Systems Internals", credits: 4, internalMarks: "45/50", externalGrade: "A", points: 9 },
-      { code: "CS202", title: "Computer Networks & Topologies", credits: 4, internalMarks: "43/50", externalGrade: "A", points: 9 },
-      { code: "CS203", title: "Object-Oriented Software Design Patterns", credits: 4, internalMarks: "47/50", externalGrade: "A+", points: 10 },
-      { code: "CS204", title: "Engineering Statistics & Probabilities", credits: 4, internalMarks: "42/50", externalGrade: "B+", points: 8 },
-      { code: "CS205", title: "Enterprise Cloud Compute Infrastructure", credits: 10, internalMarks: "91/100", externalGrade: "A+", points: 10 },
-    ]
-  },
-  {
-    id: "sem-1",
-    term: "Semester 1",
-    academicYear: "Autumn 2024",
-    sgpa: "8.82",
-    cgpa: "8.82",
-    creditsCleared: "24 / 24",
-    attendance: "92%",
-    evaluationStatus: "Very Good",
-    subjects: [
-      { code: "CS101", title: "Data Structures & Core Algorithms", credits: 4, internalMarks: "44/50", externalGrade: "A", points: 9 },
-      { code: "CS102", title: "Digital Logic Design & Circuits", credits: 4, internalMarks: "41/50", externalGrade: "B+", points: 8 },
-      { code: "CS103", title: "Discrete Mathematical Structures", credits: 4, internalMarks: "46/50", externalGrade: "A+", points: 10 },
-      { code: "CS104", title: "Matrix Analysis & Linear Systems", credits: 4, internalMarks: "42/50", externalGrade: "B+", points: 8 },
-      { code: "CS105", title: "Communication Core Competency Workshop", credits: 8, internalMarks: "88/100", externalGrade: "A", points: 9 },
-    ]
-  }
-];
-
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
-      type: "spring" as const, 
-      stiffness: 400, 
-      damping: 25 
-    } 
-  },
+  visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 400, damping: 25 } },
 };
 
 export default function PerformanceReportCardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSemesterId, setActiveSemesterId] = useState("sem-5");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
-  const [courseLessons, setCourseLessons] = useState<any[]>([]);
+  const [allLessons, setAllLessons] = useState<any[]>([]);
+  const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login");
-        return;
-      }
+      if (!session) { router.push("/login"); return; }
 
       const [profileRes, enrollRes, progressRes, lessonRes] = await Promise.all([
         supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
         supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
         supabase.from("user_progress").select("*").eq("user_id", session.user.id),
-        supabase.from("lessons").select("id, course_id")
+        supabase.from("lessons").select("id, course_id, title, order_index, has_assignment").order("order_index", { ascending: true }),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
-      if (enrollRes.data) setEnrollments(enrollRes.data);
+      if (enrollRes.data) {
+        setEnrollments(enrollRes.data);
+        if (enrollRes.data.length > 0) setActiveCourseId(enrollRes.data[0].course_id);
+      }
       if (progressRes.data) setUserProgress(progressRes.data);
-      if (lessonRes.data) setCourseLessons(lessonRes.data);
+      if (lessonRes.data) setAllLessons(lessonRes.data);
       setLoading(false);
     };
-
-    fetchUserData();
+    fetchData();
   }, [router]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center font-sans">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full" />
       </div>
     );
   }
 
-  // Currently active report card object binding
-  const activeSemData = RCD.find(s => s.id === activeSemesterId) || RCD[0];
+  // ── Derived metrics ──────────────────────────────────────────────
+  const totalEnrolled = enrollments.length;
+  const totalLessonsCompleted = userProgress.length;
 
-  // Table rendering logic engine mapping evaluation variables
-  const rcRender = () => (
-    <motion.div 
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      key={activeSemesterId}
-      className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none font-sans"
-    >
-      <div className="p-[24px] md:p-[32px] border-b border-[#8B4513]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] bg-[#F9F5F0]/50">
-        <div>
-          <div className="flex items-center gap-[8px]">
-            <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.term} Breakdown</h3>
-            <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">
-              {activeSemData.academicYear}
-            </span>
-          </div>
-          <p className="text-xs text-[#3D2B1F]/70 mt-1">Subject-wise evaluation scorecard tracking standard grading metrics</p>
-        </div>
-        
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-medium text-[#3D2B1F]/60 block tracking-wider">Term Score Status</span>
-            <span className="text-xs font-semibold text-emerald-800">{activeSemData.evaluationStatus}</span>
-          </div>
-        </div>
-      </div>
+  const totalLessonsAcrossEnrolled = allLessons.filter(l =>
+    enrollments.some(e => e.course_id === l.course_id)
+  ).length;
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-[#8B4513]/10 text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 bg-[#F9F5F0]/20">
-              <th className="p-4 pl-6">Subject Code</th>
-              <th className="p-4">Course Title</th>
-              <th className="p-4 text-center">Credits</th>
-              <th className="p-4 text-center">Internal Evaluation</th>
-              <th className="p-4 text-center">External Grade</th>
-              <th className="p-4 pr-6 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#8B4513]/5 text-xs">
-            {activeSemData.subjects.map((subj) => (
-              <tr key={subj.code} className="hover:bg-[#F9F5F0]/30 transition-colors">
-                <td className="p-4 pl-6 font-medium text-[#3D2B1F]">
-                  <span className="px-2 py-0.5 rounded-[4px] bg-[#8B4513]/5 text-[#8B4513] text-[11px] font-mono border border-[#8B4513]/10">{subj.code}</span>
-                </td>
-                <td className="p-4 font-normal text-[#3D2B1F] max-w-xs truncate">{subj.title}</td>
-                <td className="p-4 text-center font-normal text-[#3D2B1F]/70">{subj.credits}</td>
-                <td className="p-4 text-center font-normal text-[#3D2B1F]/70">{subj.internalMarks}</td>
-                <td className="p-4 text-center">
-                  <span className="font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10 text-xs">
-                    {subj.externalGrade}
-                  </span>
-                </td>
-                <td className="p-4 pr-6 text-right">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">
-                    <CheckCircle2 size={10} /> Cleared
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      <div className="p-4 bg-[#F9F5F0]/30 border-t border-[#8B4513]/10 flex flex-wrap items-center justify-between gap-4 text-xs text-[#3D2B1F]/70">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={14} className="text-[#8B4513]" />
-          <span>All internal practical modules accredited by Matrix Root Evaluation Boards.</span>
-        </div>
-        <div className="font-medium text-[#3D2B1F]">
-          Cleared Component Credits: <span className="text-[#8B4513]">{activeSemData.creditsCleared}</span>
-        </div>
-      </div>
-    </motion.div>
-  );
+  const overallProgress = totalLessonsAcrossEnrolled > 0
+    ? Math.round((totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100)
+    : 0;
 
-  const activeEnrollment = enrollments[0];
-  const navigateToWorkspace = () => {
-    if (!activeEnrollment) {
-      alert("Please enroll in a course to unlock your Workspace Hub.");
-      return;
-    }
-    const lessonsForActiveCourse = courseLessons.filter(l => l.course_id === activeEnrollment.course_id);
-    const completedForActiveCourse = userProgress.filter(p => p.course_id === activeEnrollment.course_id);
-    const isCompleted = lessonsForActiveCourse.length > 0 && completedForActiveCourse.length >= lessonsForActiveCourse.length;
+  const assignmentsSubmitted = userProgress.filter(p => p.assignment_url).length;
 
-    if (!isCompleted) {
-      alert("Your Internship Workspace is locked. Please complete all course lessons in the Courses page to unlock it!");
-      router.push(`/dashboard/courses/${activeEnrollment.course_id}`);
-      return;
-    }
-    router.push(`/workspace/${activeEnrollment.course_id}`);
-  };
+  // Per-course stats
+  const courseStats = enrollments.map(enr => {
+    const course = enr.courses;
+    const lessons = allLessons.filter(l => l.course_id === enr.course_id);
+    const completed = userProgress.filter(p => p.course_id === enr.course_id);
+    const pct = lessons.length > 0 ? Math.round((completed.length / lessons.length) * 100) : 0;
+    const lastActivity = completed.length > 0
+      ? completed.sort((a: any, b: any) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())[0].completed_at
+      : null;
+    const assignments = completed.filter((p: any) => p.assignment_url).length;
+    return { course, enr, lessons, completed, pct, lastActivity, assignments };
+  });
+
+  const activeStat = courseStats.find(s => s.enr.course_id === activeCourseId) || courseStats[0];
+
+  // Active course lesson list
+  const activeLessons = activeStat ? allLessons.filter(l => l.course_id === activeStat.enr.course_id) : [];
+  const activeCompletedIds = new Set((activeStat?.completed || []).map((p: any) => p.lesson_id));
 
   return (
     <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar Navigation Pane */}
+
+      {/* Desktop Sidebar */}
       <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white shrink-0">
         <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
           <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
           <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
         </div>
-        
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" onClick={() => router.push('/dashboard')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
-          
           <div className="pt-6">
             <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
             <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
           </div>
         </nav>
       </aside>
-      
-      {/* Mobile Sidebar Overlay */}
+
+      {/* Mobile Sidebar */}
       {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        >
+        <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setIsSidebarOpen(false)}>
           <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
-          <motion.aside 
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+          <motion.aside
+            initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
               <div className="flex items-center gap-3">
@@ -315,13 +135,12 @@ export default function PerformanceReportCardPage() {
                 <X size={20} />
               </button>
             </div>
-            
             <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
               <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
               <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
+              <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
+              <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
               <div className="pt-6">
                 <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
                 <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
@@ -331,14 +150,11 @@ export default function PerformanceReportCardPage() {
         </div>
       )}
 
-      {/* Primary Analytics Content Dashboard */}
+      {/* Main */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
-            >
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]">
               <Menu size={20} />
             </button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
@@ -347,124 +163,211 @@ export default function PerformanceReportCardPage() {
               </Button>
             </motion.div>
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Performance Studio Node</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Performance Metrics</h2>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#8B4513]/5 text-[10px] font-medium text-[#8B4513] border border-[#8B4513]/10">
               <Award size={12} />
-              <span>CGPA Ledger Synchronized</span>
+              <span>Live Student Data</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] space-y-[48px] pb-20 max-w-[1600px] w-full mx-auto">
-          
-          {/* Top Performance Status Widget Container */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-[24px]">
-            
-            <motion.div variants={cardVariants} initial="hidden" animate="visible" className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
-              <div className="flex items-center justify-between mb-[16px]">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Cumulative Index</span>
-                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">CGPA</span>
+        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pb-20 max-w-[1400px] w-full mx-auto">
+
+          {/* Student Info Banner */}
+          <motion.div variants={cardVariants} initial="hidden" animate="visible"
+            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] text-lg font-bold shrink-0">
+                {profile?.full_name?.charAt(0)?.toUpperCase() || "S"}
               </div>
               <div>
-                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">9.35</p>
-                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Overall academic status vector</p>
+                <h1 className="text-base font-semibold text-[#3D2B1F]">{profile?.full_name || "Student"}</h1>
+                <p className="text-xs text-[#3D2B1F]/60 mt-0.5">
+                  {profile?.departments?.name || profile?.college || "Matrix Root Academy"}
+                  {profile?.year ? ` · Year ${profile.year}` : ""}
+                </p>
               </div>
-              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
-                <div className="h-full bg-[#8B4513]" style={{ width: '93.5%' }}></div>
-              </div>
-            </motion.div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-[12px] border border-emerald-200 self-start sm:self-auto">
+              <ShieldCheck size={13} />
+              <span>{totalEnrolled} Course{totalEnrolled !== 1 ? "s" : ""} Enrolled</span>
+            </div>
+          </motion.div>
 
-            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
-              <div className="flex items-center justify-between mb-[16px]">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Active Term Index</span>
-                <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">SGPA</span>
-              </div>
-              <div>
-                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.sgpa}</p>
-                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Current target evaluation metric</p>
-              </div>
-              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
-                <div className="h-full bg-emerald-700" style={{ width: `${parseFloat(activeSemData.sgpa) * 10}%` }}></div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
-              <div className="flex items-center justify-between mb-[16px]">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Verified Attendance</span>
-                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">KPI</span>
-              </div>
-              <div>
-                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.attendance}</p>
-                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Workspace presence verification</p>
-              </div>
-              <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-[16px] overflow-hidden border border-[#8B4513]/10">
-                <div className="h-full bg-[#8B4513]" style={{ width: activeSemData.attendance }}></div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }} className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] flex flex-col justify-between shadow-none">
-              <div className="flex items-center justify-between mb-[16px]">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">Cleared Component</span>
-                <span className="text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded-[12px] border border-[#8B4513]/10">Credits</span>
-              </div>
-              <div>
-                <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{activeSemData.creditsCleared.split('/')[0].trim()}</p>
-                <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">Accredited study points confirmed</p>
-              </div>
-              <div className="flex items-center gap-1 mt-[16px] text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] w-fit border border-emerald-200">
-                <ShieldCheck size={12} /> Fully Aligned
-              </div>
-            </motion.div>
-
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <StatCard label="Overall Progress" value={`${overallProgress}%`} sub="Lessons completed" bar={overallProgress} barColor="#8B4513" delay={0} />
+            <StatCard label="Lessons Completed" value={`${totalLessonsCompleted}`} sub={`of ${totalLessonsAcrossEnrolled} total`} bar={totalLessonsAcrossEnrolled > 0 ? (totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100 : 0} barColor="#059669" delay={0.1} />
+            <StatCard label="Assignments Submitted" value={`${assignmentsSubmitted}`} sub="Task submissions" bar={totalLessonsCompleted > 0 ? (assignmentsSubmitted / totalLessonsCompleted) * 100 : 0} barColor="#d97706" delay={0.2} />
+            <StatCard label="Courses Enrolled" value={`${totalEnrolled}`} sub="Active tracks" bar={Math.min(totalEnrolled * 25, 100)} barColor="#7c3aed" delay={0.3} />
           </div>
 
-          {/* Interactive Term Switcher Navigation Header */}
-          <div className="space-y-[16px]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[8px]">
-              <h3 className="text-xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Historical Report Ledgers</h3>
-              <p className="text-xs text-[#3D2B1F]/70">Select term tabs below to parse evaluation subsets</p>
-            </div>
+          {/* No enrollments state */}
+          {enrollments.length === 0 && (
+            <motion.div variants={cardVariants} initial="hidden" animate="visible"
+              className="bg-white border border-[#8B4513]/20 rounded-[12px] p-12 text-center space-y-3">
+              <BookMarked size={40} className="text-[#8B4513]/30 mx-auto" />
+              <h3 className="text-base font-medium text-[#3D2B1F]">No Courses Enrolled Yet</h3>
+              <p className="text-xs text-[#3D2B1F]/60">Enroll in a course to start tracking your performance here.</p>
+              <button onClick={() => router.push('/dashboard/courses')}
+                className="mt-2 px-5 py-2 bg-[#8B4513] text-white text-xs font-semibold rounded-[10px] hover:bg-[#7a3c12] transition-colors">
+                Browse Courses
+              </button>
+            </motion.div>
+          )}
 
-            <div className="flex items-center gap-[16px] overflow-x-auto pb-2 scrollbar-none border-b border-[#8B4513]/10">
-              {RCD.map((sem) => {
-                const isSelected = sem.id === activeSemesterId;
-                return (
-                  <motion.button
-                    whileHover={{ y: -1 }}
-                    whileTap={{ y: 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    key={sem.id}
-                    onClick={() => setActiveSemesterId(sem.id)}
-                    className={`pb-3 text-xs font-medium transition-colors relative shrink-0 flex items-center gap-2 ${
-                      isSelected 
-                        ? "text-[#8B4513] font-semibold" 
-                        : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"
-                    }`}
-                  >
-                    <Calendar size={12} className={isSelected ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
-                    <span>{sem.term}</span>
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded-[8px] border ${isSelected ? "bg-[#8B4513]/5 text-[#8B4513] border-[#8B4513]/20" : "bg-white text-[#3D2B1F]/60 border-[#8B4513]/10"}`}>
-                      {sem.sgpa}
-                    </span>
-                    {isSelected && (
-                      <motion.div 
-                        layoutId="activeTabUnderline"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4513]" 
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      />
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
+          {/* Course Tabs + Detail */}
+          {enrollments.length > 0 && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F]">Course Progress Breakdown</h3>
+                <p className="text-xs text-[#3D2B1F]/60">Select a course below to view lesson-level details</p>
+              </div>
 
-          {/* Render Subject Evaluation View Table Logic Widget */}
-          {rcRender()}
+              {/* Course Tab Switcher */}
+              <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none border-b border-[#8B4513]/10">
+                {courseStats.map((stat, i) => {
+                  const isActive = stat.enr.course_id === activeCourseId;
+                  return (
+                    <motion.button
+                      key={stat.enr.course_id}
+                      whileHover={{ y: -1 }} whileTap={{ y: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      onClick={() => setActiveCourseId(stat.enr.course_id)}
+                      className={`pb-3 text-xs font-medium transition-colors relative shrink-0 flex items-center gap-2 ${isActive ? "text-[#8B4513] font-semibold" : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"}`}
+                    >
+                      <BookOpen size={12} className={isActive ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
+                      <span className="max-w-[160px] truncate">{stat.course?.title || `Course ${i + 1}`}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-[8px] border ${isActive ? "bg-[#8B4513]/5 text-[#8B4513] border-[#8B4513]/20" : "bg-white text-[#3D2B1F]/60 border-[#8B4513]/10"}`}>
+                        {stat.pct}%
+                      </span>
+                      {isActive && (
+                        <motion.div layoutId="activeTabUnderline"
+                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4513]"
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }} />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Active Course Detail */}
+              {activeStat && (
+                <motion.div variants={cardVariants} initial="hidden" animate="visible" key={activeCourseId}
+                  className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none">
+
+                  {/* Course Header */}
+                  <div className="p-6 md:p-8 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-[#3D2B1F]">{activeStat.course?.title}</h3>
+                      <p className="text-xs text-[#3D2B1F]/60 mt-1">
+                        {activeStat.completed.length} of {activeStat.lessons.length} lessons completed
+                        {activeStat.lastActivity && ` · Last active ${new Date(activeStat.lastActivity).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Progress ring */}
+                      <div className="relative w-14 h-14">
+                        <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                          <circle cx="28" cy="28" r="22" fill="none" stroke="#F9F5F0" strokeWidth="5" />
+                          <circle cx="28" cy="28" r="22" fill="none" stroke="#8B4513" strokeWidth="5"
+                            strokeDasharray={`${2 * Math.PI * 22}`}
+                            strokeDashoffset={`${2 * Math.PI * 22 * (1 - activeStat.pct / 100)}`}
+                            strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#8B4513]">
+                          {activeStat.pct}%
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-medium text-[#3D2B1F]/60 block tracking-wider">Status</span>
+                        <span className="text-xs font-semibold text-emerald-800">
+                          {activeStat.pct === 100 ? "Completed ✓" : activeStat.pct > 50 ? "In Progress" : activeStat.pct > 0 ? "Started" : "Not Started"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lesson Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#8B4513]/10 text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 bg-[#F9F5F0]/20">
+                          <th className="p-4 pl-6">#</th>
+                          <th className="p-4">Lesson Title</th>
+                          <th className="p-4 text-center">Assignment</th>
+                          <th className="p-4 text-center">Completed On</th>
+                          <th className="p-4 pr-6 text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#8B4513]/5 text-xs">
+                        {activeLessons.map((lesson, idx) => {
+                          const progressEntry = activeStat.completed.find((p: any) => p.lesson_id === lesson.id);
+                          const isDone = activeCompletedIds.has(lesson.id);
+                          return (
+                            <tr key={lesson.id} className="hover:bg-[#F9F5F0]/30 transition-colors">
+                              <td className="p-4 pl-6 text-[#3D2B1F]/40 font-mono text-[11px]">{String(idx + 1).padStart(2, "0")}</td>
+                              <td className="p-4 font-normal text-[#3D2B1F] max-w-xs">
+                                <span className="truncate block max-w-[260px]">{lesson.title}</span>
+                              </td>
+                              <td className="p-4 text-center">
+                                {lesson.has_assignment ? (
+                                  progressEntry?.assignment_url ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded border border-[#8B4513]/10">
+                                      <CheckCircle2 size={10} /> Submitted
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Pending</span>
+                                  )
+                                ) : (
+                                  <span className="text-[10px] text-[#3D2B1F]/30">—</span>
+                                )}
+                              </td>
+                              <td className="p-4 text-center text-[#3D2B1F]/60">
+                                {progressEntry?.completed_at
+                                  ? new Date(progressEntry.completed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+                                  : <span className="text-[#3D2B1F]/30">—</span>}
+                              </td>
+                              <td className="p-4 pr-6 text-right">
+                                {isDone ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">
+                                    <CheckCircle2 size={10} /> Done
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#3D2B1F]/50 bg-slate-50 px-2 py-0.5 rounded-[12px] border border-slate-200">
+                                    <Clock size={10} /> Pending
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {activeLessons.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="text-center py-10 text-xs text-[#3D2B1F]/40 italic">No lessons found for this course.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-4 bg-[#F9F5F0]/30 border-t border-[#8B4513]/10 flex flex-wrap items-center justify-between gap-4 text-xs text-[#3D2B1F]/70">
+                    <div className="flex items-center gap-2">
+                      <BarChart2 size={14} className="text-[#8B4513]" />
+                      <span>{activeStat.assignments} assignment{activeStat.assignments !== 1 ? "s" : ""} submitted for this course</span>
+                    </div>
+                    <div className="font-medium text-[#3D2B1F]">
+                      Lessons Done: <span className="text-[#8B4513]">{activeStat.completed.length} / {activeStat.lessons.length}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
 
         </div>
       </main>
@@ -472,18 +375,35 @@ export default function PerformanceReportCardPage() {
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+function StatCard({ label, value, sub, bar, barColor, delay }: {
+  label: string; value: string; sub: string; bar: number; barColor: string; delay: number;
+}) {
   return (
-    <motion.button 
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
+    <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay }}
+      className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 flex flex-col justify-between shadow-none">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">{label}</span>
+      </div>
+      <div>
+        <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{value}</p>
+        <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">{sub}</p>
+      </div>
+      <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-4 overflow-hidden border border-[#8B4513]/10">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(bar, 100)}%`, backgroundColor: barColor }} />
+      </div>
+    </motion.div>
+  );
+}
+
+function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
-        active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" 
-        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
-      }`}
+      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${active ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"}`}
     >
       <span className="text-[#8B4513]">{icon}</span>
       {label}
