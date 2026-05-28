@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Separate app — has its own git repo, do not track here
+/matrix-roots-academy/
