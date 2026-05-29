@@ -429,7 +429,14 @@ export default function AdminPage() {
 
   const handleCreateModule = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await createModuleAction(newModule);
+    if (!selectedCourseFilter) {
+      alert("Please select a course first.");
+      return;
+    }
+    const res = await createModuleAction({
+      ...newModule,
+      course_id: selectedCourseFilter
+    });
     if (res.success) {
       alert("Module initialized successfully!");
       setNewModule({ course_id: selectedCourseFilter, title: "", description: "", has_assessment: false });
@@ -873,7 +880,14 @@ export default function AdminPage() {
                       </div>
                       <form onSubmit={async (e) => {
                         e.preventDefault();
-                        const res = await createLessonAction(newLesson);
+                        if (!selectedCourseFilter) {
+                          alert("Please select a course first.");
+                          return;
+                        }
+                        const res = await createLessonAction({
+                          ...newLesson,
+                          course_id: selectedCourseFilter
+                        });
                         if (res.success) {
                           setNewLesson({ ...newLesson, title: "", content_url: "", notes: "", has_assignment: false });
                           fetchData();
