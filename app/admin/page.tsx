@@ -432,7 +432,7 @@ export default function AdminPage() {
     const res = await createModuleAction(newModule);
     if (res.success) {
       alert("Module initialized successfully!");
-      setNewModule({ course_id: "", title: "", description: "", has_assessment: false });
+      setNewModule({ course_id: selectedCourseFilter, title: "", description: "", has_assessment: false });
       fetchData();
     } else {
       alert("Error creating module: " + res.error);
