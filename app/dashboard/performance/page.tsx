@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
   TrendingUp, LayoutDashboard, BookOpen, User, LogOut,
   ArrowLeft, Award, ShieldCheck, CheckCircle2, Menu, X,
-  GraduationCap, Layers, BookMarked, Clock, BarChart2
+  GraduationCap, Layers, BookMarked, Clock, BarChart2, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -127,6 +127,7 @@ export default function PerformanceReportCardPage() {
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
           <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
+          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
           <div className="pt-6">
             <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
             <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
@@ -161,6 +162,7 @@ export default function PerformanceReportCardPage() {
               <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
               <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
               <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
+              <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
               <div className="pt-6">
                 <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
                 <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />

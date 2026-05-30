@@ -75,13 +75,12 @@ export async function fetchAdminData(activeTab: string) {
     if (activeTab === "grading" || activeTab === "certificates") {
       const { data: progressData, error: progErr } = await supabaseAdmin
         .from("user_progress")
-        .select("*")
-        .not("assignment_url", "is", null);
+        .select("*");
       if (progErr) console.error("Progress Data Error:", progErr);
 
       const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name");
       const { data: lessons } = await supabaseAdmin.from("lessons").select("id, title, course_id");
-      const { data: allCourses } = await supabaseAdmin.from("courses").select("id, title, weekly_tasks, timeline_weeks");
+      const { data: allCourses } = await supabaseAdmin.from("courses").select("id, title, weekly_tasks, timeline_weeks, project_tasks");
       const { data: enrolls } = await supabaseAdmin.from("enrollments").select("*");
 
       // Fetch weekly internship submissions
@@ -116,35 +115,9 @@ export async function approveAssignmentAction(progressId: string, enrollmentId: 
 
     if (progressError) throw progressError;
 
-    // 2. Check if ALL lessons for this course are now approved for this user
-    const { data: totalLessons } = await supabaseAdmin
-      .from("lessons")
-      .select("id")
-      .eq("course_id", courseId);
-
-    const { data: approvedProgress } = await supabaseAdmin
-      .from("user_progress")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("course_id", courseId)
-      .eq("status", "approved");
-
-    let certified = false;
-    if (totalLessons && approvedProgress && approvedProgress.length >= totalLessons.length) {
-      // 3. AUTO-APPROVE CERTIFICATE
-      await supabaseAdmin
-        .from("enrollments")
-        .update({
-          is_certified: true,
-          certification_status: "approved",
-          final_score: 100, // Default score for perfect completion
-        })
-        .eq("id", enrollmentId);
-      
-      certified = true;
-    }
-
-    return { success: true, certified };
+    // Auto-approve certificate logic is removed. Students must be manually approved 
+    // from the certificates tab where strict checks are verified.
+    return { success: true, certified: false };
   } catch (error: any) {
     console.error("Approval Action Error:", error);
     return { success: false, error: error.message };
@@ -152,17 +125,123 @@ export async function approveAssignmentAction(progressId: string, enrollmentId: 
 }
 
 export async function updateEnrollmentAction(enrollmentId: string, score: number, status: string) {
-  const { error } = await supabaseAdmin
-    .from("enrollments")
-    .update({
-      is_certified: status === "approved",
-      certification_status: status,
-      final_score: score,
-    })
-    .eq("id", enrollmentId);
+  try {
+    if (status === "approved") {
+      // 1. Fetch enrollment
+      const { data: enrollment, error: enrollError } = await supabaseAdmin
+        .from("enrollments")
+        .select("*")
+        .eq("id", enrollmentId)
+        .single();
+      
+      if (enrollError || !enrollment) {
+        return { success: false, error: "Enrollment not found." };
+      }
 
-  if (error) return { success: false, error: error.message };
-  return { success: true };
+      // 2. Fetch course
+      const { data: course, error: courseError } = await supabaseAdmin
+        .from("courses")
+        .select("*")
+        .eq("id", enrollment.course_id)
+        .single();
+      
+      if (courseError || !course) {
+        return { success: false, error: "Course not found." };
+      }
+
+      // 3. Fetch lessons
+      const { data: lessons, error: lessonsError } = await supabaseAdmin
+        .from("lessons")
+        .select("id")
+        .eq("course_id", enrollment.course_id);
+
+      if (lessonsError) {
+        return { success: false, error: "Failed to fetch course lessons." };
+      }
+
+      // 4. Fetch progress
+      const { data: progress, error: progressError } = await supabaseAdmin
+        .from("user_progress")
+        .select("lesson_id, status")
+        .eq("user_id", enrollment.student_id)
+        .eq("course_id", enrollment.course_id);
+
+      if (progressError) {
+        return { success: false, error: "Failed to fetch student progress." };
+      }
+
+      // 5. Fetch weekly updates
+      const { data: weeklyUpdates, error: weeklyError } = await supabaseAdmin
+        .from("weekly_updates")
+        .select("week_number, status")
+        .eq("student_id", enrollment.student_id)
+        .eq("course_id", enrollment.course_id);
+
+      if (weeklyError) {
+        return { success: false, error: "Failed to fetch student weekly updates." };
+      }
+
+      // -- Check 1: Completed Course (all lessons completed or approved)
+      const completedLessonIds = progress
+        ?.filter((p: any) => p.status === "completed" || p.status === "approved")
+        .map((p: any) => String(p.lesson_id)) || [];
+      
+      const hasCompletedCourse = lessons && lessons.length > 0 && lessons.every((l: any) => 
+        completedLessonIds.includes(String(l.id))
+      );
+
+      if (!hasCompletedCourse) {
+        return { 
+          success: false, 
+          error: "Strict Approval Check Failed: Student must complete all course lessons." 
+        };
+      }
+
+      // -- Check 2: Completed Internship Tasks
+      const courseProjectTasks = course.project_tasks || [];
+      const studentCompletedTasks = enrollment.completed_tasks || [];
+      const hasCompletedInternship = courseProjectTasks.every((task: string) => 
+        studentCompletedTasks.includes(task)
+      );
+
+      if (!hasCompletedInternship) {
+        return { 
+          success: false, 
+          error: "Strict Approval Check Failed: Student must complete all internship project tasks." 
+        };
+      }
+
+      // -- Check 3: Submitted & approved every week update
+      const totalWeeks = course.timeline_weeks || 8;
+      const approvedWeeklyUpdates = weeklyUpdates?.filter((wu: any) => wu.status === "approved") || [];
+      
+      const hasApprovedAllWeeklyUpdates = Array.from({ length: totalWeeks }, (_, i) => i + 1).every((weekNum) => 
+        approvedWeeklyUpdates.some((wu: any) => wu.week_number === weekNum)
+      );
+
+      if (!hasApprovedAllWeeklyUpdates) {
+        return { 
+          success: false, 
+          error: `Strict Approval Check Failed: Student must have approved weekly updates for all ${totalWeeks} weeks.` 
+        };
+      }
+    }
+
+    const { error } = await supabaseAdmin
+      .from("enrollments")
+      .update({
+        is_certified: status === "approved",
+        certification_status: status,
+        final_score: score,
+      })
+      .eq("id", enrollmentId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error in updateEnrollmentAction:", err);
+    return { success: false, error: err.message || "An unexpected error occurred." };
+  }
 }
 
 export async function createCourseAction(course: any) {

@@ -17,7 +17,8 @@ import {
   BookOpen,
   TrendingUp,
   LogOut,
-  Layers
+  Layers,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -127,6 +128,7 @@ export default function ProfilePage() {
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => window.location.href = '/workspace'} />
           <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => window.location.href = '/dashboard/internships'} />
           <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => window.location.href = '/dashboard/performance'} />
+          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => window.location.href = '/dashboard/support'} />
           
           <div className="pt-6">
             <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>

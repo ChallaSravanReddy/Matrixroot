@@ -69,7 +69,7 @@ export default function CourseDetailPage() {
   const [progressRecords, setProgressRecords] = useState<any[]>([]);
   const [assignmentUrl, setAssignmentUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [openModuleId, setOpenModuleId] = useState<string | null>(null);
+  const [openModuleIds, setOpenModuleIds] = useState<string[]>([]);
 
   // Custom video playback overlay state to conceal YouTube defaults
   const [isPlaying, setIsPlaying] = useState(false);
@@ -141,14 +141,16 @@ export default function CourseDetailPage() {
   // Automatically sequence open module accordion state based on current lesson progression
   useEffect(() => {
     if (currentLesson?.module_id) {
-      setOpenModuleId(currentLesson.module_id);
+      setOpenModuleIds(prev => prev.includes(currentLesson.module_id!) ? prev : [...prev, currentLesson.module_id!]);
     } else if (currentLesson && !currentLesson.module_id) {
-      setOpenModuleId("general");
+      setOpenModuleIds(prev => prev.includes("general") ? prev : [...prev, "general"]);
     }
   }, [currentLesson]);
 
   const toggleModule = (modId: string) => {
-    setOpenModuleId(prev => prev === modId ? null : modId);
+    setOpenModuleIds(prev =>
+      prev.includes(modId) ? prev.filter(id => id !== modId) : [...prev, modId]
+    );
   };
 
   const handleCompleteLesson = async (lessonToComplete?: Lesson | null) => {
@@ -357,7 +359,7 @@ export default function CourseDetailPage() {
   const isCurrentLessonCompleted = currentLesson ? completedLessonIds.includes(currentLesson.id) : false;
 
   const renderSyllabus = () => (
-    <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] shadow-none space-y-[24px]">
+    <div className="space-y-[24px]">
       <div className="border-b border-[#8B4513]/10 pb-[16px] flex items-center justify-between">
         <div>
           <h2 className="text-base font-bold text-[#3D2B1F]">Course Modules & Syllabus</h2>
@@ -375,14 +377,14 @@ export default function CourseDetailPage() {
       <div className="space-y-[16px]">
         {modules.map((mod) => {
           const modLessons = sortedLessons.filter(l => String(l.module_id) === String(mod.id));
-          const isOpen = String(openModuleId) === String(mod.id);
+          const isOpen = openModuleIds.includes(mod.id);
 
           return (
             <div key={mod.id} className="space-y-[8px] border-b border-[#8B4513]/5 pb-3 last:border-0">
-              {/* Module Dropdown Trigger Header */}
+              {/* Module Collapsible Header Title */}
               <button
                 onClick={() => toggleModule(mod.id)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-[#F9F5F0]/60 hover:bg-[#F9F5F0] text-[#3D2B1F] rounded-[8px] transition-colors text-left group border border-[#8B4513]/5"
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-[#F9F5F0]/60 hover:bg-[#F9F5F0] text-[#3D2B1F] rounded-[8px] border border-[#8B4513]/5 transition-colors text-left group"
               >
                 <div className="flex items-center gap-2 min-w-0 pr-2">
                   <span className="text-xs font-bold text-[#3D2B1F] truncate">{mod.title}</span>
@@ -393,7 +395,7 @@ export default function CourseDetailPage() {
                 </div>
               </button>
 
-              {/* Collapsible Dropdown Lessons Container */}
+              {/* Collapsible Lessons list */}
               {isOpen && (
                 <div className="space-y-1 pl-2 pt-1 border-l border-[#8B4513]/10 ml-2 animate-in fade-in-50 duration-200">
                   {modLessons.length === 0 ? (
@@ -454,17 +456,17 @@ export default function CourseDetailPage() {
           );
         })}
 
-        {/* Unassigned lessons fallback accordion visibility container */}
+        {/* Unassigned lessons fallback (Collapsible) */}
         {(() => {
           const unassigned = sortedLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id)));
           if (unassigned.length === 0) return null;
-          const isOpen = openModuleId === "general";
+          const isOpen = openModuleIds.includes("general");
 
           return (
             <div className="space-y-[8px] pt-2 border-t border-[#8B4513]/10">
               <button
-                onClick={() => setOpenModuleId(prev => prev === "general" ? null : "general")}
-                className="w-full flex items-center justify-between px-3 py-2 bg-[#F9F5F0]/30 hover:bg-[#F9F5F0]/60 text-[#3D2B1F]/80 font-bold rounded-[8px] transition-colors text-left"
+                onClick={() => toggleModule("general")}
+                className="w-full flex items-center justify-between px-3 py-2 bg-[#F9F5F0]/30 hover:bg-[#F9F5F0]/60 text-[#3D2B1F]/80 font-bold rounded-[8px] border border-[#8B4513]/5 transition-colors text-left"
               >
                 <span className="text-[10px] uppercase tracking-wider">General Course Classes</span>
                 <div className="shrink-0 transition-transform duration-200 text-[#8B4513]" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
@@ -659,112 +661,68 @@ export default function CourseDetailPage() {
       </header>
 
       {/* Main Studio Area */}
-      <div className="flex-1 lg:overflow-hidden px-[16px] md:px-[32px] pt-[8px] md:pt-[12px] pb-0 max-w-[1600px] w-full mx-auto overflow-y-auto">
+      <div className="flex-1 flex overflow-hidden w-full">
         {!currentLesson ? (
-          <div className="py-20 text-center text-xs text-[#3D2B1F]/60 font-bold">Resolving active syllabus coordinates...</div>
-        ) : hasVideo ? (
-          /* SCENARIO A: Has Video */
-          <div className="grid lg:grid-cols-12 gap-[32px] items-start lg:h-full">
-
-            {/* Left Side: Video + Syllabus Below */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col lg:h-full space-y-[24px] min-h-0">
-              {/* Wraps YouTube iframe in overflow: hidden container using absolute absolute inset layout */}
-              <div className="w-full aspect-video bg-[#F9F5F0] rounded-[12px] overflow-hidden border border-[#8B4513]/20 relative shadow-none shrink-0">
-                {isLocked ? (
-                  <div className="w-full h-full bg-white flex flex-col items-center justify-center p-6 text-center space-y-4 absolute inset-0 z-10">
-                    <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10">
-                      <ShieldCheck size={24} className="text-[#8B4513]" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-[#3D2B1F]">Course Access Locked</h3>
-                      <p className="text-xs text-[#3D2B1F]/70 max-w-xs mx-auto mt-1 leading-[1.6] font-medium">Unlock full lecture recordings and study projects instantly.</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => setShowPayment(true)}
-                      className="px-5 py-2 bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-bold text-xs rounded-[8px] shadow-none"
-                    >
-                      Enroll to Access Lessons
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {!isPlaying && (
-                      <div
-                        onClick={() => setIsPlaying(true)}
-                        className="absolute inset-0 bg-[#3D2B1F] flex flex-col items-center justify-center p-6 text-center cursor-pointer group z-20 transition-all duration-300"
-                      >
-                        {/* Custom decorative inner stroke to match Quiet Luxury */}
-                        <div className="absolute inset-3 border border-[#8B4513]/20 rounded-[8px] pointer-events-none" />
-
-                        <div className="w-16 h-16 rounded-full bg-[#D2B48C] flex items-center justify-center text-[#3D2B1F] shadow-none group-hover:scale-105 transition-transform duration-300 mb-4">
-                          <Play size={28} className="fill-current ml-1 text-[#3D2B1F]" />
-                        </div>
-
-                        <h3 className="text-base font-bold text-[#F9F5F0] max-w-md px-4 leading-tight group-hover:text-[#D2B48C] transition-colors line-clamp-2">
-                          {currentLesson?.title || "Lesson Stream"}
-                        </h3>
-                        <p className="text-[10px] font-bold tracking-wider uppercase text-[#D2B48C]/90 mt-2">
-                          Click to Start Video Lecture
-                        </p>
-                      </div>
-                    )}
-                    {renderVideoPlayer(currentLesson.content_url || "")}
-                  </>
-                )}
-              </div>
-
-              <div className="lg:flex-1 lg:overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
+          <div className="flex-1 py-20 text-center text-xs text-[#3D2B1F]/60 font-bold">Resolving active syllabus coordinates...</div>
+        ) : (
+          <>
+            {/* Docked Left Sidebar Panel */}
+            <aside className="w-80 shrink-0 border-r border-[#8B4513]/10 bg-white flex flex-col h-full overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
                 {renderSyllabus()}
               </div>
-            </div>
+            </aside>
 
-            {/* Right Side: Lesson Notes & Tasks */}
-            <div className="lg:col-span-7 xl:col-span-7 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent min-h-0 pb-4">
-              {isLocked ? (
-                <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
-                  <h3 className="text-base font-bold text-[#3D2B1F]">{currentLesson.title}</h3>
-                  <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
-                    This module provides specialized masterclass video streaming, institutional lesson summaries, and assignment verifications.
-                  </p>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
-                    <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
-                      Unlock Full Access Now
-                    </Button>
-                  </motion.div>
-                </div>
-              ) : (
-                renderNotesAndAssessment()
-              )}
-            </div>
+            {/* Right Side: Content Player Area */}
+            <main className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent">
+              <div className="max-w-4xl mx-auto">
+                {isLocked ? (
+                  <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
+                    <h3 className="text-base font-bold text-[#3D2B1F]">{currentLesson.title}</h3>
+                    <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
+                      This module provides specialized masterclass video streaming, institutional lesson summaries, and assignment verifications.
+                    </p>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                      <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
+                        Unlock Full Access Now
+                      </Button>
+                    </motion.div>
+                  </div>
+                ) : (
+                  <div className="space-y-[24px]">
+                    {/* Embedded Video Player at the top of the content area */}
+                    {hasVideo && (
+                      <div className="w-full aspect-video bg-[#F9F5F0] rounded-[12px] overflow-hidden border border-[#8B4513]/20 relative shadow-none shrink-0 mb-[24px]">
+                        {!isPlaying && (
+                          <div
+                            onClick={() => setIsPlaying(true)}
+                            className="absolute inset-0 bg-[#3D2B1F] flex flex-col items-center justify-center p-6 text-center cursor-pointer group z-20 transition-all duration-300"
+                          >
+                            <div className="absolute inset-3 border border-[#8B4513]/20 rounded-[8px] pointer-events-none" />
 
-          </div>
-        ) : (
-          /* SCENARIO B: No Video */
-          <div className="max-w-4xl mx-auto space-y-[32px] lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-amber-200 scrollbar-track-transparent pb-4">
-            {isLocked ? (
-              <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[48px] text-center space-y-[16px] shadow-none">
-                <div className="w-12 h-12 bg-[#8B4513]/5 rounded-full flex items-center justify-center border border-[#8B4513]/10 mx-auto">
-                  <ShieldCheck size={24} className="text-[#8B4513]" />
-                </div>
-                <h3 className="text-base font-bold text-[#3D2B1F]">Premium Study Guide Locked</h3>
-                <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
-                  Enroll in this academic program track to instantly unseal expert learning references and submission slots.
-                </p>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
-                  <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
-                    Start Course Program
-                  </Button>
-                </motion.div>
+                            <div className="w-16 h-16 rounded-full bg-[#D2B48C] flex items-center justify-center text-[#3D2B1F] shadow-none group-hover:scale-105 transition-transform duration-300 mb-4">
+                              <Play size={28} className="fill-current ml-1 text-[#3D2B1F]" />
+                            </div>
+
+                            <h3 className="text-base font-bold text-[#F9F5F0] max-w-md px-4 leading-tight group-hover:text-[#D2B48C] transition-colors line-clamp-2">
+                              {currentLesson.title}
+                            </h3>
+                            <p className="text-[10px] font-bold tracking-wider uppercase text-[#D2B48C]/90 mt-2">
+                              Click to Start Video Lecture
+                            </p>
+                          </div>
+                        )}
+                        {renderVideoPlayer(currentLesson.content_url || "")}
+                      </div>
+                    )}
+
+                    {/* Lesson text content, notes, and assessment submission */}
+                    {renderNotesAndAssessment()}
+                  </div>
+                )}
               </div>
-            ) : (
-              renderNotesAndAssessment()
-            )}
-
-            <div className="pt-2 border-t border-[#8B4513]/10">
-              {renderSyllabus()}
-            </div>
-          </div>
+            </main>
+          </>
         )}
       </div>
 

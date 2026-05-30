@@ -34,6 +34,8 @@ export default function LessonPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
+  const [openModuleIds, setOpenModuleIds] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchLessonData = async () => {
       if (!courseId || !lessonId) return;
@@ -113,6 +115,21 @@ export default function LessonPage() {
 
     fetchLessonData();
   }, [courseId, lessonId]);
+
+  // Synchronize openModuleIds with active lesson module
+  useEffect(() => {
+    if (currentLesson?.module_id) {
+      setOpenModuleIds(prev => prev.includes(currentLesson.module_id!) ? prev : [...prev, currentLesson.module_id!]);
+    } else if (currentLesson && !currentLesson.module_id) {
+      setOpenModuleIds(prev => prev.includes("general") ? prev : [...prev, "general"]);
+    }
+  }, [currentLesson]);
+
+  const toggleModule = (modId: string) => {
+    setOpenModuleIds(prev =>
+      prev.includes(modId) ? prev.filter(id => id !== modId) : [...prev, modId]
+    );
+  };
 
   const handleCompleteLesson = async () => {
     if (!userId || !currentLesson) return;
@@ -204,7 +221,7 @@ export default function LessonPage() {
 
   // Reusable component block for the Syllabus/Modules outline
   const renderSyllabus = () => (
-    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6 font-sans">
+    <div className="space-y-6">
       <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
         <div>
           <h2 className="text-base font-bold text-slate-900">Curriculum Structure</h2>
@@ -212,23 +229,93 @@ export default function LessonPage() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Group lessons by module */}
         {modules.map((mod) => {
           const modLessons = allLessons.filter(l => String(l.module_id) === String(mod.id)).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+          const isOpen = openModuleIds.includes(mod.id);
 
           return (
             <div key={mod.id} className="space-y-2">
-              <div className="flex items-center justify-between px-3 py-2 bg-slate-100 rounded-xl">
-                <span className="text-xs font-bold text-slate-700 truncate">{mod.title}</span>
-                {mod.has_assessment && <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Assessment</span>}
-              </div>
+              {/* Collapsible Module Header Trigger */}
+              <button
+                onClick={() => toggleModule(mod.id)}
+                className="w-full flex items-center justify-between px-3 py-2 bg-slate-100 hover:bg-slate-200/80 rounded-xl text-left transition-colors"
+              >
+                <div className="flex items-center gap-2 min-w-0 pr-2">
+                  <span className="text-xs font-bold text-slate-700 truncate">{mod.title}</span>
+                  {mod.has_assessment && <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shrink-0">Assessment</span>}
+                </div>
+                <div className="shrink-0 transition-transform duration-200 text-slate-500" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </div>
+              </button>
 
-              <div className="space-y-1 pl-1">
-                {modLessons.length === 0 ? (
-                  <div className="text-[11px] text-slate-400 italic px-2 py-1">No lessons added.</div>
-                ) : (
-                  modLessons.map((lesson) => {
+              {/* Collapsible Lessons list */}
+              {isOpen && (
+                <div className="space-y-1 pl-2 pt-1 border-l border-slate-200 ml-2 animate-in fade-in-50 duration-200">
+                  {modLessons.length === 0 ? (
+                    <div className="text-[11px] text-slate-400 italic px-2 py-1">No lessons added.</div>
+                  ) : (
+                    modLessons.map((lesson) => {
+                      const isActive = lesson.id === lessonId;
+
+                      return (
+                        <button
+                          key={lesson.id}
+                          onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
+                          className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
+                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
+                              : "hover:bg-slate-50 text-slate-700"
+                            }`}
+                        >
+                          <div className="flex-1 min-w-0 pr-2">
+                            <h4 className={`text-xs truncate ${isActive ? "text-white font-bold" : "text-slate-800 font-medium"}`}>
+                              {lesson.title}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {lesson.notes && <span className={`text-[9px] ${isActive ? "text-blue-100" : "text-slate-500"}`}>📝 Notes</span>}
+                              {lesson.content_url && <span className={`text-[9px] ${isActive ? "text-blue-100" : "text-slate-500"}`}>🎥 Video</span>}
+                              {lesson.has_assignment && <span className={`text-[9px] ${isActive ? "text-amber-200" : "text-amber-600 font-semibold"}`}>Task</span>}
+                            </div>
+                          </div>
+                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0"></div>}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Legacy/Unassigned lessons */}
+        {(() => {
+          const unassigned = allLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id))).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+          if (unassigned.length === 0) return null;
+          const isOpen = openModuleIds.includes("general");
+
+          return (
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              {/* Collapsible General Trigger */}
+              <button
+                onClick={() => toggleModule("general")}
+                className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl text-left transition-colors"
+              >
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">General Curriculum</span>
+                <div className="shrink-0 transition-transform duration-200 text-slate-400" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className="space-y-1 pl-2 pt-1 border-l border-slate-200 ml-2 animate-in fade-in-50 duration-200">
+                  {unassigned.map((lesson) => {
                     const isActive = lesson.id === lessonId;
 
                     return (
@@ -253,51 +340,9 @@ export default function LessonPage() {
                         {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0"></div>}
                       </button>
                     );
-                  })
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Legacy/Unassigned lessons */}
-        {(() => {
-          const unassigned = allLessons.filter(l => !l.module_id || !modules.some(m => String(m.id) === String(l.module_id))).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
-          if (unassigned.length === 0) return null;
-
-          return (
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="px-3 py-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">General Curriculum</span>
-              </div>
-              <div className="space-y-1 pl-1">
-                {unassigned.map((lesson) => {
-                  const isActive = lesson.id === lessonId;
-
-                  return (
-                    <button
-                      key={lesson.id}
-                      onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
-                          : "hover:bg-slate-50 text-slate-700"
-                        }`}
-                    >
-                      <div className="flex-1 min-w-0 pr-2">
-                        <h4 className={`text-xs truncate ${isActive ? "text-white font-bold" : "text-slate-800 font-medium"}`}>
-                          {lesson.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {lesson.notes && <span className={`text-[9px] ${isActive ? "text-blue-100" : "text-slate-500"}`}>📝 Notes</span>}
-                          {lesson.content_url && <span className={`text-[9px] ${isActive ? "text-blue-100" : "text-slate-500"}`}>🎥 Video</span>}
-                          {lesson.has_assignment && <span className={`text-[9px] ${isActive ? "text-amber-200" : "text-amber-600 font-semibold"}`}>Task</span>}
-                        </div>
-                      </div>
-                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0"></div>}
-                    </button>
-                  );
-                })}
-              </div>
+                  })}
+                </div>
+              )}
             </div>
           );
         })()}
@@ -486,65 +531,192 @@ export default function LessonPage() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:overflow-hidden p-6 md:p-10 max-w-[1600px] w-full mx-auto overflow-y-auto">
+      <div className="flex-1 flex overflow-hidden w-full">
         {!currentLesson ? (
-          <div className="py-20 text-center text-slate-400">Lesson not found</div>
-        ) : hasVideo ? (
-          /* SCENARIO A: Has Video */
-          /* Video on Left (Reduced size), Course Modules below Video, Notes on Right side */
-          <div className="grid lg:grid-cols-12 gap-8 items-start lg:h-full">
-
-            {/* Left Side: Video + Modules Below */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col lg:h-full space-y-6 min-h-0">
-              {/* Reduced size Video Container */}
-              <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-slate-200/80">
-                {(!currentLesson.is_preview && !isEnrolled) ? (
-                  <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-6 text-center space-y-4">
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-blue-600">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-slate-900">Enrollment Required</h3>
-                      <p className="text-xs text-slate-600 max-w-xs mx-auto mt-1">Unlock premium course content to watch.</p>
-                    </div>
-                    <button
-                      onClick={() => window.location.href = `/dashboard/courses/${courseId}`}
-                      className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all shadow-sm"
-                    >
-                      Enroll Now
-                    </button>
-                  </div>
-                ) : (
-                  renderVideoPlayer(currentLesson.content_url)
-                )}
-              </div>
-
-              {/* Course Modules and Lessons below Video */}
-              <div className="lg:flex-1 lg:overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+          <div className="flex-1 py-20 text-center text-slate-400">Lesson not found</div>
+        ) : (
+          <>
+            {/* Left Side Sidebar: Curriculum Modules & Sessions */}
+            <aside className="w-80 shrink-0 border-r border-slate-200 bg-white flex flex-col h-full overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                 {renderSyllabus()}
               </div>
-            </div>
+            </aside>
 
-            {/* Right Side: Lesson Notes */}
-            <div className="lg:col-span-7 xl:col-span-7 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20 min-h-0">
-              {renderNotesAndAssessment()}
-            </div>
+            {/* Right Side Main Content View: Video + Document Notes + Assessment Submission */}
+            <main className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+              <div className="max-w-4xl mx-auto space-y-8">
+                
+                {/* Title & Metadata Section */}
+                <div className="space-y-3 border-b border-slate-200 pb-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                      {currentLesson.title}
+                    </h1>
+                    {isCompleted && (
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 self-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        </svg>
+                        Completed
+                      </span>
+                    )}
+                  </div>
 
-          </div>
-        ) : (
-          /* SCENARIO B: No Video */
-          /* Only Document/Notes on Top, under that Modules and Lessons */
-          <div className="max-w-4xl mx-auto space-y-10 lg:h-full lg:overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent pb-20">
-            {/* Notes & Submission Block on Top */}
-            {renderNotesAndAssessment()}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {currentLesson.notes && <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded">📝 Text Notes Included</span>}
+                    {requiresAssessment && <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">⚠️ Mandatory Assessment Link Required</span>}
+                  </div>
+                </div>
 
-            {/* Modules and Lessons Below */}
-            <div className="pt-2 border-t border-slate-200">
-              {renderSyllabus()}
-            </div>
-          </div>
+                {/* Embedded Video Player (Top of right-hand content view) */}
+                {hasVideo && (
+                  <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-md border border-slate-200/80">
+                    {(!currentLesson.is_preview && !isEnrolled) ? (
+                      <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center p-6 text-center space-y-4">
+                        <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-blue-600">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900">Enrollment Required</h3>
+                          <p className="text-xs text-slate-600 max-w-xs mx-auto mt-1">Unlock premium course content to watch.</p>
+                        </div>
+                        <button
+                          onClick={() => window.location.href = `/dashboard/courses/${courseId}`}
+                          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all shadow-sm"
+                        >
+                          Enroll Now
+                        </button>
+                      </div>
+                    ) : (
+                      renderVideoPlayer(currentLesson.content_url)
+                    )}
+                  </div>
+                )}
+
+                {/* Companion Lecture notes / Documents */}
+                {currentLesson.notes ? (
+                  <div className="space-y-4 border border-slate-300 rounded-none p-8 md:p-12 shadow-md max-w-none bg-white text-black font-sans">
+                    <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-3 text-slate-500">
+                      <span>📄 Official Document & Lecture Notes</span>
+                    </h3>
+                    <div 
+                      className="rich-text-content selection:bg-blue-100 block font-normal text-black" 
+                      dangerouslySetInnerHTML={{ __html: currentLesson.notes }}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm text-slate-400 italic py-4">No companion text notes provided for this lesson.</div>
+                )}
+
+                {/* Assignment submission card (Rendered if assessment is required) */}
+                {requiresAssessment && (
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+                    <h2 className="text-lg font-bold flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-blue-600 shrink-0">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12" />
+                      </svg>
+                      Required Assessment Submission
+                    </h2>
+
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
+                          Task Submission Link {parentModule?.has_assessment ? "(Module Assessment)" : "(Lesson Assessment)"}
+                        </label>
+                        <textarea
+                          value={assignmentUrl}
+                          onChange={(e) => setAssignmentUrl(e.target.value)}
+                          placeholder="Paste your accessible project output link (GitHub repository, deployed link, or Google Drive document)..."
+                          className="w-full bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl p-3.5 text-slate-900 placeholder:text-slate-400 text-sm transition-all min-h-[90px] resize-y outline-none font-medium"
+                        />
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                        <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                          Submitting your project link saves your output for mentor evaluation and credit validation.
+                        </p>
+
+                        <button
+                          onClick={handleCompleteLesson}
+                          disabled={submitting || !assignmentUrl.trim()}
+                          className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 self-end sm:self-auto shrink-0 ${isCompleted
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/10"
+                              : "bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 active:scale-[0.98]"
+                            } disabled:opacity-40 disabled:cursor-not-allowed`}
+                        >
+                          {submitting ? (
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : isCompleted ? (
+                            "Update Submitted Task"
+                          ) : (
+                            "Submit Assessment"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Lesson Navigation Actions */}
+                {(() => {
+                  const sortedLessons = [...allLessons].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                  const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+                  const prevLesson = currentIndex > 0 ? sortedLessons[currentIndex - 1] : null;
+                  const nextLesson = currentIndex < sortedLessons.length - 1 ? sortedLessons[currentIndex + 1] : null;
+
+                  return (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-6 border-t border-slate-200">
+                      {prevLesson ? (
+                        <button
+                          onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${prevLesson.id}`}
+                          className="px-5 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                          </svg>
+                          <span className="truncate max-w-[180px]">Prev: {prevLesson.title}</span>
+                        </button>
+                      ) : <div />}
+
+                      {nextLesson ? (
+                        <button
+                          onClick={async () => {
+                            if (!requiresAssessment && !isCompleted) {
+                              await handleCompleteLesson();
+                            }
+                            window.location.href = `/dashboard/courses/${courseId}/lessons/${nextLesson.id}`;
+                          }}
+                          className="px-8 py-3 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
+                        >
+                          <span className="truncate max-w-[180px]">Next: {nextLesson.title}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => window.location.href = `/dashboard/courses/${courseId}`}
+                          className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+                        >
+                          Finish Course Track
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+
+              </div>
+            </main>
+          </>
         )}
       </div>
     </div>

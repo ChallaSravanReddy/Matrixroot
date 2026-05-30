@@ -46,7 +46,9 @@ import {
   Calendar,
   GitBranch,
   Pencil,
-  Check
+  Check,
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -65,6 +67,7 @@ export default function AdminPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [certRequests, setCertRequests] = useState<any[]>([]);
+  const [allProgressRecords, setAllProgressRecords] = useState<any[]>([]);
 
   // Form States
   const [newCourse, setNewCourse] = useState({ 
@@ -175,7 +178,9 @@ export default function AdminPage() {
             const enrollment = enrolls.find((e: any) => e.student_id === progress.user_id && String(e.course_id) === String(lesson?.course_id));
             return { ...progress, profiles: student, lessons: { ...lesson, courses: course }, enrollment: enrollment };
           });
-          setSubmissions(joined);
+          setAllProgressRecords(joined);
+          setSubmissions(joined.filter((s: any) => s.assignment_url !== null && s.assignment_url !== undefined));
+          if (lessons) setLessons(lessons);
           const readyForCert = enrolls.filter((e: any) => e.payment_status === 'completed' && !e.is_certified).map((e: any) => ({
             ...e, courses: allCourses.find((c: any) => String(c.id) === String(e.course_id)), profiles: profiles.find((p: any) => p.id === e.student_id)
           }));
@@ -1461,24 +1466,210 @@ export default function AdminPage() {
 
           {activeTab === "certificates" && (
              <div className="space-y-[24px]">
-                <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Signature Allocation Approval Gate</h3>
+                <div className="flex justify-between items-center border-b border-[#8B4513]/10 pb-4">
+                   <div>
+                      <h3 className="text-xl font-semibold tracking-tight text-[#3D2B1F]">Signature Allocation Approval Gate</h3>
+                      <p className="text-xs text-[#3D2B1F]/60 mt-1">Review student eligibility requirements and issue credentials.</p>
+                   </div>
+                   <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-3.5 py-1.5 rounded-[8px]">
+                      {certRequests.length} pending request{certRequests.length !== 1 ? "s" : ""}
+                   </span>
+                </div>
+
                 <div className="grid gap-[24px]">
-                   {certRequests.map(req => (
-                     <div key={req.id} className="p-[32px] bg-white border border-[#8B4513]/20 rounded-[12px] flex items-center justify-between shadow-none">
-                        <div>
-                           <h4 className="text-base font-medium text-[#3D2B1F]">{req.profiles?.full_name}</h4>
-                           <p className="text-xs font-medium text-[#8B4513] mt-0.5">{req.courses?.title}</p>
-                           <p className="text-[10px] text-[#3D2B1F]/50 uppercase tracking-wider font-medium mt-1">Authority ID: {req.id.substring(0,8)}</p>
-                        </div>
-                        <div className="flex gap-[8px]">
-                           <Button size="sm" className="rounded-[12px] px-4 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" onClick={() => handleGrade(req.id, "90", "approved")}>Approve Node</Button>
-                           <Button variant="outline" size="sm" className="rounded-[12px] px-4 font-medium border-[#8B4513]/20 text-xs shadow-none" onClick={() => handleGrade(req.id, "0", "rejected")}>Purge Request</Button>
-                        </div>
-                     </div>
-                   ))}
-                 </div>
-              </div>
-           )}
+                   {certRequests.length === 0 ? (
+                      <div className="py-[80px] text-center bg-white border border-[#8B4513]/10 rounded-[16px] text-xs text-[#3D2B1F]/50 font-medium">
+                         No pending certificate requests at this time.
+                      </div>
+                   ) : (
+                      certRequests.map(req => {
+                         // Compute student eligibility parameters
+                         const courseLessons = lessons.filter((l: any) => String(l.course_id) === String(req.course_id));
+                         const userProgressForCourse = allProgressRecords.filter((p: any) => 
+                           String(p.user_id) === String(req.student_id) && 
+                           String(p.lessons?.course_id) === String(req.course_id)
+                         );
+
+                         const completedLessonsCount = courseLessons.filter((lesson: any) => 
+                           userProgressForCourse.some((p: any) => 
+                             String(p.lesson_id) === String(lesson.id) && 
+                             (p.status === "completed" || p.status === "approved")
+                           )
+                         ).length;
+
+                         const totalLessons = courseLessons.length;
+                         const isCourseCompleted = totalLessons > 0 && completedLessonsCount >= totalLessons;
+
+                         // Internship tasks check
+                         const courseProjectTasks = req.courses?.project_tasks || [];
+                         const completedTasks = req.completed_tasks || [];
+                         const completedTasksCount = courseProjectTasks.filter((t: string) => completedTasks.includes(t)).length;
+                         const totalTasks = courseProjectTasks.length;
+                         const isInternshipTasksCompleted = totalTasks === 0 || completedTasksCount >= totalTasks;
+
+                         // Weekly updates check
+                         const courseWeeklyUpdates = weeklyUpdates.filter((wu: any) => 
+                           String(wu.student_id) === String(req.student_id) && 
+                           String(wu.course_id) === String(req.course_id)
+                         );
+                         
+                         const totalWeeks = req.courses?.timeline_weeks || 8;
+                         const submittedUpdates = Array.from({ length: totalWeeks }, (_, idx) => {
+                           const weekNum = idx + 1;
+                           const update = courseWeeklyUpdates.find((wu: any) => wu.week_number === weekNum);
+                           return {
+                             weekNumber: weekNum,
+                             status: update?.status || "none", // "submitted", "approved", "rejected", "none"
+                           };
+                         });
+
+                         const approvedWeeksCount = submittedUpdates.filter(w => w.status === "approved").length;
+                         const isWeeklyUpdatesCompleted = approvedWeeksCount >= totalWeeks;
+
+                         const isEligible = isCourseCompleted && isInternshipTasksCompleted && isWeeklyUpdatesCompleted;
+
+                         return (
+                            <div key={req.id} className="p-[28px] bg-white border border-[#8B4513]/15 rounded-[16px] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-sm hover:border-[#8B4513]/30 transition-all">
+                               {/* Student & Course Details */}
+                               <div className="space-y-3 xl:max-w-[280px] w-full">
+                                  <div>
+                                     <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-2.5 py-1 rounded-[6px] uppercase tracking-wider">
+                                        Credential Gate
+                                     </span>
+                                     <h4 className="text-base font-bold text-[#3D2B1F] mt-2 truncate">{req.profiles?.full_name}</h4>
+                                     <p className="text-xs font-medium text-[#8B4513] mt-0.5 line-clamp-1">{req.courses?.title}</p>
+                                     <p className="text-[9px] text-[#3D2B1F]/40 font-mono mt-1">Enrollment ID: {req.id}</p>
+                                  </div>
+
+                                  {/* Eligibility Badge */}
+                                  <div>
+                                     {isEligible ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[20px] text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                           <CheckCircle2 size={12} className="text-emerald-600" /> Eligible for Issuance
+                                        </span>
+                                     ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[20px] text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+                                           <Loader2 size={12} className="text-amber-600 animate-spin" /> Verification Pending
+                                        </span>
+                                     )}
+                                  </div>
+                               </div>
+
+                               {/* Verification Checklist */}
+                               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 border-y xl:border-y-0 xl:border-x border-[#8B4513]/10 py-4 xl:py-0 xl:px-6">
+                                  {/* Course Completion Gate */}
+                                  <div className="space-y-1.5">
+                                     <div className="flex items-center justify-between text-xs">
+                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Course Syllabus</span>
+                                        <span className={`font-bold ${isCourseCompleted ? "text-emerald-700" : "text-amber-700"}`}>
+                                           {completedLessonsCount} / {totalLessons}
+                                        </span>
+                                     </div>
+                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
+                                        <div 
+                                           className={`h-full rounded-full transition-all duration-300 ${isCourseCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
+                                           style={{ width: `${totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0}%` }}
+                                        />
+                                     </div>
+                                     <div className="text-[10px] text-[#3D2B1F]/50 flex items-center gap-1">
+                                        {isCourseCompleted ? (
+                                           <><CheckCircle2 size={10} className="text-emerald-600" /> All lessons completed</>
+                                        ) : (
+                                           <><Circle size={10} className="text-amber-500" /> Syllabus completion required</>
+                                        )}
+                                     </div>
+                                  </div>
+
+                                  {/* Internship Checklist Gate */}
+                                  <div className="space-y-1.5">
+                                     <div className="flex items-center justify-between text-xs">
+                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Internship Checklist</span>
+                                        <span className={`font-bold ${isInternshipTasksCompleted ? "text-emerald-700" : "text-amber-700"}`}>
+                                           {completedTasksCount} / {totalTasks}
+                                        </span>
+                                     </div>
+                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
+                                        <div 
+                                           className={`h-full rounded-full transition-all duration-300 ${isInternshipTasksCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
+                                           style={{ width: `${totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 100}%` }}
+                                        />
+                                     </div>
+                                     <div className="text-[10px] text-[#3D2B1F]/50 flex items-center gap-1">
+                                        {isInternshipTasksCompleted ? (
+                                           <><CheckCircle2 size={10} className="text-emerald-600" /> All project tasks completed</>
+                                        ) : (
+                                           <><Circle size={10} className="text-amber-500" /> Complete all project tasks</>
+                                        )}
+                                     </div>
+                                  </div>
+
+                                  {/* Weekly Progress Logs Gate */}
+                                  <div className="space-y-1.5">
+                                     <div className="flex items-center justify-between text-xs">
+                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Weekly Updates</span>
+                                        <span className={`font-bold ${isWeeklyUpdatesCompleted ? "text-emerald-700" : "text-amber-700"}`}>
+                                           {approvedWeeksCount} / {totalWeeks} Approved
+                                        </span>
+                                     </div>
+                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
+                                        <div 
+                                           className={`h-full rounded-full transition-all duration-300 ${isWeeklyUpdatesCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
+                                           style={{ width: `${totalWeeks > 0 ? (approvedWeeksCount / totalWeeks) * 100 : 0}%` }}
+                                        />
+                                     </div>
+                                     {/* Simple dots showing weeks submission status */}
+                                     <div className="flex gap-1 items-center flex-wrap pt-0.5">
+                                        {submittedUpdates.map((w, idx) => (
+                                           <span 
+                                              key={idx} 
+                                              className={`w-4 h-4 rounded-full border text-[8px] flex items-center justify-center font-bold font-mono transition-all ${
+                                                 w.status === "approved" 
+                                                    ? "bg-emerald-500 border-emerald-600 text-white" 
+                                                    : w.status === "submitted" 
+                                                    ? "bg-amber-400 border-amber-500 text-amber-950 animate-pulse" 
+                                                    : w.status === "rejected" 
+                                                    ? "bg-rose-500 border-rose-600 text-white" 
+                                                    : "bg-gray-100 border-gray-200 text-gray-400"
+                                              }`}
+                                              title={`Week ${w.weekNumber}: ${w.status}`}
+                                           >
+                                              {w.weekNumber}
+                                           </span>
+                                        ))}
+                                     </div>
+                                  </div>
+                               </div>
+
+                               {/* Action Drawer */}
+                               <div className="flex xl:flex-col gap-2 shrink-0 xl:min-w-[140px]">
+                                  <Button 
+                                     size="sm" 
+                                     className={`rounded-[10px] px-5 py-2.5 font-bold shadow-sm text-xs flex-1 transition-all ${
+                                        isEligible 
+                                           ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                                           : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-100"
+                                     }`} 
+                                     disabled={!isEligible}
+                                     onClick={() => handleGrade(req.id, "90", "approved")}
+                                  >
+                                     Approve Node
+                                  </Button>
+                                  <Button 
+                                     variant="outline" 
+                                     size="sm" 
+                                     className="rounded-[10px] px-5 py-2.5 font-bold border-rose-200 text-rose-600 hover:bg-rose-50 shadow-none text-xs flex-1" 
+                                     onClick={() => handleGrade(req.id, "0", "rejected")}
+                                  >
+                                     Purge Request
+                                  </Button>
+                               </div>
+                            </div>
+                         );
+                      })
+                   )}
+                </div>
+             </div>
+          )}
 
           {activeTab === "branches" && (
             <div className="grid lg:grid-cols-[380px_1fr] gap-[32px]">
