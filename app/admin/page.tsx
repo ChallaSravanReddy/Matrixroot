@@ -51,8 +51,6 @@ import {
 import { Button } from "@/components/ui/button";
 import RichTextEditor from "@/components/RichTextEditor";
 
-export const dynamic = "force-dynamic";
-
 export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);

@@ -1,10 +1,17 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck } from "@/components/icons";
 
 export function Footer() {
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="border-t border-[#8B4513]/10 bg-[#F9F5F0] py-[64px] mt-[64px]">
       <div className="container mx-auto max-w-7xl px-4">
@@ -43,7 +50,7 @@ export function Footer() {
         </div>
 
         <div className="mt-[64px] pt-8 border-t border-[#8B4513]/10 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-[#3D2B1F]/60 font-medium">
-          <p>© {new Date().getFullYear()} Matrix Root. Practical Tech Infrastructure.</p>
+          <p>© {year || 2026} Matrix Root. Practical Tech Infrastructure.</p>
           <div className="flex items-center gap-6">
             <span>Ecosystem Integrity</span>
             <div className="h-4 w-px bg-[#8B4513]/10" />

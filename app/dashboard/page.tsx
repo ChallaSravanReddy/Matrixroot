@@ -92,14 +92,31 @@ export default function DashboardPage() {
       setSessionUser(session.user);
 
       try {
-        const [profileRes, courseRes, enrollRes, progressRes, lessonRes, updatesRes] = await Promise.all([
+        const [profileRes, courseRes, enrollRes, updatesRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("courses").select("*, departments(name, slug)"),
           supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id),
-          supabase.from("user_progress").select("*").eq("user_id", session.user.id),
-          supabase.from("lessons").select("id, course_id"),
           supabase.from("weekly_updates").select("*").eq("student_id", session.user.id)
         ]);
+
+        let enrolledCourseIds: string[] = [];
+        if (enrollRes.data) {
+          enrolledCourseIds = enrollRes.data
+            .filter((e: any) => e.payment_status === "completed" || e.payment_status === "success")
+            .map((e: any) => e.course_id);
+        }
+
+        let progressData: any[] = [];
+        let lessonData: any[] = [];
+
+        if (enrolledCourseIds.length > 0) {
+          const [progressRes, lessonRes] = await Promise.all([
+            supabase.from("user_progress").select("*").eq("user_id", session.user.id).in("course_id", enrolledCourseIds),
+            supabase.from("lessons").select("id, course_id").in("course_id", enrolledCourseIds)
+          ]);
+          if (progressRes.data) progressData = progressRes.data;
+          if (lessonRes.data) lessonData = lessonRes.data;
+        }
 
         if (profileRes.data) {
           setProfile(profileRes.data);
@@ -111,8 +128,8 @@ export default function DashboardPage() {
         }
         if (courseRes.data) setAllCourses(courseRes.data as Course[]);
         if (enrollRes.data) setEnrollments(enrollRes.data);
-        if (progressRes.data) setUserProgress(progressRes.data);
-        if (lessonRes.data) setCourseLessons(lessonRes.data);
+        setUserProgress(progressData);
+        setCourseLessons(lessonData);
         if (updatesRes.data) setWeeklyUpdates(updatesRes.data);
       } catch (error) {
         console.error("Dashboard Load Error:", error);

@@ -32,21 +32,41 @@ export default function PerformanceReportCardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/login"); return; }
 
-      const [profileRes, enrollRes, progressRes, lessonRes] = await Promise.all([
-        supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
-        supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
-        supabase.from("user_progress").select("*").eq("user_id", session.user.id),
-        supabase.from("lessons").select("id, course_id, title, order_index, has_assignment").order("order_index", { ascending: true }),
-      ]);
+      try {
+        const [profileRes, enrollRes] = await Promise.all([
+          supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
+          supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
+        ]);
 
-      if (profileRes.data) setProfile(profileRes.data);
-      if (enrollRes.data) {
-        setEnrollments(enrollRes.data);
-        if (enrollRes.data.length > 0) setActiveCourseId(enrollRes.data[0].course_id);
+        let enrolledCourseIds: string[] = [];
+        if (enrollRes.data) {
+          enrolledCourseIds = enrollRes.data.map((e: any) => e.course_id);
+        }
+
+        let progressData: any[] = [];
+        let lessonData: any[] = [];
+
+        if (enrolledCourseIds.length > 0) {
+          const [progressRes, lessonRes] = await Promise.all([
+            supabase.from("user_progress").select("*").eq("user_id", session.user.id).in("course_id", enrolledCourseIds),
+            supabase.from("lessons").select("id, course_id, title, order_index, has_assignment").in("course_id", enrolledCourseIds).order("order_index", { ascending: true }),
+          ]);
+          if (progressRes.data) progressData = progressRes.data;
+          if (lessonRes.data) lessonData = lessonRes.data;
+        }
+
+        if (profileRes.data) setProfile(profileRes.data);
+        if (enrollRes.data) {
+          setEnrollments(enrollRes.data);
+          if (enrollRes.data.length > 0) setActiveCourseId(enrollRes.data[0].course_id);
+        }
+        setUserProgress(progressData);
+        setAllLessons(lessonData);
+      } catch (err) {
+        console.error("Performance Page Load Error:", err);
+      } finally {
+        setLoading(false);
       }
-      if (progressRes.data) setUserProgress(progressRes.data);
-      if (lessonRes.data) setAllLessons(lessonRes.data);
-      setLoading(false);
     };
     fetchData();
   }, [router]);
