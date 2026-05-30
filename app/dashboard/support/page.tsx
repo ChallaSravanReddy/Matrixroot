@@ -383,7 +383,7 @@ export default function SupportPage() {
               </div>
             </div>
 
-            <div className="space-y-[16px]">
+            {/* <div className="space-y-[16px]">
               <h2 className="text-sm font-bold uppercase tracking-wider text-[#3D2B1F]/60">Need Urgent Help?</h2>
               <div className="bg-[#8B4513]/5 border border-[#8B4513]/15 rounded-[12px] p-[24px] space-y-[12px] flex flex-col justify-between">
                 <div className="space-y-2">
@@ -392,11 +392,11 @@ export default function SupportPage() {
                     If you have payment inquiries, enrollment issues, or other operational issues outside of coding doubt solving, you can submit a support ticket.
                   </p>
                 </div>
-                <Button variant="outline" onClick={() => router.push('/contact')} className="w-full bg-white hover:bg-[#F9F5F0] text-[#3D2B1F] font-bold border-[#8B4513]/20 shadow-none text-[11px] h-9 mt-4">
+                <Button variant="outline" onClick={() => router.push('/dashboard/support')} className="w-full bg-white hover:bg-[#F9F5F0] text-[#3D2B1F] font-bold border-[#8B4513]/20 shadow-none text-[11px] h-9 mt-4">
                   Contact Support Office
                 </Button>
               </div>
-            </div>
+            </div> */}
 
           </div>
 

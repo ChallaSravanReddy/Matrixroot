@@ -1004,8 +1004,8 @@ export default function AdminPage() {
                                         <div className="min-w-0">
                                           <div className="text-xs font-medium text-[#3D2B1F] truncate">{lsn.title}</div>
                                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                            {lsn.content_url && <span className="text-[9px] text-[#3D2B1F]/40">ðŸŽ¥ Video</span>}
-                                            {lsn.notes && <span className="text-[9px] text-[#3D2B1F]/40">ðŸ“ Notes</span>}
+                                            {lsn.content_url && <span className="text-[9px] text-[#3D2B1F]/40">Video</span>}
+                                            {lsn.notes && <span className="text-[9px] text-[#3D2B1F]/40">Notes</span>}
                                             {lsn.is_preview && <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 rounded-[4px]">Preview</span>}
                                             {lsn.has_assignment && <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-1.5 rounded-[4px]">Assignment</span>}
                                           </div>
