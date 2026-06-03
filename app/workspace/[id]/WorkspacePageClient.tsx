@@ -247,68 +247,59 @@ export default function WorkspacePage() {
   const handlePayNow = async () => {
     setEnrollLoading(true);
     try {
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        showNotification("Failed to load payment gateway script. Please verify your internet connection.", "error");
-        setEnrollLoading(false);
-        return;
+      const formUrl = process.env.NEXT_PUBLIC_PAYMENT_FORM_URL || "https://forms.gle/fbn69wav5MiwwSdD8";
+
+      const { data: existing } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('student_id', sessionUser?.id)
+        .eq('course_id', id)
+        .maybeSingle();
+
+      let dbError;
+      let freshEnroll;
+      if (existing) {
+        const { data, error } = await supabase
+          .from('enrollments')
+          .update({
+            payment_status: 'pending',
+            payment_id: 'manual-pending',
+            enrolled_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        dbError = error;
+        freshEnroll = data;
+      } else {
+        const { data, error } = await supabase
+          .from('enrollments')
+          .insert({
+            student_id: sessionUser?.id,
+            course_id: id,
+            payment_status: 'pending',
+            payment_id: 'manual-pending',
+            enrolled_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        dbError = error;
+        freshEnroll = data;
       }
 
-      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      const targetPrice = course?.price ?? 500;
+      if (dbError) throw dbError;
 
-      const options = {
-        key: razorpayKey,
-        amount: targetPrice * 100,
-        currency: "INR",
-        name: "Matrix Root",
-        description: `Enrollment: ${course?.title}`,
-        handler: async function (response: any) {
-          try {
-            const { error: enrollError } = await supabase
-              .from("enrollments")
-              .upsert({
-                student_id: sessionUser.id,
-                course_id: id,
-                payment_status: "completed",
-                payment_id: response.razorpay_payment_id,
-                enrolled_at: new Date().toISOString()
-              }, {
-                onConflict: "student_id,course_id"
-              });
+      setEnrollment(freshEnroll);
+      showNotification("Enrollment request submitted! Opening payment form in a new tab.", "success");
+      
+      if (typeof window !== "undefined") {
+        window.open(formUrl, "_blank", "noopener,noreferrer");
+      }
 
-            if (enrollError) throw enrollError;
-
-            showNotification("Enrollment confirmed successfully!", "success");
-            setIsEnrolled(true);
-            
-            // Fetch fresh enrollment state
-            const { data: freshEnroll } = await supabase
-              .from("enrollments")
-              .select("*")
-              .eq("student_id", sessionUser.id)
-              .eq("course_id", id)
-              .single();
-            if (freshEnroll) setEnrollment(freshEnroll);
-
-            setShowPayment(false);
-          } catch (e: any) {
-            console.error(e);
-            showNotification(`Enrollment logic error: ${e.message}`, "error");
-          }
-        },
-        prefill: {
-          email: sessionUser?.email || "",
-        },
-        theme: {
-          color: "#8B4513"
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
+      setShowPayment(false);
     } catch (err: any) {
-      showNotification(`Razorpay initiation failed: ${err.message}`, "error");
+      console.error(err);
+      showNotification(`Request failed: ${err.message || "Unknown error"}`, "error");
     } finally {
       setEnrollLoading(false);
     }

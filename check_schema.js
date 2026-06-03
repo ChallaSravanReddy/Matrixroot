@@ -23,5 +23,11 @@ async function check() {
   } else {
     console.log("enrollments columns:", Object.keys(enrolls[0] || {}));
   }
+  const { data: profiles, error: profilesErr } = await supabase.from('profiles').select('*').limit(1);
+  if (profilesErr) {
+    console.error(profilesErr);
+  } else {
+    console.log("profiles columns:", Object.keys(profiles[0] || {}));
+  }
 }
 check();

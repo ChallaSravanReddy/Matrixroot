@@ -72,6 +72,43 @@ export async function fetchAdminData(activeTab: string) {
       result.students = stds || [];
     }
 
+    if (activeTab === "enrollments") {
+      const { data: enrolls, error: enrollsErr } = await supabaseAdmin
+        .from("enrollments")
+        .select("*")
+        .order("enrolled_at", { ascending: false });
+      if (enrollsErr) console.error("Enrollments Fetch Error:", enrollsErr);
+
+      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, phone");
+      const { data: courses } = await supabaseAdmin.from("courses").select("id, title, price");
+      
+      let users: any[] = [];
+      try {
+        const { data, error: authErr } = await supabaseAdmin.auth.admin.listUsers();
+        if (!authErr && data?.users) {
+          users = data.users;
+        }
+      } catch (authEx) {
+        console.error("Auth Users Fetch Error:", authEx);
+      }
+
+      const mappedEnrollments = (enrolls || []).map((e: any) => {
+        const student = profiles?.find((p: any) => p.id === e.student_id);
+        const course = courses?.find((c: any) => String(c.id) === String(e.course_id));
+        const authUser = users?.find((u: any) => u.id === e.student_id);
+        return {
+          ...e,
+          student_name: student?.full_name || "Unknown Scholar",
+          student_phone: student?.phone || "No Phone",
+          student_email: authUser?.email || "No Email",
+          course_title: course?.title || "Unknown Track",
+          course_price: course?.price || 500
+        };
+      });
+
+      result.enrollments = mappedEnrollments;
+    }
+
     if (activeTab === "grading" || activeTab === "certificates") {
       const { data: progressData, error: progErr } = await supabaseAdmin
         .from("user_progress")
@@ -393,4 +430,35 @@ export async function deleteBranchAction(id: string) {
   const { error } = await supabaseAdmin.from("departments").delete().eq("id", id);
   if (error) return { success: false, error: error.message };
   return { success: true };
+}
+
+export async function approveManualPaymentAction(enrollmentId: string) {
+  try {
+    const { error } = await supabaseAdmin
+      .from("enrollments")
+      .update({
+        payment_status: "completed",
+        payment_id: "manual-approved-" + Date.now()
+      })
+      .eq("id", enrollmentId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error in approveManualPaymentAction:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function rejectManualPaymentAction(enrollmentId: string) {
+  try {
+    const { error } = await supabaseAdmin
+      .from("enrollments")
+      .delete()
+      .eq("id", enrollmentId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error in rejectManualPaymentAction:", err);
+    return { success: false, error: err.message };
+  }
 }

@@ -118,6 +118,13 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
               </div>
 
               <div className="flex flex-col items-center pb-2">
+                  <div className="h-[44px] flex items-end justify-center mb-1">
+                      <img 
+                          src="/img/signature.png" 
+                          alt="Program Director Signature" 
+                          className="max-h-full max-w-[150px] object-contain" 
+                      />
+                  </div>
                   <div className="w-48 h-[2px] bg-[#8B4513]/30 mb-3"></div>
                   <p className="text-base font-bold text-[#3D2B1F]">Program Director</p>
                   <p className="text-[11px] font-bold text-[#3D2B1F]/50 uppercase tracking-widest">Matrix Root Institution</p>

@@ -32,7 +32,7 @@ export function EnrollmentModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-900">Enroll in {courseTitle}</DialogTitle>
           <DialogDescription className="text-slate-500">
-            Review the training terms and conditions before proceeding to payment.
+            Review the training terms and manual payment verification process before enrolling.
           </DialogDescription>
         </DialogHeader>
 
@@ -46,7 +46,7 @@ export function EnrollmentModal({
               </p>
               <p>
                 {/* <strong className="text-slate-900 font-bold block mb-1">2. Training Fee.</strong>  */}
-                → A one-time training fee of ₹{price ?? 500} is applicable and is non-refundable once content access is granted. All payments are processed securely through Razorpay.
+                → A one-time training fee of ₹{price ?? 500} is applicable and is non-refundable once content access is granted. All payments are securely processed and verified manually via our Google Form.
               </p>
               <p>
                 {/* <strong className="text-slate-900 font-bold block mb-1">3. Certification.</strong>  */}
@@ -100,12 +100,12 @@ export function EnrollmentModal({
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Processing...
+                Requesting Enrollment...
               </>
             ) : (
               <>
                 <ShieldCheck className="h-4 w-4" /> 
-                Pay & Start Internship
+                Proceed to Payment Form
               </>
             )}
           </Button>

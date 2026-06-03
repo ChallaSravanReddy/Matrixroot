@@ -60,6 +60,7 @@ export default function CourseDetailPage() {
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollment, setEnrollment] = useState<any>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -117,10 +118,12 @@ export default function CourseDetailPage() {
         setCurrentLesson(loadedLessons[0]);
       }
 
-      const hasPaid = allEnrollsRes.data?.some(e => String(e.course_id) === String(courseId) && (e.payment_status === "completed" || e.payment_status === "success"));
-
-      if (hasPaid) {
-        setIsEnrolled(true);
+      const userEnroll = allEnrollsRes.data?.find(e => String(e.course_id) === String(courseId));
+      if (userEnroll) {
+        setEnrollment(userEnroll);
+        if (userEnroll.payment_status === "completed" || userEnroll.payment_status === "success") {
+          setIsEnrolled(true);
+        }
       }
 
       setLoading(false);
@@ -197,107 +200,60 @@ export default function CourseDetailPage() {
   const handlePayNow = async () => {
     setEnrollLoading(true);
     try {
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        showNotification("Failed to load payment gateway script. Please verify your internet connection.", "error");
-        setEnrollLoading(false);
-        return;
+      const formUrl = process.env.NEXT_PUBLIC_PAYMENT_FORM_URL || "https://forms.gle/fbn69wav5MiwwSdD8";
+
+      const { data: existing } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('student_id', sessionUser?.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+
+      let dbError;
+      let freshEnroll;
+      if (existing) {
+        const { data, error } = await supabase
+          .from('enrollments')
+          .update({
+            payment_status: 'pending',
+            payment_id: 'manual-pending',
+            enrolled_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        dbError = error;
+        freshEnroll = data;
+      } else {
+        const { data, error } = await supabase
+          .from('enrollments')
+          .insert({
+            student_id: sessionUser?.id,
+            course_id: courseId,
+            payment_status: 'pending',
+            payment_id: 'manual-pending',
+            enrolled_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        dbError = error;
+        freshEnroll = data;
       }
 
-      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      const targetPrice = course?.price ?? 500;
+      if (dbError) throw dbError;
 
-      const options = {
-        key: razorpayKey,
-        amount: targetPrice * 100,
-        currency: "INR",
-        name: "Matrix Root",
-        description: `Enrollment: ${course?.title}`,
-        retry: { enabled: false },
-        timeout: 600,
-        handler: async function (response: any) {
-          try {
-            const { data: existing } = await supabase
-              .from('enrollments')
-              .select('id')
-              .eq('student_id', sessionUser?.id)
-              .eq('course_id', courseId)
-              .maybeSingle();
-
-            let dbError;
-            if (existing) {
-              const { error } = await supabase
-                .from('enrollments')
-                .update({
-                  payment_status: 'completed',
-                  payment_id: response.razorpay_payment_id,
-                  enrolled_at: new Date().toISOString()
-                })
-                .eq('id', existing.id);
-              dbError = error;
-            } else {
-              const { error } = await supabase
-                .from('enrollments')
-                .insert({
-                  student_id: sessionUser?.id,
-                  course_id: courseId,
-                  payment_status: 'completed',
-                  payment_id: response.razorpay_payment_id,
-                  enrolled_at: new Date().toISOString()
-                });
-              dbError = error;
-            }
-
-            if (dbError) throw dbError;
-
-            showNotification("Enrollment Successful! Access Unlocked.", "success");
-            setIsEnrolled(true);
-            setShowPayment(false);
-            setEnrollLoading(false);
-          } catch (handlerErr: any) {
-            console.error("Enrollment status confirmation error:", handlerErr);
-            showNotification(`Payment database sync failed: ${handlerErr.message || "Unknown Error"}. Please contact administrators.`, "error");
-            setEnrollLoading(false);
-          }
-        },
-        prefill: {
-          name: profile?.full_name || "",
-          email: sessionUser?.email || "",
-          contact: cleanPhone(profile?.phone || "")
-        },
-        notes: {
-          course_id: courseId,
-          student_id: sessionUser?.id
-        },
-        config: {
-          display: {
-            preferences: {
-              show_default_blocks: true
-            }
-          }
-        },
-        theme: { color: "#8B4513" },
-        modal: {
-          ondismiss: () => setEnrollLoading(false),
-          escape: true
-        }
-      };
-
-      if (!razorpayKey || !(window as any).Razorpay) {
-        showNotification("Payment gateway offline. Retrying secure communication setup.", "error");
-        setEnrollLoading(false);
-        return;
+      setEnrollment(freshEnroll);
+      showNotification("Enrollment request submitted! Opening payment form in a new tab.", "success");
+      
+      if (typeof window !== "undefined") {
+        window.open(formUrl, "_blank", "noopener,noreferrer");
       }
 
-      const rzp = new (window as any).Razorpay(options);
       setShowPayment(false);
-      rzp.open();
-      rzp.on('payment.failed', function (response: any) {
-        showNotification(`Transaction declined: ${response.error.description}`, "error");
-        setEnrollLoading(false);
-      });
-      rzp.open();
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err);
+      showNotification(`Request failed: ${err.message || "Unknown error"}`, "error");
+    } finally {
       setEnrollLoading(false);
     }
   };
@@ -679,14 +635,38 @@ export default function CourseDetailPage() {
                 {isLocked ? (
                   <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
                     <h3 className="text-base font-bold text-[#3D2B1F]">{currentLesson.title}</h3>
-                    <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
-                      This module provides specialized masterclass video streaming, institutional lesson summaries, and assignment verifications.
-                    </p>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
-                      <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
-                        Unlock Full Access Now
-                      </Button>
-                    </motion.div>
+                    {enrollment?.payment_status === "pending" ? (
+                      <div className="space-y-[16px] mt-2">
+                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-[8px] text-xs leading-[1.6] max-w-md mx-auto font-medium">
+                          <strong>Verification Pending:</strong> Your payment request is under manual review. Our team will verify your details and unlock full access shortly (usually within 24 hours).
+                        </div>
+                        <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
+                          If you haven't completed the payment or submitted the Google Form yet, please use the button below to do so now.
+                        </p>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                          <Button 
+                            onClick={() => {
+                              const formUrl = process.env.NEXT_PUBLIC_PAYMENT_FORM_URL || "https://forms.gle/fbn69wav5MiwwSdD8";
+                              window.open(formUrl, "_blank", "noopener,noreferrer");
+                            }} 
+                            className="bg-[#8B4513] hover:bg-[#723910] text-white font-bold text-xs rounded-[8px] h-10 px-6 shadow-none"
+                          >
+                            Open Payment Google Form
+                          </Button>
+                        </motion.div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto leading-[1.6] font-medium">
+                          This module provides specialized masterclass video streaming, institutional lesson summaries, and assignment verifications.
+                        </p>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
+                          <Button onClick={() => setShowPayment(true)} className="bg-[#D2B48C] hover:bg-[#C1A37B] text-[#3D2B1F] font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
+                            Unlock Full Access Now
+                          </Button>
+                        </motion.div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-[24px]">

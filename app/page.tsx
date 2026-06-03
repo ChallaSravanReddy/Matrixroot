@@ -303,11 +303,10 @@ function ExcellenceSection() {
   return (
     <section className="py-[48px] md:py-[80px] bg-[#F9F5F0] border-b border-[#8B4513]/10">
       <div className="container mx-auto max-w-6xl px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[24px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
           {[
             { label: "Government Registry", value: "MSME Certified" },
             { label: "Target Outcomes", value: "Production-Ready" },
-            { label: "Architecture", value: "Next.js & Vercel" },
             { label: "Automation Layer", value: "Custom AI Agents" },
           ].map((s, i) => (
             <motion.div 

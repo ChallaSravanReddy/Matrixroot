@@ -19,7 +19,9 @@ import {
   createBranchAction,
   updateBranchAction,
   deleteBranchAction,
-  updateCourseAction
+  updateCourseAction,
+  approveManualPaymentAction,
+  rejectManualPaymentAction
 } from "./actions";
 
 import { getYouTubeThumbnail } from "@/lib/utils";
@@ -48,7 +50,8 @@ import {
   Pencil,
   Check,
   CheckCircle2,
-  Circle
+  Circle,
+  CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -67,7 +70,10 @@ export default function AdminPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [certRequests, setCertRequests] = useState<any[]>([]);
+  const [certScores, setCertScores] = useState<Record<string, string>>({});
   const [allProgressRecords, setAllProgressRecords] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [enrollFilter, setEnrollFilter] = useState("");
 
   // Form States
   const [newCourse, setNewCourse] = useState({ 
@@ -163,6 +169,7 @@ export default function AdminPage() {
         if (data.departments) setDepartments(data.departments);
       }
       if (activeTab === "students" && data.students) setStudents(data.students);
+      if (activeTab === "enrollments" && data.enrollments) setEnrollments(data.enrollments);
       if (activeTab === "internship_tasks") {
         if (data.courses) setCourses(data.courses);
         if (data.weeklyUpdates) setWeeklyUpdates(data.weeklyUpdates);
@@ -196,6 +203,28 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Fetch Data Error:", err);
+    }
+  };
+
+  const handleApprovePayment = async (enrollmentId: string) => {
+    if (!confirm("Are you sure you want to approve this enrollment payment request?")) return;
+    const res = await approveManualPaymentAction(enrollmentId);
+    if (res.success) {
+      alert("Enrollment payment approved successfully! Access unlocked.");
+      fetchData();
+    } else {
+      alert("Error approving payment: " + res.error);
+    }
+  };
+
+  const handleRejectPayment = async (enrollmentId: string) => {
+    if (!confirm("Are you sure you want to reject and delete this enrollment request? This student will need to request enrollment again.")) return;
+    const res = await rejectManualPaymentAction(enrollmentId);
+    if (res.success) {
+      alert("Enrollment request rejected and deleted.");
+      fetchData();
+    } else {
+      alert("Error rejecting request: " + res.error);
     }
   };
 
@@ -544,10 +573,11 @@ export default function AdminPage() {
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {[
-                      { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
+            { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
             { id: "lessons", label: "Curriculum Builder", icon: <PlusCircle size={18} /> },
             { id: "internship_tasks", label: "Internship Task List", icon: <Layers size={18} /> },
             { id: "students", label: "Scholar Directory", icon: <Users size={18} /> },
+            { id: "enrollments", label: "Enrollment Approvals", icon: <CreditCard size={18} /> },
             { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
             { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
             { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
@@ -595,10 +625,11 @@ export default function AdminPage() {
             
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
               {[
-                                { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
+                { id: "courses", label: "Program Tracks", icon: <BookOpen size={18} /> },
                 { id: "lessons", label: "Curriculum Builder", icon: <PlusCircle size={18} /> },
                 { id: "internship_tasks", label: "Internship Task List", icon: <Layers size={18} /> },
                 { id: "students", label: "Scholar Directory", icon: <Users size={18} /> },
+                { id: "enrollments", label: "Enrollment Approvals", icon: <CreditCard size={18} /> },
                 { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
                 { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
                 { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
@@ -1642,6 +1673,18 @@ export default function AdminPage() {
 
                                {/* Action Drawer */}
                                <div className="flex xl:flex-col gap-2 shrink-0 xl:min-w-[140px]">
+                                  <div className="flex flex-col gap-1 mb-1">
+                                     <label className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider block">Set Score (%)</label>
+                                     <input 
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        placeholder="90"
+                                        value={certScores[req.id] !== undefined ? certScores[req.id] : "90"}
+                                        onChange={(e) => setCertScores({ ...certScores, [req.id]: e.target.value })}
+                                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 px-3 py-1.5 rounded-[8px] text-xs font-semibold text-[#3D2B1F] focus:outline-none focus:border-[#8B4513]"
+                                     />
+                                  </div>
                                   <Button 
                                      size="sm" 
                                      className={`rounded-[10px] px-5 py-2.5 font-bold shadow-sm text-xs flex-1 transition-all ${
@@ -1650,7 +1693,7 @@ export default function AdminPage() {
                                            : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed hover:bg-gray-100"
                                      }`} 
                                      disabled={!isEligible}
-                                     onClick={() => handleGrade(req.id, "90", "approved")}
+                                     onClick={() => handleGrade(req.id, certScores[req.id] || "90", "approved")}
                                   >
                                      Approve Node
                                   </Button>
@@ -1666,6 +1709,97 @@ export default function AdminPage() {
                             </div>
                          );
                       })
+                   )}
+                 </div>
+              </div>
+           )}
+
+          {activeTab === "enrollments" && (
+             <div className="space-y-[32px]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
+                   <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Manual Enrollment Approvals</h3>
+                   <div className="relative w-full md:w-96">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40" size={14} />
+                      <input 
+                        type="text" 
+                        placeholder="Search student or course..." 
+                        className="w-full bg-white border border-[#8B4513]/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-[#8B4513] outline-none transition-all text-[#3D2B1F]" 
+                        value={enrollFilter}
+                        onChange={(e) => setEnrollFilter(e.target.value)}
+                      />
+                   </div>
+                </div>
+
+                <div className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none">
+                   <table className="w-full text-left border-collapse">
+                      <thead>
+                         <tr className="border-b border-[#8B4513]/10 bg-[#F9F5F0] text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">
+                            <th className="px-6 py-4">Student</th>
+                            <th className="px-6 py-4">Course Track</th>
+                            <th className="px-6 py-4">Price</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4">Enrolled At</th>
+                            <th className="px-6 py-4">Actions</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#8B4513]/10">
+                         {enrollments
+                           .filter(e => {
+                             if (!enrollFilter) return true;
+                             const query = enrollFilter.toLowerCase();
+                             return (
+                               (e.student_name || "").toLowerCase().includes(query) ||
+                               (e.student_email || "").toLowerCase().includes(query) ||
+                               (e.student_phone || "").toLowerCase().includes(query) ||
+                               (e.course_title || "").toLowerCase().includes(query)
+                             );
+                           })
+                           .map(e => (
+                            <tr key={e.id} className="hover:bg-[#F9F5F0]/50 transition-colors group">
+                               <td className="px-6 py-3.5">
+                                  <div className="font-medium text-xs text-[#3D2B1F]">{e.student_name}</div>
+                                  <div className="text-[10px] text-[#3D2B1F]/50">{e.student_email} &middot; {e.student_phone}</div>
+                               </td>
+                               <td className="px-6 py-3.5 text-xs font-normal text-[#3D2B1F]">{e.course_title}</td>
+                               <td className="px-6 py-3.5 text-xs font-semibold text-[#8B4513]">₹{e.course_price}</td>
+                               <td className="px-6 py-3.5">
+                                  <span className={`px-2 py-0.5 rounded-[12px] text-[10px] font-medium uppercase tracking-wider border ${
+                                    e.payment_status === 'completed' || e.payment_status === 'success'
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                                  }`}>
+                                     {e.payment_status}
+                                  </span>
+                               </td>
+                               <td className="px-6 py-3.5 text-xs text-[#3D2B1F]/60">
+                                 {e.enrolled_at ? new Date(e.enrolled_at).toLocaleDateString() : 'N/A'}
+                               </td>
+                               <td className="px-6 py-3.5">
+                                  {e.payment_status !== 'completed' && e.payment_status !== 'success' ? (
+                                    <div className="flex gap-2">
+                                       <button 
+                                         onClick={() => handleApprovePayment(e.id)} 
+                                         className="px-2.5 py-1 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-[6px] transition-colors"
+                                       >
+                                         Approve
+                                       </button>
+                                       <button 
+                                         onClick={() => handleRejectPayment(e.id)} 
+                                         className="px-2.5 py-1 text-[10px] font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-[6px] transition-colors"
+                                       >
+                                         Reject
+                                       </button>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[10px] text-emerald-600 font-medium">Access Granted</span>
+                                  )}
+                               </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                   </table>
+                   {enrollments.length === 0 && (
+                     <div className="py-[64px] text-center text-xs text-[#3D2B1F]/60 font-medium">No enrollment records found.</div>
                    )}
                 </div>
              </div>
