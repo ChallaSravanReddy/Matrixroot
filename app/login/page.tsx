@@ -34,8 +34,9 @@ export default function LoginPage() {
         
         window.location.href = "/dashboard";
       }
-    } catch (err: any) {
-      setError(err.message || "Invalid credentials. Please try again.");
+    } catch (err: unknown) {
+      const errMsg = (err as { message?: string })?.message || "Invalid credentials. Please try again.";
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -50,14 +51,14 @@ export default function LoginPage() {
             <span className="font-medium text-xl tracking-tight text-[#3D2B1F]">Matrix Root</span>
           </Link>
           <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Student Login</h2>
-          <p className="text-sm text-[#3D2B1F]/80 mt-1">Authenticate access to verified ledgers</p>
+          <p className="text-sm text-[#3D2B1F]/80 mt-1">Sign in to your student account</p>
         </div>
 
         <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] shadow-none">
           <form onSubmit={handleLogin} className="space-y-[24px]">
             <div className="space-y-[16px]">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-[#3D2B1F]/60">Email Identity</label>
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
@@ -73,8 +74,8 @@ export default function LoginPage() {
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-[#3D2B1F]/60">Secure Passphrase</label>
-                  <Link href="/forgot-password" className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider hover:underline">Reset Passphrase</Link>
+                  <label className="text-xs font-medium text-[#3D2B1F]/60">Password</label>
+                  <Link href="/forgot-password" className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider hover:underline">Forgot Password?</Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
@@ -119,16 +120,16 @@ export default function LoginPage() {
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-[#8B4513]" />
               ) : (
-                <>Access portal <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
+                <>Log In <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
               )}
             </Button>
           </form>
 
           <div className="mt-[32px] text-center border-t border-[#8B4513]/10 pt-[24px]">
             <p className="text-xs text-[#3D2B1F]/60">
-              Require credentials?{' '}
+              {"Don't have an account?"}{' '}
               <Link href="/signup" className="text-[#8B4513] font-medium hover:underline">
-                Enroll Identity
+                Sign Up
               </Link>
             </p>
           </div>

@@ -98,15 +98,15 @@ export default function SignupPage() {
             <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={40} height={40} className="object-contain" />
             <span className="font-medium text-xl tracking-tight text-[#3D2B1F]">Matrix Root</span>
           </Link>
-          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]"> Enrollment</h2>
-          <p className="text-sm text-[#3D2B1F]/80 mt-1">Foundational membership & curriculum access</p>
+          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">Student Sign Up</h2>
+          <p className="text-sm text-[#3D2B1F]/80 mt-1">Create your student account to get started</p>
         </div>
 
         <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[32px] shadow-none">
           <form onSubmit={handleSignup} className="space-y-[24px]">
             <div className="space-y-[16px]">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-[#3D2B1F]/60">Full Legal Name</label>
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
@@ -136,7 +136,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-[#3D2B1F]/60">Secure Credentials</label>
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
                   <input
@@ -152,7 +152,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-[#3D2B1F]/60">Contact Number</label>
+                <label className="text-xs font-medium text-[#3D2B1F]/60">Phone Number</label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 text-xs font-bold">+91</div>
                   <input
@@ -197,16 +197,16 @@ export default function SignupPage() {
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-[#8B4513]" />
               ) : (
-                <>Submit Identity <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
+                <>Sign Up <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
               )}
             </Button>
           </form>
 
           <div className="mt-[32px] text-center border-t border-[#8B4513]/10 pt-[24px]">
             <p className="text-xs text-[#3D2B1F]/60">
-              Already possess authenticated credentials?{' '}
+              Already have an account?{' '}
               <Link href="/login" className="text-[#8B4513] font-medium hover:underline">
-                Access Portal
+                Log In
               </Link>
             </p>
           </div>
