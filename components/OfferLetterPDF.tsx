@@ -27,7 +27,7 @@ const OfferLetterPDF: React.FC<OfferLetterProps> = ({ studentName, email, course
         month: 'long',
         day: 'numeric'
       });
-    } catch (e) {
+    } catch {
       return dateString;
     }
   };
@@ -76,62 +76,75 @@ const OfferLetterPDF: React.FC<OfferLetterProps> = ({ studentName, email, course
             width: '794px',
             height: '1123px',
           }}
-          className="p-16 relative font-sans text-[#3D2B1F] flex flex-col justify-between"
+          className="p-16 relative font-sans text-[#3D2B1F] flex flex-col justify-between overflow-hidden"
         >
           {/* Subtle Decorative Borders */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-[#8B4513]"></div>
           <div className="absolute bottom-0 left-0 right-0 h-2 bg-[#8B4513]"></div>
 
-          <div>
+          {/* Watermark Logo */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+            <img 
+              src="/img/Matrixroot_onlyimglogo-removebg-preview.png" 
+              alt="Watermark" 
+              className="w-[420px] h-[420px] object-contain"
+            />
+          </div>
+
+          <div className="relative z-10">
             {/* Header: Company Logo & Details */}
-            <div className="flex justify-between items-start mb-8">
-              <div>
+            <div className="flex justify-between items-center mb-8 border-b border-[#8B4513]/10 pb-6">
+              <div className="flex items-center gap-3">
                 <img 
-                  src="/img/matrixroot_combinedlogo-removebg-preview.png" 
-                  alt="Matrix Root" 
-                  className="h-14 object-contain" 
-                  onError={(e) => {
-                    // Fallback to text if image fails to load
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
+                  src="/img/Matrixroot_onlyimglogo-removebg-preview.png" 
+                  alt="Matrix Root Logo" 
+                  className="h-12 w-12 object-contain" 
                 />
-                <span className="font-extrabold text-xl tracking-tight text-[#8B4513] font-sans">
-                  MATRIX ROOT
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-black text-lg tracking-tight text-[#3D2B1F] leading-none">
+                    MATRIX ROOT
+                  </span>
+                  <span className="text-[9px] font-bold text-[#8B4513] tracking-widest uppercase mt-0.5">
+                    STUDIO
+                  </span>
+                </div>
               </div>
               <div className="text-right text-[10px] text-[#3D2B1F]/60 leading-normal">
                 <h3 className="font-extrabold text-xs text-[#8B4513] uppercase tracking-wider mb-1">Matrix Root Studio</h3>
                 <p>Enterprise Software & IT Internships</p>
                 <p>Registered MSME Entity</p>
-                <p>Contact: support@matrixroot.in</p>
+                <p>Contact: matrixroottechnologies@gmail.com</p>
                 <p>Website: www.matrixroot.in</p>
               </div>
             </div>
 
             {/* Reference Number & Date */}
-            <div className="flex justify-between text-xs text-[#3D2B1F]/70 mb-8 border-b border-[#8B4513]/10 pb-4">
+            <div className="flex justify-between text-xs text-[#3D2B1F]/70 mb-6">
               <p><span className="font-bold text-[#8B4513]">Ref No:</span> MR/INT/2026/{enrollId.substring(0, 8).toUpperCase()}</p>
               <p><span className="font-bold text-[#8B4513]">Date:</span> {formatDate(enrolledAt)}</p>
             </div>
 
             {/* Recipient Details */}
-            <div className="mb-8 text-xs leading-normal">
-              <p className="font-extrabold text-[10px] text-[#8B4513] tracking-widest uppercase mb-2">Offer of Internship</p>
-              <p className="font-extrabold text-base text-[#3D2B1F] mb-1">{studentName}</p>
-              <p className="text-[#3D2B1F]/70">{email}</p>
-              <p className="text-[#3D2B1F]/70">Intern ID: MR-INT-2026-{enrollId.substring(0, 5).toUpperCase()}</p>
+            <div className="mb-6 text-xs leading-normal">
+              <p className="font-bold text-[10px] text-[#8B4513] tracking-widest uppercase mb-2">INTERNSHIP OFFER LETTER</p>
+              <div className="space-y-0.5">
+                <p className="text-[#3D2B1F]/50 text-[10px]">To,</p>
+                <p className="font-extrabold text-base text-[#3D2B1F] capitalize">{studentName}</p>
+                <p className="text-[#3D2B1F]/70">{email}</p>
+                <p className="text-[#3D2B1F]/70 font-mono text-[11px]">Intern ID: MR-INT-2026-{enrollId.substring(0, 5).toUpperCase()}</p>
+              </div>
             </div>
 
             {/* Subject */}
-            <div className="text-center mb-8">
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-[#3D2B1F] bg-[#F9F5F0] border-y border-[#8B4513]/20 py-2.5">
+            <div className="mb-6">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-[#3D2B1F] border-l-4 border-[#8B4513] pl-3 py-1">
                 Subject: Internship Joining & Enrollment Confirmation
               </h2>
             </div>
 
             {/* Letter Body */}
-            <div className="space-y-4 text-xs text-[#3D2B1F]/90 leading-relaxed font-normal">
-              <p>Dear <strong>{studentName}</strong>,</p>
+            <div className="space-y-3.5 text-xs text-[#3D2B1F]/90 leading-relaxed text-justify font-normal">
+              <p>Dear <strong className="capitalize">{studentName}</strong>,</p>
               
               <p>
                 We are pleased to congratulate you on successfully enrolling and joining the <strong>8-Week Training-cum-Internship Program</strong> at <strong>Matrix Root Studio</strong>. This letter serves as your official joining confirmation for the <strong>{courseName}</strong> specialization track.
@@ -141,29 +154,28 @@ const OfferLetterPDF: React.FC<OfferLetterProps> = ({ studentName, email, course
                 Your internship begins on <strong>{formatDate(enrolledAt)}</strong>. Throughout the course of this internship, you will be trained on modern industry tools, build project portfolios, and collaborate under the guidance of our engineering mentors to develop key industry skills.
               </p>
 
-              <p>
-                <strong>Internship Details:</strong>
-              </p>
-              <table className="w-full text-left border-collapse border border-[#8B4513]/15 my-4">
-                <tbody>
-                  <tr className="border-b border-[#8B4513]/15">
-                    <td className="p-2.5 font-bold bg-[#F9F5F0] text-[#8B4513] w-1/3">Internship Role</td>
-                    <td className="p-2.5">Intern - {courseName}</td>
-                  </tr>
-                  <tr className="border-b border-[#8B4513]/15">
-                    <td className="p-2.5 font-bold bg-[#F9F5F0] text-[#8B4513]">Joining Date</td>
-                    <td className="p-2.5">{formatDate(enrolledAt)}</td>
-                  </tr>
-                  <tr className="border-b border-[#8B4513]/15">
-                    <td className="p-2.5 font-bold bg-[#F9F5F0] text-[#8B4513]">Tenure / Duration</td>
-                    <td className="p-2.5">8 Weeks (Structured Learning, Mentorship & Capstone Deliverables)</td>
-                  </tr>
-                  <tr>
-                    <td className="p-2.5 font-bold bg-[#F9F5F0] text-[#8B4513]">Credential Issued</td>
-                    <td className="p-2.5">Verifiable Internship Certificate (Upon passing assignments)</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="my-5 border border-[#8B4513]/10 rounded-[8px] overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <tbody>
+                    <tr className="border-b border-[#8B4513]/10 bg-[#F9F5F0]/30">
+                      <td className="p-3 font-semibold text-[#8B4513] text-[11px] uppercase tracking-wider w-1/3">Internship Role</td>
+                      <td className="p-3 text-xs text-[#3D2B1F]">Intern - {courseName}</td>
+                    </tr>
+                    <tr className="border-b border-[#8B4513]/10">
+                      <td className="p-3 font-semibold text-[#8B4513] text-[11px] uppercase tracking-wider">Joining Date</td>
+                      <td className="p-3 text-xs text-[#3D2B1F]">{formatDate(enrolledAt)}</td>
+                    </tr>
+                    <tr className="border-b border-[#8B4513]/10 bg-[#F9F5F0]/30">
+                      <td className="p-3 font-semibold text-[#8B4513] text-[11px] uppercase tracking-wider">Tenure / Duration</td>
+                      <td className="p-3 text-xs text-[#3D2B1F]">8 Weeks (Structured Learning, Mentorship & Capstone Deliverables)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-[#8B4513] text-[11px] uppercase tracking-wider">Credential Issued</td>
+                      <td className="p-3 text-xs text-[#3D2B1F]">Verifiable Internship Certificate (Upon passing assignments)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
               <p>
                 <strong>Operational Terms & Learning Policies:</strong>
@@ -186,23 +198,26 @@ const OfferLetterPDF: React.FC<OfferLetterProps> = ({ studentName, email, course
           </div>
 
           {/* Letter Footer: Signatures & Bottom Info */}
-          <div className="mt-8 pt-6 border-t border-[#8B4513]/10">
+          <div className="mt-8 pt-6 border-t border-[#8B4513]/10 relative z-10">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[9px] text-[#3D2B1F]/50 font-bold uppercase tracking-wider mb-1">Status: Active & Verified</p>
-                <p className="text-[9px] text-[#3D2B1F]/40 font-mono">Verify Code: MR-{enrollId.substring(0, 13).toUpperCase()}</p>
+                <p className="text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-[4px] font-bold uppercase tracking-wider inline-block mb-1">
+                  Status: Active & Verified
+                </p>
+                <p className="text-[9px] text-[#3D2B1F]/50 font-mono">Verification Hash: MR-{enrollId.substring(0, 13).toUpperCase()}</p>
               </div>
               
-              <div className="flex flex-col items-center">
-                {/* Signature box placeholder - customizable later */}
-                <div className="h-12 w-44 flex items-center justify-center relative border border-[#8B4513]/10 rounded bg-[#F9F5F0]/50 mb-1">
-                  <span className="text-[8px] text-[#8B4513]/50 font-extrabold tracking-widest uppercase">
-                    [ Signature Placeholder ]
-                  </span>
+              <div className="flex flex-col items-center mr-4">
+                <div className="h-[48px] flex items-end justify-center mb-1">
+                  <img 
+                    src="/img/signature.png" 
+                    alt="Program Director Signature" 
+                    className="max-h-full max-w-[140px] object-contain mix-blend-multiply" 
+                  />
                 </div>
-                <div className="w-44 h-[1px] bg-[#8B4513]/30 mb-1"></div>
+                <div className="w-40 h-[1px] bg-[#8B4513]/30 mb-1"></div>
                 <p className="text-[11px] font-extrabold text-[#3D2B1F]">Program Director</p>
-                <p className="text-[9px] text-[#3D2B1F]/50 uppercase tracking-widest font-semibold">Matrix Root Academy</p>
+                <p className="text-[9px] text-[#8B4513] uppercase tracking-widest font-bold">Matrix Root Academy</p>
               </div>
             </div>
           </div>

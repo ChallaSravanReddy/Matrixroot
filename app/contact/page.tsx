@@ -198,7 +198,7 @@ export default function ContactPage() {
                     required 
                     value={formData.fullName} 
                     onChange={handleChange} 
-                    placeholder="e.g. Sravan Reddy" 
+                    placeholder="e.g. Jhone Doe" 
                     className="w-full bg-[#F9F5F0] border border-[#8B4513]/20 focus:border-[#8B4513] rounded-[8px] p-3 text-xs text-[#3D2B1F] outline-none transition-all font-medium"
                   />
                 </div>
