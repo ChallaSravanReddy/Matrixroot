@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const DEPARTMENTS = [
+  { id: "cse", name: "Computer Science & Allied Branches", icon: "🖥️" },
   { id: "it", name: "Information Technology", icon: "💻" },
   { id: "eee", name: "Electrical & Electronics", icon: "⚡" },
   { id: "mech", name: "Mechanical Engineering", icon: "⚙️" },
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const [fetching, setFetching] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [enrollments, setEnrollments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({

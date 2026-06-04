@@ -24,12 +24,51 @@ export default function SignupPage() {
     setError(null);
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // 1. Check if phone number already exists in profiles
+      const { data: existingPhoneData, error: phoneCheckError } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("phone", phone);
+
+      if (phoneCheckError) throw phoneCheckError;
+
+      if (existingPhoneData && existingPhoneData.length > 0) {
+        setError("Phone is already exist");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Attempt signup and check if email already exists
+      const signUpResult = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (signUpError) throw signUpError;
+      const data = signUpResult.data;
+      const signUpError = signUpResult.error;
+
+      if (signUpError) {
+        const errMsg = signUpError.message.toLowerCase();
+        if (
+          errMsg.includes("already registered") ||
+          errMsg.includes("already exists") ||
+          errMsg.includes("email already in use") ||
+          signUpError.status === 400
+        ) {
+          setError("Gmail already exist");
+          setLoading(false);
+          return;
+        } else {
+          throw signUpError;
+        }
+      }
+
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        // Supabase returns an empty identities array for existing users to prevent email enumeration
+        setError("Gmail already exist");
+        setLoading(false);
+        return;
+      }
 
       if (data.user) {
         await supabase.from("profiles").upsert({ 
@@ -43,8 +82,9 @@ export default function SignupPage() {
       } else {
         setError("Success! Check your email for a verification link.");
       }
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      const errMsg = (err as { message?: string })?.message || "Something went wrong. Please try again.";
+      setError(errMsg);
     } finally {
       setLoading(false);
     }

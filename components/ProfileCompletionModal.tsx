@@ -6,6 +6,7 @@ import { Loader2, GraduationCap, Building2, Calendar, Phone, ArrowRight } from "
 import { Button } from "@/components/ui/button";
 
 const DEPARTMENTS = [
+  { id: "cse", name: "Computer Science & Allied Branches" },
   { id: "it", name: "Information Technology" },
   { id: "eee", name: "Electrical & Electronics" },
   { id: "mech", name: "Mechanical Engineering" },
@@ -17,7 +18,13 @@ export function ProfileCompletionModal({
   onComplete 
 }: { 
   userId: string, 
-  initialData: any, 
+  initialData: {
+    department_slug?: string;
+    year_of_study?: string;
+    college_name?: string;
+    phone?: string;
+    role?: string;
+  } | null | undefined,
   onComplete: () => void 
 }) {
   const [loading, setLoading] = useState(false);
@@ -47,8 +54,9 @@ export function ProfileCompletionModal({
 
       if (updateError) throw updateError;
       onComplete();
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile. Please try again.");
+    } catch (err: unknown) {
+      const errMsg = (err as { message?: string })?.message || "Failed to update profile. Please try again.";
+      setError(errMsg);
     } finally {
       setLoading(false);
     }

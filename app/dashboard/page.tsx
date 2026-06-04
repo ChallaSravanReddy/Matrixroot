@@ -415,40 +415,37 @@ export default function DashboardPage() {
           })()}
 
           {/* Enrolled Courses Grid */}
-          <section className="space-y-[16px]">
-            <div className="border-b border-[#8B4513]/10 pb-[12px]">
-              <h2 className="text-lg font-bold text-[#3D2B1F]">My Enrolled Tracks</h2>
-              <p className="text-xs text-[#3D2B1F]/60">Your active subscribed training & internship channels</p>
-            </div>
-            <motion.div 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
-            >
-              {enrollments.map(enroll => {
-                const course = enroll.courses;
-                if (!course) return null;
-                return (
-                  <CourseCard 
-                    key={course.id} 
-                    course={course} 
-                    enrolled={enroll} 
-                    progress={userProgress.filter(p => p.course_id === course.id)}
-                    lessons={courseLessons.filter(l => l.course_id === course.id)}
-                    profile={profile}
-                    onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
-                    sessionUser={sessionUser}
-                  />
-                );
-              })}
-              {enrollments.length === 0 && (
-                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">You have not subscribed to any tracks yet.</p>
-                </div>
-              )}
-            </motion.div>
-          </section>
+          {enrollments.length > 0 && (
+            <section className="space-y-[16px]">
+              <div className="border-b border-[#8B4513]/10 pb-[12px]">
+                <h2 className="text-lg font-bold text-[#3D2B1F]">My Enrolled Tracks</h2>
+                <p className="text-xs text-[#3D2B1F]/60">Your active subscribed training & internship channels</p>
+              </div>
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
+              >
+                {enrollments.map(enroll => {
+                  const course = enroll.courses;
+                  if (!course) return null;
+                  return (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      enrolled={enroll} 
+                      progress={userProgress.filter(p => p.course_id === course.id)}
+                      lessons={courseLessons.filter(l => l.course_id === course.id)}
+                      profile={profile}
+                      onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
+                      sessionUser={sessionUser}
+                    />
+                  );
+                })}
+              </motion.div>
+            </section>
+          )}
 
           {/* Specialization / Branch Courses */}
           <section className="space-y-[16px]">
