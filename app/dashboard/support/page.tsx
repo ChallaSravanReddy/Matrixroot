@@ -288,12 +288,12 @@ export default function SupportPage() {
               {/* Left Column: Timing details */}
               <div className="space-y-[16px]">
                 <h3 className="text-sm font-bold text-[#3D2B1F] flex items-center gap-2">
-                  <Clock size={16} className="text-[#8B4513]" /> Daily Session Schedule
+                  <Clock size={16} className="text-[#8B4513]" /> Saturday Session Schedule
                 </h3>
                 <div className="bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[12px] p-[16px] space-y-4">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-xs font-bold text-[#3D2B1F]">Every Day Evening</p>
+                      <p className="text-xs font-bold text-[#3D2B1F]">Every Saturday Evening</p>
                       <p className="text-lg font-black text-[#8B4513] tracking-tight">6:00 PM – 8:00 PM</p>
                       <p className="text-[9px] text-[#3D2B1F]/60 font-medium">Indian Standard Time (IST)</p>
                     </div>
