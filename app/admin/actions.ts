@@ -186,28 +186,7 @@ export async function updateEnrollmentAction(enrollmentId: string, score: number
         return { success: false, error: "Course not found." };
       }
 
-      // 3. Fetch lessons
-      const { data: lessons, error: lessonsError } = await supabaseAdmin
-        .from("lessons")
-        .select("id")
-        .eq("course_id", enrollment.course_id);
-
-      if (lessonsError) {
-        return { success: false, error: "Failed to fetch course lessons." };
-      }
-
-      // 4. Fetch progress
-      const { data: progress, error: progressError } = await supabaseAdmin
-        .from("user_progress")
-        .select("lesson_id, status")
-        .eq("user_id", enrollment.student_id)
-        .eq("course_id", enrollment.course_id);
-
-      if (progressError) {
-        return { success: false, error: "Failed to fetch student progress." };
-      }
-
-      // 5. Fetch weekly updates
+      // 3. Fetch weekly updates
       const { data: weeklyUpdates, error: weeklyError } = await supabaseAdmin
         .from("weekly_updates")
         .select("week_number, status")
@@ -216,22 +195,6 @@ export async function updateEnrollmentAction(enrollmentId: string, score: number
 
       if (weeklyError) {
         return { success: false, error: "Failed to fetch student weekly updates." };
-      }
-
-      // -- Check 1: Completed Course (all lessons completed or approved)
-      const completedLessonIds = progress
-        ?.filter((p: any) => p.status === "completed" || p.status === "approved")
-        .map((p: any) => String(p.lesson_id)) || [];
-      
-      const hasCompletedCourse = lessons && lessons.length > 0 && lessons.every((l: any) => 
-        completedLessonIds.includes(String(l.id))
-      );
-
-      if (!hasCompletedCourse) {
-        return { 
-          success: false, 
-          error: "Strict Approval Check Failed: Student must complete all course lessons." 
-        };
       }
 
       // -- Check 2: Completed Internship Tasks

@@ -1515,21 +1515,6 @@ export default function AdminPage() {
                    ) : (
                       certRequests.map(req => {
                          // Compute student eligibility parameters
-                         const courseLessons = lessons.filter((l: any) => String(l.course_id) === String(req.course_id));
-                         const userProgressForCourse = allProgressRecords.filter((p: any) => 
-                           String(p.user_id) === String(req.student_id) && 
-                           String(p.lessons?.course_id) === String(req.course_id)
-                         );
-
-                         const completedLessonsCount = courseLessons.filter((lesson: any) => 
-                           userProgressForCourse.some((p: any) => 
-                             String(p.lesson_id) === String(lesson.id) && 
-                             (p.status === "completed" || p.status === "approved")
-                           )
-                         ).length;
-
-                         const totalLessons = courseLessons.length;
-                         const isCourseCompleted = totalLessons > 0 && completedLessonsCount >= totalLessons;
 
                          // Internship tasks check
                          const courseProjectTasks = req.courses?.project_tasks || [];
@@ -1557,7 +1542,7 @@ export default function AdminPage() {
                          const approvedWeeksCount = submittedUpdates.filter(w => w.status === "approved").length;
                          const isWeeklyUpdatesCompleted = approvedWeeksCount >= totalWeeks;
 
-                         const isEligible = isCourseCompleted && isInternshipTasksCompleted && isWeeklyUpdatesCompleted;
+                         const isEligible = isInternshipTasksCompleted && isWeeklyUpdatesCompleted;
 
                          return (
                             <div key={req.id} className="p-[28px] bg-white border border-[#8B4513]/15 rounded-[16px] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-sm hover:border-[#8B4513]/30 transition-all">
@@ -1587,29 +1572,7 @@ export default function AdminPage() {
                                </div>
 
                                {/* Verification Checklist */}
-                               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 border-y xl:border-y-0 xl:border-x border-[#8B4513]/10 py-4 xl:py-0 xl:px-6">
-                                  {/* Course Completion Gate */}
-                                  <div className="space-y-1.5">
-                                     <div className="flex items-center justify-between text-xs">
-                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Course Syllabus</span>
-                                        <span className={`font-bold ${isCourseCompleted ? "text-emerald-700" : "text-amber-700"}`}>
-                                           {completedLessonsCount} / {totalLessons}
-                                        </span>
-                                     </div>
-                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
-                                        <div 
-                                           className={`h-full rounded-full transition-all duration-300 ${isCourseCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
-                                           style={{ width: `${totalLessons > 0 ? (completedLessonsCount / totalLessons) * 100 : 0}%` }}
-                                        />
-                                     </div>
-                                     <div className="text-[10px] text-[#3D2B1F]/50 flex items-center gap-1">
-                                        {isCourseCompleted ? (
-                                           <><CheckCircle2 size={10} className="text-emerald-600" /> All lessons completed</>
-                                        ) : (
-                                           <><Circle size={10} className="text-amber-500" /> Syllabus completion required</>
-                                        )}
-                                     </div>
-                                  </div>
+                               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 border-y xl:border-y-0 xl:border-x border-[#8B4513]/10 py-4 xl:py-0 xl:px-6">
 
                                   {/* Internship Checklist Gate */}
                                   <div className="space-y-1.5">
