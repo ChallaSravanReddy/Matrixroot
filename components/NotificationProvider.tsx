@@ -71,9 +71,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             const isError = notification.type === "error";
 
             // Premium Colors & Borders based on type
-            let bgStyles = "bg-white/95 border-[#8B4513]/10";
-            let textStyles = "text-[#3D2B1F]";
-            let iconColor = "text-[#8B4513]";
+            let bgStyles = "bg-white/95 border-black/10";
+            let textStyles = "text-black";
+            let iconColor = "text-[#8B5A2B]";
             let borderStyles = "border";
 
             if (isSuccess) {

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -18,12 +19,12 @@ export default function ResetPasswordPage() {
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
       const codeParam = searchParams.get("code");
-      
+
       if (codeParam) {
         supabase.auth.exchangeCodeForSession(codeParam).then(({ error: exchangeErr }) => {
           if (exchangeErr) {
             console.error("PKCE Code Verification link handshake failed:", exchangeErr);
-            setError("Password recovery link validation link expired or corrupted. Please generate a fresh recovery link.");
+            setError(`Password recovery link validation failed: ${getFriendlyAuthErrorMessage(exchangeErr)}`);
           }
         });
       }
@@ -55,7 +56,7 @@ export default function ResetPasswordPage() {
         if (updateError.message?.toLowerCase().includes("logged in") || updateError.status === 401) {
           setError("Your password token handshake expired. Please ensure you open the reset link in the primary default browser application.");
         } else {
-          setError(updateError.message);
+          setError(getFriendlyAuthErrorMessage(updateError));
         }
       } else {
         setMessage("Password re-secured successfully! Launching login module verification gate...");
@@ -64,7 +65,7 @@ export default function ResetPasswordPage() {
         }, 2000);
       }
     } catch (err: any) {
-      setError(err.message || "Credential configuration validation failed.");
+      setError(getFriendlyAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 selection:bg-primary/20 font-sans">
       <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-      
+
       <div className="w-full max-w-md font-sans">
         <div className="text-center mb-10 font-sans">
           <Link href="/login" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground mb-6 transition-colors font-sans">

@@ -106,7 +106,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
   }, [value]);
 
   return (
-    <div className="w-full bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden focus-within:border-[#8B4513] transition-colors shadow-sm">
+    <div className="w-full bg-white border border-black/10 rounded-[12px] overflow-hidden focus-within:border-black transition-colors shadow-sm">
       <div className="quill-wrapper">
         <div ref={containerRef} />
       </div>

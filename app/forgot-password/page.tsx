@@ -8,6 +8,7 @@ import { ShieldCheck, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { getSiteUrl } from "@/lib/siteConfig";
+import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function ForgotPasswordPage() {
     try {
       const siteUrl = getSiteUrl();
       const targetRedirectUrl = `${siteUrl}/reset-password`;
-      
+
       console.log("Password Reset Redirect URL:", targetRedirectUrl);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
@@ -33,16 +34,16 @@ export default function ForgotPasswordPage() {
 
       if (resetError) {
         // Automatically provide intelligent Supabase URL configuration guidance if unauthorized
-        if (resetError.message?.toLowerCase().includes("authorized") || resetError.message?.toLowerCase().includes("allowed") || resetError.status === 400) {
+        if (resetError.message?.toLowerCase().includes("authorized") || resetError.message?.toLowerCase().includes("allowed")) {
           setError(`Supabase Auth Notice: Please add '${targetRedirectUrl}' to your allowed Redirect URLs list in Supabase Dashboard -> Authentication -> URL Configuration.`);
         } else {
-          setError(resetError.message);
+          setError(getFriendlyAuthErrorMessage(resetError));
         }
       } else {
         setMessage("Success! Password recovery instruction link dispatched to your mailbox.");
       }
     } catch (err: any) {
-      setError(err.message || "Communication link error. Try resubmitting momentarily.");
+      setError(getFriendlyAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -51,7 +52,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 selection:bg-primary/20 font-sans">
       <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-      
+
       <div className="w-full max-w-md font-sans">
         <div className="text-center mb-10 font-sans">
           <Link href="/login" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground mb-6 transition-colors">

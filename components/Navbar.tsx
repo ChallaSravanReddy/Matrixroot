@@ -16,19 +16,19 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#8B4513]/10 bg-[#F9F5F0]/80 backdrop-blur-[10px] transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white/80 backdrop-blur-[10px] transition-all">
       <div className="container mx-auto max-w-7xl px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <Image 
-              src="/img/Matrixroot_onlyimglogo-removebg-preview.png" 
-              alt="Matrix Root Logo" 
-              width={32} 
-              height={32} 
-              className="object-contain transition-transform duration-300 group-hover:opacity-90" 
-              priority 
+            <Image
+              src="/img/Matrixroot_onlyimglogo-removebg-preview.png"
+              alt="Matrix Root Logo"
+              width={32}
+              height={32}
+              className="object-contain transition-transform duration-300 group-hover:opacity-90"
+              priority
             />
-            <span className="font-bold text-base tracking-tight text-[#3D2B1F]">
+            <span className="font-bold text-base tracking-tight text-black">
               Matrix Root
             </span>
           </Link>
@@ -40,17 +40,15 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-3.5 py-2 text-xs font-bold tracking-tight transition-colors rounded-[8px] group ${
-                    isActive 
-                      ? "text-[#8B4513]" 
-                      : "text-[#3D2B1F]/80 hover:text-[#3D2B1F]"
-                  }`}
+                  className={`relative px-3.5 py-2 text-xs font-bold tracking-tight transition-colors rounded-[8px] group ${isActive
+                      ? "text-[#8B5A2B]"
+                      : "text-black/80 hover:text-black"
+                    }`}
                 >
                   {link.label}
                   {/* Subtle underline expanding from center on hover */}
-                  <span className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300 ${
-                    isActive ? "w-[calc(100%-20px)] bg-[#8B4513]" : "w-0 bg-[#8B4513] group-hover:w-[calc(100%-20px)]"
-                  }`} />
+                  <span className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300 ${isActive ? "w-[calc(100%-20px)] bg-[#8B5A2B]" : "w-0 bg-[#8B5A2B] group-hover:w-[calc(100%-20px)]"
+                    }`} />
                 </Link>
               );
             })}
@@ -59,14 +57,14 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4">
-            <Link 
-              href="/login" 
-              className="relative text-xs font-bold tracking-tight text-[#3D2B1F] group py-1 px-2 hidden sm:block"
+            <Link
+              href="/login"
+              className="relative text-xs font-bold tracking-tight text-black group py-1 px-2 hidden sm:block"
             >
               Student Login
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#8B4513] transition-all duration-300 group-hover:w-full rounded-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#8B5A2B] transition-all duration-300 group-hover:w-full rounded-full" />
             </Link>
-            <Button asChild size="sm" className="rounded-[8px] px-5 h-9 font-bold text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] transition-colors shadow-none">
+            <Button asChild size="sm" className="rounded-[8px] px-5 h-9 font-bold text-xs bg-black text-white hover:bg-neutral-900 transition-colors shadow-none border-0">
               <Link href="/contact">Start a Project</Link>
             </Button>
           </div>

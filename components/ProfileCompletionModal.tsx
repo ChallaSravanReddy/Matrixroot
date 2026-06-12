@@ -12,12 +12,12 @@ const DEPARTMENTS = [
   { id: "mech", name: "Mechanical Engineering" },
 ];
 
-export function ProfileCompletionModal({ 
-  userId, 
-  initialData, 
-  onComplete 
-}: { 
-  userId: string, 
+export function ProfileCompletionModal({
+  userId,
+  initialData,
+  onComplete
+}: {
+  userId: string,
   initialData: {
     department_slug?: string;
     year_of_study?: string;
@@ -25,7 +25,7 @@ export function ProfileCompletionModal({
     phone?: string;
     role?: string;
   } | null | undefined,
-  onComplete: () => void 
+  onComplete: () => void
 }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -63,25 +63,25 @@ export function ProfileCompletionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#F9F5F0]/80 backdrop-blur-md p-[24px]">
-      <div className="w-full max-w-lg bg-white border border-[#8B4513]/20 rounded-[16px] shadow-2xl p-[32px] md:p-[48px]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-[24px]">
+      <div className="w-full max-w-lg bg-white border border-black/10 rounded-[16px] shadow-2xl p-[32px] md:p-[48px]">
         <div className="text-center mb-[32px]">
-          <h2 className="text-2xl font-bold text-[#3D2B1F] mb-[8px]">Complete Your Profile</h2>
-          <p className="text-sm text-[#3D2B1F]/70">Please provide these details to unlock your personalized dashboard.</p>
+          <h2 className="text-2xl font-bold text-black mb-[8px]">Complete Your Profile</h2>
+          <p className="text-sm text-black/70">Please provide these details to unlock your dashboard.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-[24px]">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]/60 block">Academic Branch</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 block">Branch</label>
             <div className="relative">
-              <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
+              <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
               <select
                 required
                 value={formData.department_slug}
-                onChange={(e) => setFormData({...formData, department_slug: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F] appearance-none"
+                onChange={(e) => setFormData({ ...formData, department_slug: e.target.value })}
+                className="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black appearance-none"
               >
-                <option value="" disabled>Select Core Stream Alignment</option>
+                <option value="" disabled>Select Branch</option>
                 {DEPARTMENTS.map(dept => (
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
                 ))}
@@ -90,14 +90,14 @@ export function ProfileCompletionModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]/60 block">Year of Study</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 block">Year of Study</label>
             <div className="relative">
-              <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
+              <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
               <select
                 required
                 value={formData.year_of_study}
-                onChange={(e) => setFormData({...formData, year_of_study: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F] appearance-none"
+                onChange={(e) => setFormData({ ...formData, year_of_study: e.target.value })}
+                className="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black appearance-none"
               >
                 <option value="" disabled>Select Year</option>
                 <option value="1">1st Year</option>
@@ -110,37 +110,37 @@ export function ProfileCompletionModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]/60 block">Institution / College Name</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 block">Institution / College Name</label>
             <div className="relative">
-              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
+              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
               <input
                 type="text"
                 required
                 value={formData.college_name}
-                onChange={(e) => setFormData({...formData, college_name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, college_name: e.target.value })}
                 placeholder="e.g. Matrix University"
-                className="w-full pl-10 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                className="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#3D2B1F]/60 block">Contact Number</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-black/60 block">Contact Number</label>
             <div className="relative">
-              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
               <input
                 type="tel"
                 required
                 value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="e.g. 9876543210"
-                className="w-full pl-10 pr-4 py-3 bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] focus:outline-none focus:border-[#8B4513] transition-all text-sm text-[#3D2B1F]"
+                className="w-full pl-10 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-3 text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-[12px]">
+            <div className="p-3 text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 rounded-[12px]">
               {error}
             </div>
           )}
@@ -148,12 +148,12 @@ export function ProfileCompletionModal({
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-[12px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none font-bold mt-[12px]"
+            className="w-full h-11 rounded-[12px] bg-black text-white hover:bg-neutral-900 shadow-none font-bold mt-[12px] border-0"
           >
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-[#8B4513]" />
+              <Loader2 className="h-5 w-5 animate-spin text-[#8B5A2B]" />
             ) : (
-              <>Save Profile <ArrowRight className="ml-2 h-4 w-4 text-[#8B4513]" /></>
+              <>Save Profile <ArrowRight className="ml-2 h-4 w-4 text-[#8B5A2B]" /></>
             )}
           </Button>
         </form>

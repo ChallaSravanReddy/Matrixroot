@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
 
 export function AuthGuard() {
   useEffect(() => {
@@ -15,12 +16,22 @@ export function AuthGuard() {
     });
 
     // Initial check to clear broken sessions
-    supabase.auth.getSession().then(({ error }) => {
-      if (error && error.message.includes("Refresh Token Not Found")) {
-        console.warn("Stale session detected. Cleaning up...");
-        supabase.auth.signOut();
-      }
-    });
+    supabase.auth.getSession()
+      .then(({ error }) => {
+        if (error) {
+          const friendlyMsg = getFriendlyAuthErrorMessage(error);
+          console.warn("Session check returned error:", friendlyMsg);
+          if (error.message?.includes("Refresh Token Not Found") || error.status === 400 || error.status === 401) {
+            console.warn("Stale session detected. Cleaning up...");
+            supabase.auth.signOut().catch((e) => {
+              console.error("SignOut cleanup failed:", getFriendlyAuthErrorMessage(e));
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Unhandled exception in session fetch:", getFriendlyAuthErrorMessage(err));
+      });
 
     return () => {
       subscription.unsubscribe();

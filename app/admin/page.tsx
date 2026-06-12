@@ -559,16 +559,16 @@ export default function AdminPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center text-[#3D2B1F]"><Loader2 className="animate-spin text-[#8B4513]" /></div>;
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center text-black"><Loader2 className="animate-spin text-[#8B5A2B]" /></div>;
   if (!isAdmin) return null;
 
   return (
-    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
+    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
-        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
+      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white">
+        <div className="p-6 flex items-center gap-3 border-b border-black/10">
           <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-medium text-lg text-[#3D2B1F]">Admin Console</span>
+          <span className="font-medium text-lg text-black">Admin Console</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -586,18 +586,18 @@ export default function AdminPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
-                activeTab === tab.id ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+                activeTab === tab.id ? "bg-black/5 text-[#8B5A2B] border border-black/10 font-semibold" : "text-black/70 hover:bg-black/5 hover:text-black"
               }`}
             >
-              <span className="text-[#8B4513]">{tab.icon}</span>
+              <span className="text-[#8B5A2B]">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[#8B4513]/10">
-          <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-[#8B4513]/20 shadow-none" onClick={() => window.location.href='/dashboard'}>
-            <ArrowLeft size={14} className="mr-2 text-[#8B4513]" /> Exit to Portal
+        <div className="p-4 border-t border-black/10">
+          <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-black/20 shadow-none" onClick={() => window.location.href='/dashboard'}>
+            <ArrowLeft size={14} className="mr-2 text-[#8B5A2B]" /> Exit to Portal
           </Button>
         </div>
       </aside>
@@ -608,17 +608,17 @@ export default function AdminPage() {
           className="fixed inset-0 z-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         >
-          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div 
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+            <div className="p-6 flex items-center justify-between border-b border-black/10">
               <div className="flex items-center gap-3">
                 <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-                <span className="font-medium text-lg text-[#3D2B1F]">Admin</span>
+                <span className="font-medium text-lg text-black">Admin</span>
               </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
                 <X size={20} />
               </button>
             </div>
@@ -638,18 +638,18 @@ export default function AdminPage() {
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id); setIsSidebarOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
-                    activeTab === tab.id ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+                    activeTab === tab.id ? "bg-black/5 text-[#8B5A2B] border border-black/10 font-semibold" : "text-black/70 hover:bg-black/5 hover:text-black"
                   }`}
                 >
-                  <span className="text-[#8B4513]">{tab.icon}</span>
+                  <span className="text-[#8B5A2B]">{tab.icon}</span>
                   {tab.label}
                 </button>
               ))}
             </nav>
 
-            <div className="p-4 border-t border-[#8B4513]/10">
-              <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-[#8B4513]/20 shadow-none" onClick={() => window.location.href='/dashboard'}>
-                <ArrowLeft size={14} className="mr-2 text-[#8B4513]" /> Exit to Portal
+            <div className="p-4 border-t border-black/10">
+              <Button variant="outline" size="sm" className="w-full text-xs rounded-[12px] border-black/20 shadow-none" onClick={() => window.location.href='/dashboard'}>
+                <ArrowLeft size={14} className="mr-2 text-[#8B5A2B]" /> Exit to Portal
               </Button>
             </div>
           </div>
@@ -658,18 +658,18 @@ export default function AdminPage() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+        <header className="h-16 border-b border-black/10 bg-neutral-50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+              className="lg:hidden p-2 -ml-2 text-[#8B5A2B] hover:bg-black/5 rounded-[8px]"
             >
               <Menu size={20} />
             </button>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">{activeTab} Supervision Node</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-black">{activeTab} Supervision Node</h2>
           </div>
           <div className="flex items-center gap-4">
-             <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+             <div className="hidden md:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-[#8B5A2B] bg-black/5 border border-black/10 px-2 py-0.5 rounded-[12px]">
                <ShieldCheck size={12} />
                Executive Clearances Active
              </div>
@@ -681,24 +681,24 @@ export default function AdminPage() {
           {activeTab === "courses" && (
             <div className="grid lg:grid-cols-[400px_1fr] gap-[32px]">
               <div className="space-y-[24px]">
-                 <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Add Internship / Course</h3>
-                 <form onSubmit={handleCreateCourse} className="space-y-[16px] p-[24px] bg-white border border-[#8B4513]/20 rounded-[12px] shadow-none">
-                    <input type="text" placeholder="Internship Name" className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" value={newCourse.title} onChange={(e) => setNewCourse({...newCourse, title: e.target.value})} required />
-                    <textarea placeholder="Internship Description" className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs h-24 focus:outline-none focus:border-[#8B4513]" value={newCourse.description} onChange={(e) => setNewCourse({...newCourse, description: e.target.value})} required />
-                    <select className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" value={newCourse.dept_id} onChange={(e) => setNewCourse({...newCourse, dept_id: e.target.value})} required>
+                 <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Add Internship / Course</h3>
+                 <form onSubmit={handleCreateCourse} className="space-y-[16px] p-[24px] bg-white border border-black/20 rounded-[12px] shadow-none">
+                    <input type="text" placeholder="Internship Name" className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-black" value={newCourse.title} onChange={(e) => setNewCourse({...newCourse, title: e.target.value})} required />
+                    <textarea placeholder="Internship Description" className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[12px] text-xs h-24 focus:outline-none focus:border-black" value={newCourse.description} onChange={(e) => setNewCourse({...newCourse, description: e.target.value})} required />
+                    <select className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-black" value={newCourse.dept_id} onChange={(e) => setNewCourse({...newCourse, dept_id: e.target.value})} required>
                       <option value="">Select Department</option>
                       {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                     </select>
                     
                     {/* Input to support visual Cover graphic Image URL */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-medium text-[#3D2B1F]/60 flex items-center gap-1">
-                        <ImageIcon size={12} className="text-[#8B4513]" /> Cover Image URL
+                      <label className="text-[10px] font-medium text-black/60 flex items-center gap-1">
+                        <ImageIcon size={12} className="text-[#8B5A2B]" /> Cover Image URL
                       </label>
                       <input 
                         type="text" 
                         placeholder="e.g. /img/cover.png or Unsplash URL" 
-                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" 
+                        className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-black" 
                         value={newCourse.video_url} 
                         onChange={(e) => setNewCourse({...newCourse, video_url: e.target.value})} 
                       />
@@ -706,30 +706,30 @@ export default function AdminPage() {
 
                     {/* Input to support Price */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-medium text-[#3D2B1F]/60 flex items-center gap-1">
+                      <label className="text-[10px] font-medium text-black/60 flex items-center gap-1">
                         Price (INR)
                       </label>
                       <input 
                         type="number" 
                         placeholder="e.g. 500" 
                         min="0"
-                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-[#8B4513]" 
+                        className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[12px] text-xs focus:outline-none focus:border-black" 
                         value={newCourse.price} 
                         onChange={(e) => setNewCourse({...newCourse, price: parseInt(e.target.value) || 0})} 
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full h-10 rounded-[12px] font-medium text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none mt-2">Add Course</Button>
+                    <Button type="submit" className="w-full h-10 rounded-[12px] font-medium text-xs bg-black text-white hover:bg-neutral-900 shadow-none mt-2">Add Course</Button>
                  </form>
               </div>
               <div className="space-y-[24px]">
-                 <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Managed Allocations</h3>
+                 <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Managed Allocations</h3>
                  <div className="grid sm:grid-cols-2 gap-[16px]">
                     {courses.map(c => (
-                      <div key={c.id} className="p-[24px] bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors shadow-none flex flex-col justify-between">
+                      <div key={c.id} className="p-[24px] bg-white border border-black/20 rounded-[12px] hover:border-black/40 transition-colors shadow-none flex flex-col justify-between">
                         <div>
                           {c.video_url && (
-                            <div className="h-32 w-full rounded-[8px] overflow-hidden mb-[16px] border border-[#8B4513]/10 relative bg-[#F9F5F0]">
+                            <div className="h-32 w-full rounded-[8px] overflow-hidden mb-[16px] border border-black/10 relative bg-white">
                               <img
                                 src={getYouTubeThumbnail(c.video_url)}
                                 alt={c.title}
@@ -745,18 +745,18 @@ export default function AdminPage() {
                                 c.dept_ids.slice(0, 2).map((did: string) => {
                                   const dpt = departments.find((d: any) => String(d.id) === String(did));
                                   return dpt ? (
-                                    <span key={did} className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                    <span key={did} className="text-[10px] font-medium text-[#8B5A2B] uppercase tracking-wider bg-black/5 border border-black/10 px-2 py-0.5 rounded-[12px]">
                                       {dpt.name}
                                     </span>
                                   ) : null;
                                 })
                               ) : (
-                                <span className="text-[10px] font-medium text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                <span className="text-[10px] font-medium text-[#8B5A2B] uppercase tracking-wider bg-black/5 border border-black/10 px-2 py-0.5 rounded-[12px]">
                                   {c.departments?.name || "Foundational"}
                                 </span>
                               )}
                               {c.dept_ids && c.dept_ids.length > 2 && (
-                                <span className="text-[9px] font-bold text-[#8B4513]/60 bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[12px]">
+                                <span className="text-[9px] font-bold text-[#8B5A2B]/60 bg-black/5 border border-black/10 px-2 py-0.5 rounded-[12px]">
                                   +{c.dept_ids.length - 2} more
                                 </span>
                               )}
@@ -769,19 +769,19 @@ export default function AdminPage() {
                                 </span>
                               )}
                             </div>
-                            <button onClick={() => handleDeleteCourse(c.id)} className="text-[#8B4513] hover:bg-[#8B4513]/5 p-1 rounded-[6px] transition-colors" title="Purge Program">
+                            <button onClick={() => handleDeleteCourse(c.id)} className="text-[#8B5A2B] hover:bg-black/5 p-1 rounded-[6px] transition-colors" title="Purge Program">
                               <Trash2 size={12} />
                             </button>
                           </div>
-                          <h4 className="font-medium text-base tracking-[-0.02em] text-[#3D2B1F] mb-[8px]">{c.title}</h4>
-                          <p className="text-xs text-[#3D2B1F]/80 line-clamp-2 leading-[1.6]">{c.description}</p>
+                          <h4 className="font-medium text-base tracking-[-0.02em] text-black mb-[8px]">{c.title}</h4>
+                          <p className="text-xs text-black/80 line-clamp-2 leading-[1.6]">{c.description}</p>
                           
-                          <div className="mt-4 pt-3 border-t border-[#8B4513]/10 flex items-center justify-between">
-                            <span className="text-[11px] font-semibold text-[#8B4513]">Price: {c.price ?? 500}</span>
+                          <div className="mt-4 pt-3 border-t border-black/10 flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-[#8B5A2B]">Price: {c.price ?? 500}</span>
                             <div className="flex items-center gap-1.5">
                               <input 
                                 type="number"
-                                className="w-16 bg-[#F9F5F0]/50 border border-[#8B4513]/20 px-2 py-0.5 rounded-[6px] text-[10px] focus:outline-none focus:border-[#8B4513] text-right font-semibold"
+                                className="w-16 bg-neutral-50 border border-black/20 px-2 py-0.5 rounded-[6px] text-[10px] focus:outline-none focus:border-black text-right font-semibold"
                                 defaultValue={c.price ?? 500}
                                 onBlur={async (e) => {
                                   const newPrice = parseInt(e.target.value);
@@ -801,7 +801,7 @@ export default function AdminPage() {
                                   }
                                 }}
                               />
-                              <span className="text-[9px] text-[#3D2B1F]/50 font-medium">INR</span>
+                              <span className="text-[9px] text-black/50 font-medium">INR</span>
                             </div>
                           </div>
 
@@ -817,7 +817,7 @@ export default function AdminPage() {
                                 dept_ids: c.dept_ids?.length ? c.dept_ids : (c.dept_id ? [c.dept_id] : []),
                                 price: c.price ?? 500,
                               })}
-                              className="flex-1 py-1.5 text-center text-[10px] font-bold bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/15 rounded-[8px] hover:bg-[#8B4513]/10 transition-colors flex items-center justify-center gap-1"
+                              className="flex-1 py-1.5 text-center text-[10px] font-bold bg-black/5 text-[#8B5A2B] border border-black/15 rounded-[8px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1"
                             >
                               <Pencil size={11} /> Edit Course
                             </button>
@@ -828,7 +828,7 @@ export default function AdminPage() {
                                 title: c.title,
                                 problem_statements: c.problem_statements || [""]
                               })}
-                              className="flex-1 py-1.5 text-center text-[10px] font-bold bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/15 rounded-[8px] hover:bg-[#8B4513]/10 transition-colors"
+                              className="flex-1 py-1.5 text-center text-[10px] font-bold bg-black/5 text-[#8B5A2B] border border-black/15 rounded-[8px] hover:bg-black/10 transition-colors"
                             >
                               Manage Blueprints
                             </button>
@@ -845,13 +845,13 @@ export default function AdminPage() {
             <div className="space-y-8">
 
               {/* Top: Course Selector */}
-              <div className="bg-white border border-[#8B4513]/20 rounded-[14px] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="bg-white border border-black/20 rounded-[14px] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="shrink-0">
-                  <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Working Course</span>
-                  <p className="text-xs text-[#3D2B1F]/50 mt-0.5">Select a course to manage its modules and lessons</p>
+                  <span className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Working Course</span>
+                  <p className="text-xs text-black/50 mt-0.5">Select a course to manage its modules and lessons</p>
                 </div>
                 <select
-                  className="flex-1 w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-semibold text-[#3D2B1F] focus:outline-none focus:border-[#8B4513]"
+                  className="flex-1 w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-semibold text-black focus:outline-none focus:border-black"
                   value={selectedCourseFilter}
                   onChange={(e) => handleSelectCourse(e.target.value)}
                 >
@@ -861,7 +861,7 @@ export default function AdminPage() {
 
                 <Button
                   onClick={() => setIsBaseTrackModalOpen(true)}
-                  className="shrink-0 rounded-[10px] px-5 h-10 font-semibold bg-[#8B4513] text-white hover:bg-[#72360f] shadow-none text-xs"
+                  className="shrink-0 rounded-[10px] px-5 h-10 font-semibold bg-black text-white hover:bg-neutral-900 shadow-none text-xs"
                 >
                   + New Course
                 </Button>
@@ -869,8 +869,8 @@ export default function AdminPage() {
 
               {!selectedCourseFilter ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center space-y-3">
-                  <BookOpen size={40} className="text-[#8B4513]/20" />
-                  <p className="text-sm font-semibold text-[#3D2B1F]/40">Select a course above to manage its curriculum</p>
+                  <BookOpen size={40} className="text-[#8B5A2B]/20" />
+                  <p className="text-sm font-semibold text-black/40">Select a course above to manage its curriculum</p>
                 </div>
               ) : (
                 <div className="space-y-8">
@@ -878,39 +878,39 @@ export default function AdminPage() {
                   {/* Add Module + Add Lesson side by side */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <div className="pb-2 border-b border-[#8B4513]/10">
-                        <h3 className="text-sm font-bold text-[#3D2B1F]">1. Add Module</h3>
-                        <p className="text-[10px] text-[#3D2B1F]/50 mt-0.5">Group lessons into a named chapter or phase</p>
+                      <div className="pb-2 border-b border-black/10">
+                        <h3 className="text-sm font-bold text-black">1. Add Module</h3>
+                        <p className="text-[10px] text-black/50 mt-0.5">Group lessons into a named chapter or phase</p>
                       </div>
-                      <form onSubmit={handleCreateModule} className="space-y-3 bg-white border border-[#8B4513]/15 rounded-[12px] p-5">
+                      <form onSubmit={handleCreateModule} className="space-y-3 bg-white border border-black/15 rounded-[12px] p-5">
                         <input
                           type="text"
                           placeholder="Module name (e.g. Phase 1: Fundamentals)"
-                          className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                          className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-black text-black font-medium"
                           value={newModule.title}
                           onChange={(e) => setNewModule({...newModule, title: e.target.value})}
                           required
                         />
                         <textarea
                           placeholder="Module description (optional)"
-                          className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-xs h-14 focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] resize-none"
+                          className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs h-14 focus:outline-none focus:border-black text-black resize-none"
                           value={newModule.description}
                           onChange={(e) => setNewModule({...newModule, description: e.target.value})}
                         />
                         <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 rounded border-[#8B4513]/20" checked={newModule.has_assessment} onChange={(e) => setNewModule({...newModule, has_assessment: e.target.checked})} />
-                          <span className="text-xs font-medium text-[#3D2B1F]">Requires assessment to unlock next module</span>
+                          <input type="checkbox" className="w-4 h-4 rounded border-black/20" checked={newModule.has_assessment} onChange={(e) => setNewModule({...newModule, has_assessment: e.target.checked})} />
+                          <span className="text-xs font-medium text-black">Requires assessment to unlock next module</span>
                         </label>
-                        <Button type="submit" className="w-full h-9 rounded-[10px] font-semibold text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none">
+                        <Button type="submit" className="w-full h-9 rounded-[10px] font-semibold text-xs bg-black text-white hover:bg-neutral-900 shadow-none">
                           Add Module
                         </Button>
                       </form>
                     </div>
 
                     <div className="space-y-3">
-                      <div className="pb-2 border-b border-[#8B4513]/10">
-                        <h3 className="text-sm font-bold text-[#3D2B1F]">2. Add Lesson</h3>
-                        <p className="text-[10px] text-[#3D2B1F]/50 mt-0.5">Add a video lesson inside a module</p>
+                      <div className="pb-2 border-b border-black/10">
+                        <h3 className="text-sm font-bold text-black">2. Add Lesson</h3>
+                        <p className="text-[10px] text-black/50 mt-0.5">Add a video lesson inside a module</p>
                       </div>
                       <form onSubmit={async (e) => {
                         e.preventDefault();
@@ -928,9 +928,9 @@ export default function AdminPage() {
                         } else {
                           alert("Error: " + res.error);
                         }
-                      }} className="space-y-3 bg-white border border-[#8B4513]/15 rounded-[12px] p-5">
+                      }} className="space-y-3 bg-white border border-black/15 rounded-[12px] p-5">
                         <select
-                          className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                          className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-black text-black font-medium"
                           value={newLesson.module_id}
                           onChange={(e) => setNewLesson({...newLesson, module_id: e.target.value})}
                           required
@@ -943,7 +943,7 @@ export default function AdminPage() {
                         <input
                           type="text"
                           placeholder="Lesson title"
-                          className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                          className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-black text-black font-medium"
                           value={newLesson.title}
                           onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
                           required
@@ -951,12 +951,12 @@ export default function AdminPage() {
                         <input
                           type="text"
                           placeholder="Video URL (YouTube, MP4, etc.)"
-                          className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                          className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-black text-black font-medium"
                           value={newLesson.content_url}
                           onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})}
                         />
                         <div className="space-y-1">
-                          <label className="text-[10px] font-semibold text-[#8B4513] uppercase tracking-wider block">Lesson Notes / Study Material</label>
+                          <label className="text-[10px] font-semibold text-[#8B5A2B] uppercase tracking-wider block">Lesson Notes / Study Material</label>
                           <RichTextEditor
                             value={newLesson.notes}
                             onChange={(val) => setNewLesson({...newLesson, notes: val})}
@@ -965,15 +965,15 @@ export default function AdminPage() {
                         </div>
                         <div className="flex gap-5 pt-1">
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="w-4 h-4 rounded border-[#8B4513]/20" checked={newLesson.is_preview} onChange={(e) => setNewLesson({...newLesson, is_preview: e.target.checked})} />
-                            <span className="text-xs font-medium text-[#3D2B1F]">Free preview</span>
+                            <input type="checkbox" className="w-4 h-4 rounded border-black/20" checked={newLesson.is_preview} onChange={(e) => setNewLesson({...newLesson, is_preview: e.target.checked})} />
+                            <span className="text-xs font-medium text-black">Free preview</span>
                           </label>
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="w-4 h-4 rounded border-[#8B4513]/20" checked={newLesson.has_assignment} onChange={(e) => setNewLesson({...newLesson, has_assignment: e.target.checked})} />
-                            <span className="text-xs font-medium text-[#3D2B1F]">Requires assignment</span>
+                            <input type="checkbox" className="w-4 h-4 rounded border-black/20" checked={newLesson.has_assignment} onChange={(e) => setNewLesson({...newLesson, has_assignment: e.target.checked})} />
+                            <span className="text-xs font-medium text-black">Requires assignment</span>
                           </label>
                         </div>
-                        <Button type="submit" className="w-full h-9 rounded-[10px] font-semibold text-xs bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none">
+                        <Button type="submit" className="w-full h-9 rounded-[10px] font-semibold text-xs bg-black text-white hover:bg-neutral-900 shadow-none">
                           Add Lesson
                         </Button>
                       </form>
@@ -982,12 +982,12 @@ export default function AdminPage() {
 
                   {/* Full-width Curriculum Structure */}
                   <div className="space-y-4">
-                    <div className="pb-2 border-b border-[#8B4513]/10 flex items-center justify-between">
+                    <div className="pb-2 border-b border-black/10 flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-bold text-[#3D2B1F]">Curriculum Structure</h3>
-                        <p className="text-[10px] text-[#3D2B1F]/50 mt-0.5">{courses.find(c => c.id === selectedCourseFilter)?.title}</p>
+                        <h3 className="text-sm font-bold text-black">Curriculum Structure</h3>
+                        <p className="text-[10px] text-black/50 mt-0.5">{courses.find(c => c.id === selectedCourseFilter)?.title}</p>
                       </div>
-                      <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-3 py-1.5 rounded-[8px]">
+                      <span className="text-[10px] font-bold text-[#8B5A2B] bg-black/5 border border-black/15 px-3 py-1.5 rounded-[8px]">
                         {modules.filter(m => String(m.course_id) === String(selectedCourseFilter)).length} Modules &middot; {lessons.filter(l => String(l.course_id) === String(selectedCourseFilter)).length} Lessons
                       </span>
                     </div>
@@ -1001,7 +1001,7 @@ export default function AdminPage() {
                         .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                       if (courseModules.length === 0 && unassigned.length === 0) {
                         return (
-                          <div className="text-center py-14 bg-white border border-dashed border-[#8B4513]/20 rounded-[12px] text-[#3D2B1F]/40 text-xs">
+                          <div className="text-center py-14 bg-white border border-dashed border-black/20 rounded-[12px] text-black/40 text-xs">
                             No modules yet. Add your first module above.
                           </div>
                         );
@@ -1013,32 +1013,32 @@ export default function AdminPage() {
                               .filter(l => String(l.module_id) === String(mod.id))
                               .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
                             return (
-                              <div key={mod.id} className="bg-white border border-[#8B4513]/15 rounded-[12px] overflow-hidden shadow-sm flex flex-col">
-                                <div className="flex items-center justify-between px-4 py-3 bg-[#F9F5F0]/60 border-b border-[#8B4513]/10">
+                              <div key={mod.id} className="bg-white border border-black/15 rounded-[12px] overflow-hidden shadow-sm flex flex-col">
+                                <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 border-b border-black/10">
                                   <div className="min-w-0">
-                                    <div className="text-xs font-bold text-[#3D2B1F] truncate">{mod.title}</div>
+                                    <div className="text-xs font-bold text-black truncate">{mod.title}</div>
                                     {mod.has_assessment && (
-                                      <span className="text-[9px] font-semibold text-[#8B4513]">Assessment Required</span>
+                                      <span className="text-[9px] font-semibold text-[#8B5A2B]">Assessment Required</span>
                                     )}
                                   </div>
-                                  <button onClick={() => handleDeleteModule(mod.id)} className="p-1 text-[#8B4513]/40 hover:text-red-600 hover:bg-red-50 rounded transition-all shrink-0 ml-2" title="Delete module">
+                                  <button onClick={() => handleDeleteModule(mod.id)} className="p-1 text-[#8B5A2B]/40 hover:text-red-600 hover:bg-red-50 rounded transition-all shrink-0 ml-2" title="Delete module">
                                     <Trash2 size={12} />
                                   </button>
                                 </div>
                                 <div className="p-3 space-y-1 flex-1">
                                   {modLessons.length === 0 ? (
-                                    <div className="text-[10px] text-[#3D2B1F]/30 italic py-3 text-center">No lessons yet</div>
+                                    <div className="text-[10px] text-black/30 italic py-3 text-center">No lessons yet</div>
                                   ) : modLessons.map((lsn, i) => (
-                                    <div key={lsn.id} className="flex items-start justify-between p-2 rounded-[8px] hover:bg-[#F9F5F0]/70 group transition-colors">
+                                    <div key={lsn.id} className="flex items-start justify-between p-2 rounded-[8px] hover:bg-neutral-100 group transition-colors">
                                       <div className="flex items-start gap-2 min-w-0">
-                                        <span className="text-[9px] font-bold text-[#8B4513]/40 mt-0.5 shrink-0 w-4 text-center">{i + 1}</span>
+                                        <span className="text-[9px] font-bold text-[#8B5A2B]/40 mt-0.5 shrink-0 w-4 text-center">{i + 1}</span>
                                         <div className="min-w-0">
-                                          <div className="text-xs font-medium text-[#3D2B1F] truncate">{lsn.title}</div>
+                                          <div className="text-xs font-medium text-black truncate">{lsn.title}</div>
                                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                            {lsn.content_url && <span className="text-[9px] text-[#3D2B1F]/40">Video</span>}
-                                            {lsn.notes && <span className="text-[9px] text-[#3D2B1F]/40">Notes</span>}
+                                            {lsn.content_url && <span className="text-[9px] text-black/40">Video</span>}
+                                            {lsn.notes && <span className="text-[9px] text-black/40">Notes</span>}
                                             {lsn.is_preview && <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 rounded-[4px]">Preview</span>}
-                                            {lsn.has_assignment && <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-1.5 rounded-[4px]">Assignment</span>}
+                                            {lsn.has_assignment && <span className="text-[9px] font-bold text-[#8B5A2B] bg-black/5 border border-black/15 px-1.5 rounded-[4px]">Assignment</span>}
                                           </div>
                                         </div>
                                       </div>
@@ -1052,14 +1052,14 @@ export default function AdminPage() {
                             );
                           })}
                           {unassigned.length > 0 && (
-                            <div className="bg-white border border-dashed border-[#8B4513]/20 rounded-[12px] overflow-hidden">
-                              <div className="px-4 py-3 border-b border-[#8B4513]/10">
-                                <div className="text-xs font-bold text-[#3D2B1F]/50">Unassigned Lessons</div>
+                            <div className="bg-white border border-dashed border-black/20 rounded-[12px] overflow-hidden">
+                              <div className="px-4 py-3 border-b border-black/10">
+                                <div className="text-xs font-bold text-black/50">Unassigned Lessons</div>
                               </div>
                               <div className="p-3 space-y-1">
                                 {unassigned.map((lsn) => (
-                                  <div key={lsn.id} className="flex items-center justify-between p-2 rounded-[8px] hover:bg-[#F9F5F0]/70 group transition-colors">
-                                    <span className="text-xs text-[#3D2B1F]/70 truncate">{lsn.title}</span>
+                                  <div key={lsn.id} className="flex items-center justify-between p-2 rounded-[8px] hover:bg-neutral-100 group transition-colors">
+                                    <span className="text-xs text-black/70 truncate">{lsn.title}</span>
                                     <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 rounded transition-all shrink-0">
                                       <Trash2 size={11} />
                                     </button>
@@ -1083,33 +1083,33 @@ export default function AdminPage() {
           {activeTab === "students" && (
              <div className="space-y-[32px]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
-                   <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Authenticated Identities Directory</h3>
+                   <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Authenticated Identities Directory</h3>
                    <div className="relative w-full md:w-96">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40" size={14} />
-                      <input type="text" placeholder="Filter parameters..." className="w-full bg-white border border-[#8B4513]/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-[#8B4513] outline-none transition-all text-[#3D2B1F]" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" size={14} />
+                      <input type="text" placeholder="Filter parameters..." className="w-full bg-white border border-black/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-black outline-none transition-all text-black" />
                    </div>
                 </div>
 
-                <div className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none">
+                <div className="bg-white border border-black/20 rounded-[12px] overflow-hidden shadow-none">
                    <table className="w-full text-left border-collapse">
                       <thead>
-                         <tr className="border-b border-[#8B4513]/10 bg-[#F9F5F0] text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">
+                         <tr className="border-b border-black/10 bg-white text-[10px] font-medium uppercase tracking-wider text-black/60">
                             <th className="px-6 py-4">Identity String</th>
                             <th className="px-6 py-4">Domain Association</th>
                             <th className="px-6 py-4">Clearance Role</th>
                             <th className="px-6 py-4">Node Link Status</th>
                          </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#8B4513]/10">
+                      <tbody className="divide-y divide-[#8B5A2B]/10">
                          {students.map(s => (
-                           <tr key={s.id} className="hover:bg-[#F9F5F0]/50 transition-colors group">
+                           <tr key={s.id} className="hover:bg-neutral-50 transition-colors group">
                               <td className="px-6 py-3.5">
-                                 <div className="font-medium text-xs text-[#3D2B1F]">{s.full_name || "Unverified Key"}</div>
-                                 <div className="text-[10px] text-[#3D2B1F]/50">{s.id.substring(0,18)}...</div>
+                                 <div className="font-medium text-xs text-black">{s.full_name || "Unverified Key"}</div>
+                                 <div className="text-[10px] text-black/50">{s.id.substring(0,18)}...</div>
                               </td>
-                              <td className="px-6 py-3.5 text-xs font-normal text-[#3D2B1F]">{s.department_slug?.toUpperCase() || "UNASSIGNED"}</td>
+                              <td className="px-6 py-3.5 text-xs font-normal text-black">{s.department_slug?.toUpperCase() || "UNASSIGNED"}</td>
                               <td className="px-6 py-3.5">
-                                 <span className={`px-2 py-0.5 rounded-[12px] text-[10px] font-medium uppercase tracking-wider border ${s.role === 'admin' ? 'bg-[#8B4513]/10 text-[#8B4513] border-[#8B4513]/20' : 'bg-[#F9F5F0] text-[#3D2B1F]/80 border-[#8B4513]/10'}`}>
+                                 <span className={`px-2 py-0.5 rounded-[12px] text-[10px] font-medium uppercase tracking-wider border ${s.role === 'admin' ? 'bg-black/10 text-[#8B5A2B] border-black/20' : 'bg-white text-black/80 border-black/10'}`}>
                                     {s.role || "student"}
                                  </span>
                               </td>
@@ -1124,7 +1124,7 @@ export default function AdminPage() {
                       </tbody>
                    </table>
                    {students.length === 0 && (
-                     <div className="py-[64px] text-center text-xs text-[#3D2B1F]/60 font-medium">Directory returns blank data array.</div>
+                     <div className="py-[64px] text-center text-xs text-black/60 font-medium">Directory returns blank data array.</div>
                    )}
                 </div>
              </div>
@@ -1132,13 +1132,13 @@ export default function AdminPage() {
 
           {activeTab === "internship_tasks" && (
              <div className="space-y-[32px]">
-                <div className="bg-white border border-[#8B4513]/20 rounded-[14px] p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="bg-white border border-black/20 rounded-[14px] p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                    <div className="shrink-0">
-                      <h3 className="text-sm font-bold text-[#8B4513] uppercase tracking-widest block">Working Course Workspace</h3>
-                      <p className="text-xs text-[#3D2B1F]/50 mt-0.5 font-medium">Select a track to configure guidelines, blueprints, and weekly screenshot tasks.</p>
+                      <h3 className="text-sm font-bold text-[#8B5A2B] uppercase tracking-widest block">Working Course Workspace</h3>
+                      <p className="text-xs text-black/50 mt-0.5 font-medium">Select a track to configure guidelines, blueprints, and weekly screenshot tasks.</p>
                    </div>
                    <select
-                      className="flex-1 w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-semibold text-[#3D2B1F] focus:outline-none focus:border-[#8B4513]"
+                      className="flex-1 w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-semibold text-black focus:outline-none focus:border-black"
                       value={selectedCourseFilter}
                       onChange={(e) => handleSelectCourse(e.target.value)}
                    >
@@ -1152,14 +1152,14 @@ export default function AdminPage() {
                       {/* Left Column: Guidelines & Blueprints */}
                       <div className="space-y-6">
                          {/* Guidelines Document Card */}
-                         <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 space-y-4 shadow-none">
-                            <h4 className="text-sm font-bold text-[#3D2B1F] border-b border-[#8B4513]/10 pb-2 uppercase tracking-wider flex items-center gap-2">
-                               <FileText size={16} className="text-[#8B4513]" /> Guidelines Document
+                         <div className="bg-white border border-black/20 rounded-[12px] p-6 space-y-4 shadow-none">
+                            <h4 className="text-sm font-bold text-black border-b border-black/10 pb-2 uppercase tracking-wider flex items-center gap-2">
+                               <FileText size={16} className="text-[#8B5A2B]" /> Guidelines Document
                             </h4>
                             <div className="space-y-3">
                                <div className="flex flex-col sm:flex-row gap-3">
-                                  <label className="flex items-center justify-center border border-[#8B4513]/20 border-dashed hover:border-[#8B4513]/40 rounded-[8px] cursor-pointer bg-[#F9F5F0]/30 h-10 px-4 transition-all shrink-0">
-                                     <span className="text-xs font-bold text-[#3D2B1F]/70">{uploadingDoc ? "Uploading..." : "Upload PDF/Doc"}</span>
+                                  <label className="flex items-center justify-center border border-black/20 border-dashed hover:border-black/40 rounded-[8px] cursor-pointer bg-white h-10 px-4 transition-all shrink-0">
+                                     <span className="text-xs font-bold text-black/70">{uploadingDoc ? "Uploading..." : "Upload PDF/Doc"}</span>
                                      <input 
                                         type="file" 
                                         accept=".pdf,.doc,.docx" 
@@ -1171,14 +1171,14 @@ export default function AdminPage() {
                                   <input 
                                      type="text" 
                                      placeholder="Direct guidelines URL..." 
-                                     className="flex-1 bg-[#F9F5F0]/50 border border-[#8B4513]/20 px-3 py-2 rounded-[8px] text-xs focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                                     className="flex-1 bg-neutral-50 border border-black/20 px-3 py-2 rounded-[8px] text-xs focus:outline-none focus:border-black text-black font-medium"
                                      value={courseFileUrl}
                                      onChange={(e) => setCourseFileUrl(e.target.value)}
                                   />
                                </div>
                                {courseFileUrl && (
-                                  <div className="flex items-center justify-between bg-[#F9F5F0]/30 border border-[#8B4513]/10 rounded-[8px] p-2.5">
-                                     <a href={courseFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#8B4513] hover:underline truncate max-w-[280px]">
+                                  <div className="flex items-center justify-between bg-white border border-black/10 rounded-[8px] p-2.5">
+                                     <a href={courseFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#8B5A2B] hover:underline truncate max-w-[280px]">
                                         View guidelines document
                                      </a>
                                      <button type="button" onClick={() => setCourseFileUrl("")} className="text-red-500 hover:text-red-700 p-1">
@@ -1190,15 +1190,15 @@ export default function AdminPage() {
                          </div>
 
                          {/* Blueprints / Problem statements */}
-                         <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 space-y-4 shadow-none">
-                            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-2">
-                               <h4 className="text-sm font-bold text-[#3D2B1F] uppercase tracking-wider flex items-center gap-2">
-                                  <Sparkles size={16} className="text-[#8B4513]" /> Internship Blueprints
+                         <div className="bg-white border border-black/20 rounded-[12px] p-6 space-y-4 shadow-none">
+                            <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                               <h4 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                                  <Sparkles size={16} className="text-[#8B5A2B]" /> Internship Blueprints
                                </h4>
                                <button 
                                   type="button"
                                   onClick={() => setCourseBlueprints([...courseBlueprints, ""])}
-                                  className="px-2.5 py-0.5 text-[10px] font-bold bg-[#8B4513]/10 text-[#8B4513] border border-[#8B4513]/20 rounded-[6px] hover:bg-[#8B4513]/25 transition-all"
+                                  className="px-2.5 py-0.5 text-[10px] font-bold bg-black/10 text-[#8B5A2B] border border-black/20 rounded-[6px] hover:bg-black/25 transition-all"
                                >
                                   + Add Blueprint
                                </button>
@@ -1206,7 +1206,7 @@ export default function AdminPage() {
 
                             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                                {courseBlueprints.map((blueprint, idx) => (
-                                  <div key={idx} className="flex gap-2 items-start bg-[#F9F5F0]/30 p-3 rounded-[8px] border border-[#8B4513]/20">
+                                  <div key={idx} className="flex gap-2 items-start bg-white p-3 rounded-[8px] border border-black/20">
                                      <textarea
                                         value={blueprint}
                                         onChange={(e) => {
@@ -1215,7 +1215,7 @@ export default function AdminPage() {
                                            setCourseBlueprints(updated);
                                         }}
                                         placeholder={`Blueprint Question / Statement ${idx + 1}...`}
-                                        className="flex-1 bg-transparent border-0 text-xs text-[#3D2B1F] focus:outline-none resize-none min-h-[50px] placeholder-[#3D2B1F]/30 font-medium"
+                                        className="flex-1 bg-transparent border-0 text-xs text-black focus:outline-none resize-none min-h-[50px] placeholder-black/30 font-medium"
                                      />
                                      {courseBlueprints.length > 1 && (
                                         <button
@@ -1232,15 +1232,15 @@ export default function AdminPage() {
                          </div>
 
                          {/* General Roadmap Tasks Checklist */}
-                         <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 space-y-4 shadow-none">
-                            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-2">
-                               <h4 className="text-sm font-bold text-[#3D2B1F] uppercase tracking-wider flex items-center gap-2">
-                                  <Layers size={16} className="text-[#8B4513]" /> Roadmap Project Tasks
+                         <div className="bg-white border border-black/20 rounded-[12px] p-6 space-y-4 shadow-none">
+                            <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                               <h4 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                                  <Layers size={16} className="text-[#8B5A2B]" /> Roadmap Project Tasks
                                </h4>
                                <button 
                                   type="button"
                                   onClick={() => setCourseMainTasks([...courseMainTasks, ""])}
-                                  className="px-2.5 py-0.5 text-[10px] font-bold bg-[#8B4513]/10 text-[#8B4513] border border-[#8B4513]/20 rounded-[6px] hover:bg-[#8B4513]/25 transition-all"
+                                  className="px-2.5 py-0.5 text-[10px] font-bold bg-black/10 text-[#8B5A2B] border border-black/20 rounded-[6px] hover:bg-black/25 transition-all"
                                >
                                   + Add Task
                                </button>
@@ -1248,7 +1248,7 @@ export default function AdminPage() {
 
                             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                                {courseMainTasks.map((task, idx) => (
-                                  <div key={idx} className="flex gap-2 items-center bg-[#F9F5F0]/30 p-2.5 rounded-[8px] border border-[#8B4513]/20">
+                                  <div key={idx} className="flex gap-2 items-center bg-white p-2.5 rounded-[8px] border border-black/20">
                                      <input
                                         type="text"
                                         value={task}
@@ -1258,7 +1258,7 @@ export default function AdminPage() {
                                            setCourseMainTasks(updated);
                                         }}
                                         placeholder={`Task ${idx + 1} description...`}
-                                        className="flex-1 bg-transparent border-0 text-xs text-[#3D2B1F] focus:outline-none placeholder-[#3D2B1F]/30 font-medium"
+                                        className="flex-1 bg-transparent border-0 text-xs text-black focus:outline-none placeholder-black/30 font-medium"
                                      />
                                      {courseMainTasks.length > 1 && (
                                         <button
@@ -1276,17 +1276,17 @@ export default function AdminPage() {
                       </div>
 
                       {/* Right Column: Weekly Screenshot Tasks */}
-                      <div className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 space-y-4 shadow-none flex flex-col justify-between">
+                      <div className="bg-white border border-black/20 rounded-[12px] p-6 space-y-4 shadow-none flex flex-col justify-between">
                          <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-[#3D2B1F] border-b border-[#8B4513]/10 pb-2 uppercase tracking-wider flex items-center gap-2">
-                               <Calendar size={16} className="text-[#8B4513]" /> Weekly Screenshot Tasks
+                            <h4 className="text-sm font-bold text-black border-b border-black/10 pb-2 uppercase tracking-wider flex items-center gap-2">
+                               <Calendar size={16} className="text-[#8B5A2B]" /> Weekly Screenshot Tasks
                             </h4>
-                            <p className="text-[11px] text-[#3D2B1F]/60">Define the screenshot submission prompts for each week. Students will be required to submit a proof image matching these prompts.</p>
+                            <p className="text-[11px] text-black/60">Define the screenshot submission prompts for each week. Students will be required to submit a proof image matching these prompts.</p>
 
                             <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
                                {courseWeeklyTasks.map((wtask, idx) => (
-                                  <div key={idx} className="space-y-1.5 p-3.5 bg-[#F9F5F0]/30 rounded-[10px] border border-[#8B4513]/15">
-                                     <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-wider block">Week {idx + 1} Deliverable Prompt</span>
+                                  <div key={idx} className="space-y-1.5 p-3.5 bg-white rounded-[10px] border border-black/15">
+                                     <span className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider block">Week {idx + 1} Deliverable Prompt</span>
                                      <textarea
                                         value={wtask}
                                         onChange={(e) => {
@@ -1295,26 +1295,26 @@ export default function AdminPage() {
                                            setCourseWeeklyTasks(updated);
                                         }}
                                         placeholder={`Provide description of screenshot required from students in week ${idx + 1}...`}
-                                        className="w-full bg-white border border-[#8B4513]/20 rounded-[8px] p-2 text-xs focus:border-[#8B4513] outline-none min-h-[60px] text-[#3D2B1F] font-medium"
+                                        className="w-full bg-white border border-black/20 rounded-[8px] p-2 text-xs focus:border-black outline-none min-h-[60px] text-black font-medium"
                                      />
                                   </div>
                                ))}
                             </div>
                          </div>
 
-                         <div className="pt-4 border-t border-[#8B4513]/10 flex justify-end">
+                         <div className="pt-4 border-t border-black/10 flex justify-end">
                             <Button 
                                type="submit" 
                                disabled={savingTasks}
-                               className="rounded-[10px] bg-[#8B4513] hover:bg-[#72360f] text-white px-8 h-10 font-bold text-xs shadow-md transition-colors"
+                               className="rounded-[10px] bg-black hover:bg-neutral-900 text-white px-8 h-10 font-bold text-xs shadow-md transition-colors"
                             >
-                               {savingTasks ? "Saving configuration..." : "Save Workspace Configuration"}
+                               {savingTasks ? "Saving and Publishing..." : "Save and Publish"}
                             </Button>
                          </div>
                       </div>
                    </form>
                 ) : (
-                   <div className="text-center py-20 bg-white border border-[#8B4513]/15 rounded-[12px] text-[#3D2B1F]/50 text-xs font-semibold">
+                   <div className="text-center py-20 bg-white border border-black/15 rounded-[12px] text-black/50 text-xs font-semibold">
                       Please select an academic course track from the dropdown above to manage its workspace tasks.
                    </div>
                 )}
@@ -1323,20 +1323,20 @@ export default function AdminPage() {
 
           {activeTab === "grading" && (
              <div className="space-y-[24px]">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#8B4513]/10 pb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-black/10 pb-4">
                    <div>
-                      <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Artifact Verification Pipeline</h3>
-                      <p className="text-xs text-[#3D2B1F]/60 mt-1 font-medium">Verify lesson assignments and weekly internship screenshots submitted by students.</p>
+                      <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Artifact Verification Pipeline</h3>
+                      <p className="text-xs text-black/60 mt-1 font-medium">Verify lesson assignments and weekly internship screenshots submitted by students.</p>
                    </div>
                    
                    {/* Sub-view selection buttons */}
-                   <div className="flex bg-[#F9F5F0] border border-[#8B4513]/15 rounded-[12px] p-1 gap-1">
+                   <div className="flex bg-white border border-black/15 rounded-[12px] p-1 gap-1">
                       <button 
                          onClick={() => setGradingSubView("lessons")}
                          className={`px-4 py-2 rounded-[8px] text-xs font-semibold transition-all ${
                             gradingSubView === "lessons" 
-                               ? "bg-white text-[#8B4513] shadow-sm" 
-                               : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"
+                               ? "bg-white text-[#8B5A2B] shadow-sm" 
+                               : "text-black/60 hover:text-black"
                          }`}
                       >
                          Lesson Assignments
@@ -1345,8 +1345,8 @@ export default function AdminPage() {
                          onClick={() => setGradingSubView("weekly")}
                          className={`px-4 py-2 rounded-[8px] text-xs font-semibold transition-all ${
                             gradingSubView === "weekly" 
-                               ? "bg-white text-[#8B4513] shadow-sm" 
-                               : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"
+                               ? "bg-white text-[#8B5A2B] shadow-sm" 
+                               : "text-black/60 hover:text-black"
                          }`}
                       >
                          Weekly Screenshots
@@ -1357,26 +1357,26 @@ export default function AdminPage() {
                 {gradingSubView === "lessons" ? (
                    <div className="grid gap-[24px]">
                       {submissions.length === 0 ? (
-                        <div className="py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px] text-xs text-[#3D2B1F]/60 font-medium">Pipeline node idle.</div>
+                        <div className="py-[64px] text-center bg-white border border-black/10 rounded-[12px] text-xs text-black/60 font-medium">Pipeline node idle.</div>
                       ) : (
                         submissions.map(sub => (
-                          <div key={sub.id} className="p-[32px] bg-white border border-[#8B4513]/20 rounded-[12px] flex flex-col md:flex-row gap-[24px] justify-between shadow-none">
+                          <div key={sub.id} className="p-[32px] bg-white border border-black/20 rounded-[12px] flex flex-col md:flex-row gap-[24px] justify-between shadow-none">
                              <div className="flex-1 space-y-[16px]">
                                 <div>
-                                   <h4 className="text-base font-medium text-[#3D2B1F]">{sub.profiles?.full_name || "Scholar"}</h4>
-                                   <p className="text-xs font-medium text-[#8B4513] uppercase tracking-wider mt-0.5">{sub.lessons?.courses?.title}</p>
-                                   <p className="text-xs text-[#3D2B1F]/70 mt-1">Scope Unit: {sub.lessons?.title}</p>
+                                   <h4 className="text-base font-medium text-black">{sub.profiles?.full_name || "Scholar"}</h4>
+                                   <p className="text-xs font-medium text-[#8B5A2B] uppercase tracking-wider mt-0.5">{sub.lessons?.courses?.title}</p>
+                                   <p className="text-xs text-black/70 mt-1">Scope Unit: {sub.lessons?.title}</p>
                                 </div>
-                                <div className="p-2.5 bg-[#F9F5F0] rounded-[12px] flex items-center justify-between border border-[#8B4513]/10">
-                                   <span className="text-xs font-normal truncate pr-4 text-[#3D2B1F]">{sub.assignment_url}</span>
-                                   <a href={sub.assignment_url} target="_blank" className="shrink-0 text-[#8B4513] p-1 hover:bg-white rounded-[6px]"><ExternalLink size={14} /></a>
+                                <div className="p-2.5 bg-white rounded-[12px] flex items-center justify-between border border-black/10">
+                                   <span className="text-xs font-normal truncate pr-4 text-black">{sub.assignment_url}</span>
+                                   <a href={sub.assignment_url} target="_blank" className="shrink-0 text-[#8B5A2B] p-1 hover:bg-white rounded-[6px]"><ExternalLink size={14} /></a>
                                 </div>
                              </div>
                              <div className="flex items-center gap-4 shrink-0">
                                 {sub.status === 'approved' ? (
                                    <div className="px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-[12px] font-medium text-xs uppercase tracking-wider">Signed Off</div>
                                 ) : (
-                                   <Button size="sm" className="rounded-[12px] px-6 font-medium bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" onClick={() => handleApproveAssignment(sub.id, sub.enrollment?.id, sub.user_id, sub.lessons?.course_id)}>Affirm Signoff</Button>
+                                   <Button size="sm" className="rounded-[12px] px-6 font-medium bg-black text-white hover:bg-neutral-900 shadow-none text-xs" onClick={() => handleApproveAssignment(sub.id, sub.enrollment?.id, sub.user_id, sub.lessons?.course_id)}>Affirm Signoff</Button>
                                 )}
                              </div>
                           </div>
@@ -1386,7 +1386,7 @@ export default function AdminPage() {
                 ) : (
                    <div className="grid gap-[24px]">
                       {weeklyUpdates.length === 0 ? (
-                         <div className="py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px] text-xs text-[#3D2B1F]/60 font-medium">No weekly screenshot submissions found.</div>
+                         <div className="py-[64px] text-center bg-white border border-black/10 rounded-[12px] text-xs text-black/60 font-medium">No weekly screenshot submissions found.</div>
                       ) : (
                          weeklyUpdates.map((wu: any) => {
                             const student = allProfilesMeta.find((p: any) => p.id === wu.student_id);
@@ -1394,36 +1394,36 @@ export default function AdminPage() {
                             const weekTask = course?.weekly_tasks?.[wu.week_number - 1] || "Submit weekly progress screenshot.";
                             
                             return (
-                               <div key={wu.id} className="p-[32px] bg-white border border-[#8B4513]/20 rounded-[12px] flex flex-col lg:flex-row gap-[24px] shadow-none">
+                               <div key={wu.id} className="p-[32px] bg-white border border-black/20 rounded-[12px] flex flex-col lg:flex-row gap-[24px] shadow-none">
                                   {/* Left Panel: Text & Metadata */}
                                   <div className="flex-1 space-y-4">
                                      <div>
                                         <div className="flex items-center gap-2">
-                                           <h4 className="text-base font-semibold text-[#3D2B1F]">{student?.full_name || "Scholar"}</h4>
-                                           <span className="px-2 py-0.5 rounded-[12px] text-[10px] font-bold bg-[#8B4513]/10 text-[#8B4513] border border-[#8B4513]/25 uppercase tracking-wider">
+                                           <h4 className="text-base font-semibold text-black">{student?.full_name || "Scholar"}</h4>
+                                           <span className="px-2 py-0.5 rounded-[12px] text-[10px] font-bold bg-black/10 text-[#8B5A2B] border border-black/25 uppercase tracking-wider">
                                               Week {wu.week_number}
                                            </span>
                                         </div>
-                                        <p className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider mt-1">{course?.title || "Program Track"}</p>
+                                        <p className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider mt-1">{course?.title || "Program Track"}</p>
                                      </div>
 
-                                     <div className="space-y-1.5 p-3 bg-[#F9F5F0]/50 rounded-[10px] border border-[#8B4513]/10">
-                                        <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider block">Assigned Task</span>
-                                        <p className="text-xs text-[#3D2B1F]/80 font-medium leading-[1.5]">{weekTask}</p>
+                                     <div className="space-y-1.5 p-3 bg-neutral-50 rounded-[10px] border border-black/10">
+                                        <span className="text-[10px] font-bold text-black/60 uppercase tracking-wider block">Assigned Task</span>
+                                        <p className="text-xs text-black/80 font-medium leading-[1.5]">{weekTask}</p>
                                      </div>
 
-                                     <div className="space-y-1.5 p-3 bg-[#F9F5F0]/50 rounded-[10px] border border-[#8B4513]/10">
-                                        <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider block">Student's Description / Notes</span>
-                                        <p className="text-xs text-[#3D2B1F]/80 font-medium leading-[1.5] whitespace-pre-wrap">{wu.improvement_text || "No notes provided."}</p>
+                                     <div className="space-y-1.5 p-3 bg-neutral-50 rounded-[10px] border border-black/10">
+                                        <span className="text-[10px] font-bold text-black/60 uppercase tracking-wider block">Student's Description / Notes</span>
+                                        <p className="text-xs text-black/80 font-medium leading-[1.5] whitespace-pre-wrap">{wu.improvement_text || "No notes provided."}</p>
                                      </div>
 
                                      <div className="space-y-2 pt-2">
-                                        <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider block">mentor feedback</span>
+                                        <span className="text-[10px] font-bold text-black/60 uppercase tracking-wider block">mentor feedback</span>
                                         <textarea
                                            placeholder="Enter grading feedback or changes requested..."
                                            value={gradingFeedback[wu.id] || ""}
                                            onChange={(e) => setGradingFeedback(prev => ({ ...prev, [wu.id]: e.target.value }))}
-                                           className="w-full bg-[#F9F5F0]/40 border border-[#8B4513]/25 rounded-[10px] p-2 text-xs focus:border-[#8B4513] outline-none min-h-[60px] text-[#3D2B1F]"
+                                           className="w-full bg-white border border-black/25 rounded-[10px] p-2 text-xs focus:border-black outline-none min-h-[60px] text-black"
                                         />
                                      </div>
 
@@ -1439,7 +1439,7 @@ export default function AdminPage() {
                                               </span>
                                               <Button 
                                                  size="sm" 
-                                                 className="rounded-[10px] px-5 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs" 
+                                                 className="rounded-[10px] px-5 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs" 
                                                  onClick={() => handleGradeWeekly(wu.id, "approved")}
                                               >
                                                  Approve Anyway
@@ -1469,8 +1469,8 @@ export default function AdminPage() {
 
                                   {/* Right Panel: Screenshot Preview */}
                                   <div className="w-full lg:w-[320px] shrink-0 space-y-2">
-                                     <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider block">Submitted Screenshot</span>
-                                     <div className="aspect-video lg:aspect-square w-full rounded-[10px] overflow-hidden border border-[#8B4513]/15 bg-[#F9F5F0] relative group">
+                                     <span className="text-[10px] font-bold text-black/60 uppercase tracking-wider block">Submitted Screenshot</span>
+                                     <div className="aspect-video lg:aspect-square w-full rounded-[10px] overflow-hidden border border-black/15 bg-white relative group">
                                         <img 
                                            src={wu.screenshot_url} 
                                            alt="Weekly Progress Screenshot" 
@@ -1497,19 +1497,19 @@ export default function AdminPage() {
 
           {activeTab === "certificates" && (
              <div className="space-y-[24px]">
-                <div className="flex justify-between items-center border-b border-[#8B4513]/10 pb-4">
+                <div className="flex justify-between items-center border-b border-black/10 pb-4">
                    <div>
-                      <h3 className="text-xl font-semibold tracking-tight text-[#3D2B1F]">Signature Allocation Approval Gate</h3>
-                      <p className="text-xs text-[#3D2B1F]/60 mt-1">Review student eligibility requirements and issue credentials.</p>
+                      <h3 className="text-xl font-semibold tracking-tight text-black">Signature Allocation Approval Gate</h3>
+                      <p className="text-xs text-black/60 mt-1">Review student eligibility requirements and issue credentials.</p>
                    </div>
-                   <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-3.5 py-1.5 rounded-[8px]">
+                   <span className="text-xs font-bold text-[#8B5A2B] bg-black/5 border border-black/15 px-3.5 py-1.5 rounded-[8px]">
                       {certRequests.length} pending request{certRequests.length !== 1 ? "s" : ""}
                    </span>
                 </div>
 
                 <div className="grid gap-[24px]">
                    {certRequests.length === 0 ? (
-                      <div className="py-[80px] text-center bg-white border border-[#8B4513]/10 rounded-[16px] text-xs text-[#3D2B1F]/50 font-medium">
+                      <div className="py-[80px] text-center bg-white border border-black/10 rounded-[16px] text-xs text-black/50 font-medium">
                          No pending certificate requests at this time.
                       </div>
                    ) : (
@@ -1545,16 +1545,16 @@ export default function AdminPage() {
                          const isEligible = isInternshipTasksCompleted && isWeeklyUpdatesCompleted;
 
                          return (
-                            <div key={req.id} className="p-[28px] bg-white border border-[#8B4513]/15 rounded-[16px] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-sm hover:border-[#8B4513]/30 transition-all">
+                            <div key={req.id} className="p-[28px] bg-white border border-black/15 rounded-[16px] flex flex-col xl:flex-row xl:items-center justify-between gap-6 shadow-sm hover:border-black/30 transition-all">
                                {/* Student & Course Details */}
                                <div className="space-y-3 xl:max-w-[280px] w-full">
                                   <div>
-                                     <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/15 px-2.5 py-1 rounded-[6px] uppercase tracking-wider">
+                                     <span className="text-[9px] font-bold text-[#8B5A2B] bg-black/5 border border-black/15 px-2.5 py-1 rounded-[6px] uppercase tracking-wider">
                                         Credential Gate
                                      </span>
-                                     <h4 className="text-base font-bold text-[#3D2B1F] mt-2 truncate">{req.profiles?.full_name}</h4>
-                                     <p className="text-xs font-medium text-[#8B4513] mt-0.5 line-clamp-1">{req.courses?.title}</p>
-                                     <p className="text-[9px] text-[#3D2B1F]/40 font-mono mt-1">Enrollment ID: {req.id}</p>
+                                     <h4 className="text-base font-bold text-black mt-2 truncate">{req.profiles?.full_name}</h4>
+                                     <p className="text-xs font-medium text-[#8B5A2B] mt-0.5 line-clamp-1">{req.courses?.title}</p>
+                                     <p className="text-[9px] text-black/40 font-mono mt-1">Enrollment ID: {req.id}</p>
                                   </div>
 
                                   {/* Eligibility Badge */}
@@ -1572,23 +1572,23 @@ export default function AdminPage() {
                                </div>
 
                                {/* Verification Checklist */}
-                               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 border-y xl:border-y-0 xl:border-x border-[#8B4513]/10 py-4 xl:py-0 xl:px-6">
+                               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 border-y xl:border-y-0 xl:border-x border-black/10 py-4 xl:py-0 xl:px-6">
 
                                   {/* Internship Checklist Gate */}
                                   <div className="space-y-1.5">
                                      <div className="flex items-center justify-between text-xs">
-                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Internship Checklist</span>
+                                        <span className="font-bold text-black/60 text-[10px] uppercase tracking-wider">Internship Checklist</span>
                                         <span className={`font-bold ${isInternshipTasksCompleted ? "text-emerald-700" : "text-amber-700"}`}>
                                            {completedTasksCount} / {totalTasks}
                                         </span>
                                      </div>
-                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
+                                     <div className="h-1.5 bg-black/10 rounded-full overflow-hidden">
                                         <div 
                                            className={`h-full rounded-full transition-all duration-300 ${isInternshipTasksCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
                                            style={{ width: `${totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 100}%` }}
                                         />
                                      </div>
-                                     <div className="text-[10px] text-[#3D2B1F]/50 flex items-center gap-1">
+                                     <div className="text-[10px] text-black/50 flex items-center gap-1">
                                         {isInternshipTasksCompleted ? (
                                            <><CheckCircle2 size={10} className="text-emerald-600" /> All project tasks completed</>
                                         ) : (
@@ -1600,12 +1600,12 @@ export default function AdminPage() {
                                   {/* Weekly Progress Logs Gate */}
                                   <div className="space-y-1.5">
                                      <div className="flex items-center justify-between text-xs">
-                                        <span className="font-bold text-[#3D2B1F]/60 text-[10px] uppercase tracking-wider">Weekly Updates</span>
+                                        <span className="font-bold text-black/60 text-[10px] uppercase tracking-wider">Weekly Updates</span>
                                         <span className={`font-bold ${isWeeklyUpdatesCompleted ? "text-emerald-700" : "text-amber-700"}`}>
                                            {approvedWeeksCount} / {totalWeeks} Approved
                                         </span>
                                      </div>
-                                     <div className="h-1.5 bg-[#8B4513]/10 rounded-full overflow-hidden">
+                                     <div className="h-1.5 bg-black/10 rounded-full overflow-hidden">
                                         <div 
                                            className={`h-full rounded-full transition-all duration-300 ${isWeeklyUpdatesCompleted ? "bg-emerald-600" : "bg-amber-500"}`}
                                            style={{ width: `${totalWeeks > 0 ? (approvedWeeksCount / totalWeeks) * 100 : 0}%` }}
@@ -1637,7 +1637,7 @@ export default function AdminPage() {
                                {/* Action Drawer */}
                                <div className="flex xl:flex-col gap-2 shrink-0 xl:min-w-[140px]">
                                   <div className="flex flex-col gap-1 mb-1">
-                                     <label className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider block">Set Score (%)</label>
+                                     <label className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider block">Set Score (%)</label>
                                      <input 
                                         type="number"
                                         min="0"
@@ -1645,7 +1645,7 @@ export default function AdminPage() {
                                         placeholder="90"
                                         value={certScores[req.id] !== undefined ? certScores[req.id] : "90"}
                                         onChange={(e) => setCertScores({ ...certScores, [req.id]: e.target.value })}
-                                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 px-3 py-1.5 rounded-[8px] text-xs font-semibold text-[#3D2B1F] focus:outline-none focus:border-[#8B4513]"
+                                        className="w-full bg-neutral-50 border border-black/20 px-3 py-1.5 rounded-[8px] text-xs font-semibold text-black focus:outline-none focus:border-black"
                                      />
                                   </div>
                                   <Button 
@@ -1680,23 +1680,23 @@ export default function AdminPage() {
           {activeTab === "enrollments" && (
              <div className="space-y-[32px]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
-                   <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">Manual Enrollment Approvals</h3>
+                   <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Manual Enrollment Approvals</h3>
                    <div className="relative w-full md:w-96">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40" size={14} />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" size={14} />
                       <input 
                         type="text" 
                         placeholder="Search student or course..." 
-                        className="w-full bg-white border border-[#8B4513]/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-[#8B4513] outline-none transition-all text-[#3D2B1F]" 
+                        className="w-full bg-white border border-black/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-black outline-none transition-all text-black" 
                         value={enrollFilter}
                         onChange={(e) => setEnrollFilter(e.target.value)}
                       />
                    </div>
                 </div>
 
-                <div className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none">
+                <div className="bg-white border border-black/20 rounded-[12px] overflow-hidden shadow-none">
                    <table className="w-full text-left border-collapse">
                       <thead>
-                         <tr className="border-b border-[#8B4513]/10 bg-[#F9F5F0] text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">
+                         <tr className="border-b border-black/10 bg-white text-[10px] font-medium uppercase tracking-wider text-black/60">
                             <th className="px-6 py-4">Student</th>
                             <th className="px-6 py-4">Course Track</th>
                             <th className="px-6 py-4">Price</th>
@@ -1705,7 +1705,7 @@ export default function AdminPage() {
                             <th className="px-6 py-4">Actions</th>
                          </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#8B4513]/10">
+                      <tbody className="divide-y divide-[#8B5A2B]/10">
                          {enrollments
                            .filter(e => {
                              if (!enrollFilter) return true;
@@ -1718,13 +1718,13 @@ export default function AdminPage() {
                              );
                            })
                            .map(e => (
-                            <tr key={e.id} className="hover:bg-[#F9F5F0]/50 transition-colors group">
+                            <tr key={e.id} className="hover:bg-neutral-50 transition-colors group">
                                <td className="px-6 py-3.5">
-                                  <div className="font-medium text-xs text-[#3D2B1F]">{e.student_name}</div>
-                                  <div className="text-[10px] text-[#3D2B1F]/50">{e.student_email} &middot; {e.student_phone}</div>
+                                  <div className="font-medium text-xs text-black">{e.student_name}</div>
+                                  <div className="text-[10px] text-black/50">{e.student_email} &middot; {e.student_phone}</div>
                                </td>
-                               <td className="px-6 py-3.5 text-xs font-normal text-[#3D2B1F]">{e.course_title}</td>
-                               <td className="px-6 py-3.5 text-xs font-semibold text-[#8B4513]">₹{e.course_price}</td>
+                               <td className="px-6 py-3.5 text-xs font-normal text-black">{e.course_title}</td>
+                               <td className="px-6 py-3.5 text-xs font-semibold text-[#8B5A2B]">₹{e.course_price}</td>
                                <td className="px-6 py-3.5">
                                   <span className={`px-2 py-0.5 rounded-[12px] text-[10px] font-medium uppercase tracking-wider border ${
                                     e.payment_status === 'completed' || e.payment_status === 'success'
@@ -1734,7 +1734,7 @@ export default function AdminPage() {
                                      {e.payment_status}
                                   </span>
                                </td>
-                               <td className="px-6 py-3.5 text-xs text-[#3D2B1F]/60">
+                               <td className="px-6 py-3.5 text-xs text-black/60">
                                  {e.enrolled_at ? new Date(e.enrolled_at).toLocaleDateString() : 'N/A'}
                                </td>
                                <td className="px-6 py-3.5">
@@ -1762,7 +1762,7 @@ export default function AdminPage() {
                       </tbody>
                    </table>
                    {enrollments.length === 0 && (
-                     <div className="py-[64px] text-center text-xs text-[#3D2B1F]/60 font-medium">No enrollment records found.</div>
+                     <div className="py-[64px] text-center text-xs text-black/60 font-medium">No enrollment records found.</div>
                    )}
                 </div>
              </div>
@@ -1774,25 +1774,25 @@ export default function AdminPage() {
               {/* Left: Add / Edit Branch Form */}
               <div className="space-y-[24px]">
                 <div>
-                  <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">
+                  <h3 className="text-xl font-medium tracking-[-0.02em] text-black">
                     {editingBranch ? "Edit Branch" : "Add New Branch"}
                   </h3>
-                  <p className="text-xs text-[#3D2B1F]/50 mt-1">
+                  <p className="text-xs text-black/50 mt-1">
                     Branches are department categories that courses are assigned to.
                   </p>
                 </div>
 
                 <form
                   onSubmit={editingBranch ? handleUpdateBranch : handleCreateBranch}
-                  className="space-y-[14px] p-[24px] bg-white border border-[#8B4513]/20 rounded-[16px] shadow-none"
+                  className="space-y-[14px] p-[24px] bg-white border border-black/20 rounded-[16px] shadow-none"
                 >
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Branch Name</label>
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Branch Name</label>
                     <input
                       type="text"
                       placeholder="e.g. Computer Science"
                       required
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
                       value={editingBranch ? editingBranch.name : newBranch.name}
                       onChange={(e) => editingBranch
                         ? setEditingBranch({ ...editingBranch, name: e.target.value })
@@ -1802,27 +1802,27 @@ export default function AdminPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Slug (URL Key)</label>
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Slug (URL Key)</label>
                     <input
                       type="text"
                       placeholder="e.g. computer-science"
                       required
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-mono"
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-mono"
                       value={editingBranch ? editingBranch.slug : newBranch.slug}
                       onChange={(e) => editingBranch
                         ? setEditingBranch({ ...editingBranch, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })
                         : setNewBranch({ ...newBranch, slug: e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") })
                       }
                     />
-                    <p className="text-[9px] text-[#3D2B1F]/40 font-medium">Auto-generated from name. Only lowercase letters, numbers, hyphens.</p>
+                    <p className="text-[9px] text-black/40 font-medium">Auto-generated from name. Only lowercase letters, numbers, hyphens.</p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Description <span className="text-[#3D2B1F]/40 normal-case font-normal">(optional)</span></label>
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Description <span className="text-black/40 normal-case font-normal">(optional)</span></label>
                     <textarea
                       placeholder="Brief description of this branch..."
                       rows={3}
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium resize-none"
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium resize-none"
                       value={editingBranch ? editingBranch.description || "" : newBranch.description}
                       onChange={(e) => editingBranch
                         ? setEditingBranch({ ...editingBranch, description: e.target.value })
@@ -1837,7 +1837,7 @@ export default function AdminPage() {
                         type="button"
                         variant="outline"
                         onClick={() => setEditingBranch(null)}
-                        className="flex-1 h-10 rounded-[10px] text-xs font-bold border-[#8B4513]/20 text-[#3D2B1F]/70 hover:text-[#3D2B1F] shadow-none"
+                        className="flex-1 h-10 rounded-[10px] text-xs font-bold border-black/20 text-black/70 hover:text-black shadow-none"
                       >
                         Cancel
                       </Button>
@@ -1845,7 +1845,7 @@ export default function AdminPage() {
                     <Button
                       type="submit"
                       disabled={branchSaving}
-                      className="flex-1 h-10 rounded-[10px] font-bold text-xs bg-[#8B4513] text-white hover:bg-[#72360f] shadow-none"
+                      className="flex-1 h-10 rounded-[10px] font-bold text-xs bg-black text-white hover:bg-neutral-900 shadow-none"
                     >
                       {branchSaving ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -1860,13 +1860,13 @@ export default function AdminPage() {
 
                 {/* Stats summary */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-4 text-center">
-                    <p className="text-2xl font-bold text-[#8B4513]">{departments.length}</p>
-                    <p className="text-[10px] font-bold text-[#3D2B1F]/50 uppercase tracking-wider mt-0.5">Total Branches</p>
+                  <div className="bg-white border border-black/15 rounded-[12px] p-4 text-center">
+                    <p className="text-2xl font-bold text-[#8B5A2B]">{departments.length}</p>
+                    <p className="text-[10px] font-bold text-black/50 uppercase tracking-wider mt-0.5">Total Branches</p>
                   </div>
-                  <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-4 text-center">
-                    <p className="text-2xl font-bold text-[#8B4513]">{courses.length}</p>
-                    <p className="text-[10px] font-bold text-[#3D2B1F]/50 uppercase tracking-wider mt-0.5">Total Courses</p>
+                  <div className="bg-white border border-black/15 rounded-[12px] p-4 text-center">
+                    <p className="text-2xl font-bold text-[#8B5A2B]">{courses.length}</p>
+                    <p className="text-[10px] font-bold text-black/50 uppercase tracking-wider mt-0.5">Total Courses</p>
                   </div>
                 </div>
               </div>
@@ -1874,17 +1874,17 @@ export default function AdminPage() {
               {/* Right: Branches List */}
               <div className="space-y-[20px]">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-medium tracking-[-0.02em] text-[#3D2B1F]">All Branches</h3>
-                  <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-3 py-1 rounded-[8px]">
+                  <h3 className="text-xl font-medium tracking-[-0.02em] text-black">All Branches</h3>
+                  <span className="text-[10px] font-bold text-[#8B5A2B] bg-black/5 border border-black/10 px-3 py-1 rounded-[8px]">
                     {departments.length} branch{departments.length !== 1 ? "es" : ""}
                   </span>
                 </div>
 
                 {departments.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-24 bg-white border border-dashed border-[#8B4513]/20 rounded-[16px] text-center space-y-3">
-                    <GitBranch size={40} className="text-[#8B4513]/20" />
-                    <p className="text-sm font-semibold text-[#3D2B1F]/40">No branches yet</p>
-                    <p className="text-xs text-[#3D2B1F]/30">Add your first branch using the form on the left.</p>
+                  <div className="flex flex-col items-center justify-center py-24 bg-white border border-dashed border-black/20 rounded-[16px] text-center space-y-3">
+                    <GitBranch size={40} className="text-[#8B5A2B]/20" />
+                    <p className="text-sm font-semibold text-black/40">No branches yet</p>
+                    <p className="text-xs text-black/30">Add your first branch using the form on the left.</p>
                   </div>
                 ) : (
                   <div className="space-y-[12px]">
@@ -1894,38 +1894,38 @@ export default function AdminPage() {
                       return (
                         <div
                           key={dept.id}
-                          className={`bg-white border rounded-[14px] p-5 transition-all shadow-none ${isEditing ? "border-[#8B4513]/50 ring-2 ring-[#8B4513]/10" : "border-[#8B4513]/15 hover:border-[#8B4513]/30"}`}
+                          className={`bg-white border rounded-[14px] p-5 transition-all shadow-none ${isEditing ? "border-black/50 ring-2 ring-[#8B5A2B]/10" : "border-black/15 hover:border-black/30"}`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0 space-y-2">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <div className="p-1.5 bg-[#8B4513]/8 rounded-[8px] text-[#8B4513]">
+                                <div className="p-1.5 bg-black/8 rounded-[8px] text-[#8B5A2B]">
                                   <GitBranch size={14} />
                                 </div>
-                                <h4 className="text-sm font-bold text-[#3D2B1F] truncate">{dept.name}</h4>
-                                <span className="text-[9px] font-bold text-[#8B4513] bg-[#8B4513]/8 border border-[#8B4513]/15 px-2 py-0.5 rounded-[6px] font-mono tracking-wide shrink-0">
+                                <h4 className="text-sm font-bold text-black truncate">{dept.name}</h4>
+                                <span className="text-[9px] font-bold text-[#8B5A2B] bg-black/8 border border-black/15 px-2 py-0.5 rounded-[6px] font-mono tracking-wide shrink-0">
                                   /{dept.slug}
                                 </span>
                               </div>
 
                               {dept.description && (
-                                <p className="text-xs text-[#3D2B1F]/60 leading-relaxed font-medium line-clamp-2">{dept.description}</p>
+                                <p className="text-xs text-black/60 leading-relaxed font-medium line-clamp-2">{dept.description}</p>
                               )}
 
                               <div className="flex items-center gap-3 pt-1">
-                                <span className="text-[10px] font-bold text-[#3D2B1F]/50 flex items-center gap-1">
+                                <span className="text-[10px] font-bold text-black/50 flex items-center gap-1">
                                   <BookOpen size={10} />
                                   {branchCourses.length} course{branchCourses.length !== 1 ? "s" : ""}
                                 </span>
                                 {branchCourses.length > 0 && (
                                   <div className="flex gap-1 flex-wrap">
                                     {branchCourses.slice(0, 3).map((c: any) => (
-                                      <span key={c.id} className="text-[9px] bg-[#F9F5F0] border border-[#8B4513]/10 text-[#3D2B1F]/60 px-2 py-0.5 rounded-[4px] truncate max-w-[120px]">
+                                      <span key={c.id} className="text-[9px] bg-white border border-black/10 text-black/60 px-2 py-0.5 rounded-[4px] truncate max-w-[120px]">
                                         {c.title}
                                       </span>
                                     ))}
                                     {branchCourses.length > 3 && (
-                                      <span className="text-[9px] text-[#3D2B1F]/40 font-bold">+{branchCourses.length - 3} more</span>
+                                      <span className="text-[9px] text-black/40 font-bold">+{branchCourses.length - 3} more</span>
                                     )}
                                   </div>
                                 )}
@@ -1935,14 +1935,14 @@ export default function AdminPage() {
                             <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => setEditingBranch({ id: dept.id, name: dept.name, slug: dept.slug, description: dept.description || "" })}
-                                className="p-2 text-[#3D2B1F]/40 hover:text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px] transition-all"
+                                className="p-2 text-black/40 hover:text-[#8B5A2B] hover:bg-black/5 rounded-[8px] transition-all"
                                 title="Edit branch"
                               >
                                 <Pencil size={13} />
                               </button>
                               <button
                                 onClick={() => handleDeleteBranch(dept.id, dept.name)}
-                                className="p-2 text-[#3D2B1F]/40 hover:text-red-600 hover:bg-red-50 rounded-[8px] transition-all"
+                                className="p-2 text-black/40 hover:text-red-600 hover:bg-red-50 rounded-[8px] transition-all"
                                 title="Delete branch"
                               >
                                 <Trash2 size={13} />
@@ -1965,44 +1965,44 @@ export default function AdminPage() {
       {isBaseTrackModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
           <div 
-            className="w-[90%] h-[85%] bg-white border border-[#8B4513]/20 rounded-[16px] shadow-2xl flex flex-col overflow-hidden text-[#3D2B1F] animate-in fade-in zoom-in-95 duration-200"
+            className="w-[90%] h-[85%] bg-white border border-black/20 rounded-[16px] shadow-2xl flex flex-col overflow-hidden text-black animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-6 border-b border-[#8B4513]/15 flex items-center justify-between shrink-0">
-              <h3 className="text-lg font-bold tracking-tight text-[#3D2B1F] flex items-center gap-2">
-                <Sparkles className="text-[#8B4513]" size={18} /> Add Internship Track
+            <div className="p-6 border-b border-black/15 flex items-center justify-between shrink-0">
+              <h3 className="text-lg font-bold tracking-tight text-black flex items-center gap-2">
+                <Sparkles className="text-[#8B5A2B]" size={18} /> Create New Course
               </h3>
               <button 
                 onClick={() => setIsBaseTrackModalOpen(false)}
-                className="text-[#3D2B1F]/60 hover:text-[#3D2B1F] transition-colors p-1 hover:bg-[#8B4513]/5 rounded-[6px]"
+                className="text-black/60 hover:text-black transition-colors p-1 hover:bg-black/5 rounded-[6px]"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Content (Two Column) */}
-            <div className="flex-1 overflow-y-auto p-8 bg-[#F9F5F0]/20">
+            <div className="flex-1 overflow-y-auto p-8 bg-white">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
                 {/* Left Column (Core Meta) */}
                 <div className="space-y-6 flex flex-col">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider">Internship Name</label>
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider">Internship Name</label>
                     <input 
                       type="text" 
                       value={trackTitle}
                       onChange={(e) => setTrackTitle(e.target.value)}
                       placeholder="e.g., Full Stack Development" 
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium placeholder-[#3D2B1F]/30"
+                      className="w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium placeholder-black/30"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider">Department</label>
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider">Department</label>
                     <select 
                       value={focusDomain}
                       onChange={(e) => setFocusDomain(e.target.value)}
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium"
+                      className="w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium"
                     >
                       <option value="Software Engineering">Software Engineering</option>
                       <option value="AI & Automation">AI & Automation</option>
@@ -2011,15 +2011,15 @@ export default function AdminPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">Duration Scheme</label>
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">Duration Scheme</label>
                     <div className="grid grid-cols-3 gap-3">
                       {["30-Day Sprint", "60-Day Deep Dive", "90-Day Enterprise"].map((dur) => (
                         <label 
                           key={dur} 
                           className={`flex flex-col items-center justify-center p-4 rounded-[12px] border text-xs font-medium cursor-pointer transition-all ${
                             trackDuration === dur 
-                              ? "border-[#8B4513] bg-[#8B4513]/5 text-[#8B4513]" 
-                              : "border-[#8B4513]/20 bg-[#F9F5F0]/40 text-[#3D2B1F]/60 hover:border-[#8B4513]/40"
+                              ? "border-black bg-black/5 text-[#8B5A2B]" 
+                              : "border-black/20 bg-white text-black/60 hover:border-black/40"
                           }`}
                         >
                           <input 
@@ -2037,49 +2037,49 @@ export default function AdminPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider">Reference GitHub URL</label>
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider">Reference GitHub URL</label>
                     <input 
                       type="text" 
                       value={githubUrl}
                       onChange={(e) => setGithubUrl(e.target.value)}
                       placeholder="e.g., https://github.com/matrixroot/boilerplate" 
-                      className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium placeholder-[#3D2B1F]/30"
+                      className="w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium placeholder-black/30"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">Duration (Weeks)</label>
+                      <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">Duration (Weeks)</label>
                       <input 
                         type="number" 
                         value={timelineWeeks}
                         onChange={(e) => setTimelineWeeks(parseInt(e.target.value) || 0)}
                         placeholder="e.g., 8" 
                         min="1"
-                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium placeholder-[#3D2B1F]/30"
+                        className="w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium placeholder-black/30"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">Price (INR)</label>
+                      <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">Price (INR)</label>
                       <input 
                         type="number" 
                         value={trackPrice}
                         onChange={(e) => setTrackPrice(parseInt(e.target.value) || 0)}
                         placeholder="e.g., 500" 
                         min="0"
-                        className="w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium placeholder-[#3D2B1F]/30"
+                        className="w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium placeholder-black/30"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-3 pt-2 border-t border-[#8B4513]/10">
+                  <div className="space-y-3 pt-2 border-t border-black/10">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">Internship Blueprints</label>
+                      <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">Internship Blueprints</label>
                       <button 
                         type="button"
                         onClick={() => setProblemStatements([...problemStatements, ""])}
-                        className="px-2.5 py-0.5 text-[10px] font-bold bg-[#8B4513]/10 text-[#8B4513] border border-[#8B4513]/20 rounded-[6px] hover:bg-[#8B4513]/25 transition-all"
+                        className="px-2.5 py-0.5 text-[10px] font-bold bg-black/10 text-[#8B5A2B] border border-black/20 rounded-[6px] hover:bg-black/25 transition-all"
                       >
                         + Add Blueprint
                       </button>
@@ -2087,7 +2087,7 @@ export default function AdminPage() {
 
                     <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                       {problemStatements.map((statement, idx) => (
-                        <div key={idx} className="flex gap-2 items-start bg-[#F9F5F0]/50 p-2.5 rounded-[8px] border border-[#8B4513]/20">
+                        <div key={idx} className="flex gap-2 items-start bg-neutral-50 p-2.5 rounded-[8px] border border-black/20">
                           <textarea
                             value={statement}
                             onChange={(e) => {
@@ -2096,7 +2096,7 @@ export default function AdminPage() {
                               setProblemStatements(updated);
                             }}
                             placeholder={`Blueprint Statement ${idx + 1}...`}
-                            className="flex-1 bg-transparent border-0 text-xs text-[#3D2B1F] focus:outline-none resize-none min-h-[36px] placeholder-[#3D2B1F]/30 font-medium"
+                            className="flex-1 bg-transparent border-0 text-xs text-black focus:outline-none resize-none min-h-[36px] placeholder-black/30 font-medium"
                           />
                           {problemStatements.length > 1 && (
                             <button
@@ -2118,26 +2118,26 @@ export default function AdminPage() {
                 {/* Right Column (Operational Assets) */}
                 <div className="space-y-6 flex flex-col h-full">
                   <div className="flex-1 flex flex-col space-y-2">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider">Onboarding Instructions</label>
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider">Onboarding Instructions</label>
                     <textarea 
                       value={welcomeInstructions}
                       onChange={(e) => setWelcomeInstructions(e.target.value)}
                       placeholder="Enter raw welcome instructions or onboarding markdown text here..." 
-                      className="flex-1 min-h-[200px] w-full bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-[#8B4513] text-[#3D2B1F] font-medium resize-none placeholder-[#3D2B1F]/30"
+                      className="flex-1 min-h-[200px] w-full bg-neutral-50 border border-black/20 rounded-[12px] p-3 text-sm focus:outline-none focus:border-black text-black font-medium resize-none placeholder-black/30"
                     />
                   </div>
 
                   <div className="space-y-2 shrink-0">
-                    <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">Activation Status</label>
-                    <div className="flex items-center justify-between bg-[#F9F5F0]/50 border border-[#8B4513]/20 rounded-[12px] p-3.5">
-                      <span className="text-xs font-semibold text-[#3D2B1F]">
+                    <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">Activation Status</label>
+                    <div className="flex items-center justify-between bg-neutral-50 border border-black/20 rounded-[12px] p-3.5">
+                      <span className="text-xs font-semibold text-black">
                         {activationStatus ? "Live - Accepting Token Access" : "Draft - Hidden from Portal"}
                       </span>
                       <button
                         type="button"
                         onClick={() => setActivationStatus(!activationStatus)}
                         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          activationStatus ? 'bg-[#8B4513]' : 'bg-[#8B4513]/20'
+                          activationStatus ? 'bg-black' : 'bg-black/20'
                         }`}
                       >
                         <span
@@ -2153,19 +2153,19 @@ export default function AdminPage() {
             </div>
 
             {/* Footer / Actions */}
-            <div className="p-6 border-t border-[#8B4513]/15 flex items-center justify-end gap-3 shrink-0 bg-[#F9F5F0]/30">
+            <div className="p-6 border-t border-black/15 flex items-center justify-end gap-3 shrink-0 bg-white">
               <Button 
                 variant="outline"
                 onClick={() => setIsBaseTrackModalOpen(false)}
-                className="rounded-[12px] border-[#8B4513]/20 hover:border-[#8B4513]/40 bg-transparent text-[#3D2B1F]/80 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5 px-5 h-10 font-bold text-xs shadow-none transition-colors"
+                className="rounded-[12px] border-black/20 hover:border-black/40 bg-transparent text-black/80 hover:text-black hover:bg-black/5 px-5 h-10 font-bold text-xs shadow-none transition-colors"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleDeployBaseTrack}
-                className="rounded-[12px] bg-[#8B4513] hover:bg-[#72360f] text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
+                className="rounded-[12px] bg-black hover:bg-neutral-900 text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
               >
-                Create Track
+                Create New Course
               </Button>
             </div>
           </div>
@@ -2176,28 +2176,28 @@ export default function AdminPage() {
       {editingWorkspaceCourse && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
           <div 
-            className="w-[90%] max-w-[650px] max-h-[85%] bg-white border border-[#8B4513]/20 rounded-[16px] shadow-2xl flex flex-col overflow-hidden text-[#3D2B1F] animate-in fade-in zoom-in-95 duration-200"
+            className="w-[90%] max-w-[650px] max-h-[85%] bg-white border border-black/20 rounded-[16px] shadow-2xl flex flex-col overflow-hidden text-black animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-6 border-b border-[#8B4513]/15 flex items-center justify-between shrink-0">
-              <h3 className="text-lg font-bold tracking-tight text-[#3D2B1F] flex items-center gap-2">
-                <Sparkles className="text-[#8B4513]" size={18} /> Manage Workspace: {editingWorkspaceCourse.title}
+            <div className="p-6 border-b border-black/15 flex items-center justify-between shrink-0">
+              <h3 className="text-lg font-bold tracking-tight text-black flex items-center gap-2">
+                <Sparkles className="text-[#8B5A2B]" size={18} /> Manage Workspace: {editingWorkspaceCourse.title}
               </h3>
               <button 
                 onClick={() => setEditingWorkspaceCourse(null)}
-                className="text-[#3D2B1F]/60 hover:text-[#3D2B1F] transition-colors p-1 hover:bg-[#8B4513]/5 rounded-[6px]"
+                className="text-black/60 hover:text-black transition-colors p-1 hover:bg-black/5 rounded-[6px]"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Content */}
-            <form onSubmit={handleUpdateCourseWorkspace} className="flex-1 overflow-y-auto p-6 bg-[#F9F5F0]/20 space-y-6">
+            <form onSubmit={handleUpdateCourseWorkspace} className="flex-1 overflow-y-auto p-6 bg-white space-y-6">
               {/* Blueprints / Problem statements */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#8B4513] uppercase tracking-wider block">
+                  <label className="text-xs font-semibold text-[#8B5A2B] uppercase tracking-wider block">
                     Internship Blueprints
                   </label>
                   <button 
@@ -2206,7 +2206,7 @@ export default function AdminPage() {
                       ...prev,
                       problem_statements: [...(prev.problem_statements || []), ""]
                     }))}
-                    className="px-2.5 py-0.5 text-[10px] font-bold bg-[#8B4513]/10 text-[#8B4513] border border-[#8B4513]/20 rounded-[6px] hover:bg-[#8B4513]/25 transition-all"
+                    className="px-2.5 py-0.5 text-[10px] font-bold bg-black/10 text-[#8B5A2B] border border-black/20 rounded-[6px] hover:bg-black/25 transition-all"
                   >
                     + Add Blueprint
                   </button>
@@ -2214,7 +2214,7 @@ export default function AdminPage() {
 
                 <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                   {(editingWorkspaceCourse.problem_statements || []).map((statement: string, idx: number) => (
-                    <div key={idx} className="flex gap-2 items-start bg-[#F9F5F0]/50 p-2.5 rounded-[8px] border border-[#8B4513]/20">
+                    <div key={idx} className="flex gap-2 items-start bg-neutral-50 p-2.5 rounded-[8px] border border-black/20">
                       <textarea
                         value={statement}
                         onChange={(e) => {
@@ -2223,7 +2223,7 @@ export default function AdminPage() {
                           setEditingWorkspaceCourse((prev: any) => ({ ...prev, problem_statements: updated }));
                         }}
                         placeholder={`Blueprint Statement ${idx + 1}...`}
-                        className="flex-1 bg-transparent border-0 text-xs text-[#3D2B1F] focus:outline-none resize-none min-h-[36px] placeholder-[#3D2B1F]/30 font-medium"
+                        className="flex-1 bg-transparent border-0 text-xs text-black focus:outline-none resize-none min-h-[36px] placeholder-black/30 font-medium"
                       />
                       {(editingWorkspaceCourse.problem_statements || []).length > 1 && (
                         <button
@@ -2243,18 +2243,18 @@ export default function AdminPage() {
               </div>
 
               {/* Actions */}
-              <div className="pt-4 border-t border-[#8B4513]/15 flex items-center justify-end gap-3 shrink-0">
+              <div className="pt-4 border-t border-black/15 flex items-center justify-end gap-3 shrink-0">
                 <Button 
                   type="button"
                   variant="outline"
                   onClick={() => setEditingWorkspaceCourse(null)}
-                  className="rounded-[12px] border-[#8B4513]/20 hover:border-[#8B4513]/40 bg-transparent text-[#3D2B1F]/80 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5 px-5 h-10 font-bold text-xs shadow-none transition-colors"
+                  className="rounded-[12px] border-black/20 hover:border-black/40 bg-transparent text-black/80 hover:text-black hover:bg-black/5 px-5 h-10 font-bold text-xs shadow-none transition-colors"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
-                  className="rounded-[12px] bg-[#8B4513] hover:bg-[#72360f] text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
+                  className="rounded-[12px] bg-black hover:bg-neutral-900 text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
                 >
                   Save Blueprints
                 </Button>
@@ -2271,23 +2271,23 @@ export default function AdminPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setEditingCourse(null); }}
         >
           <div
-            className="w-full max-w-lg bg-white border border-[#8B4513]/20 rounded-[20px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            className="w-full max-w-lg bg-white border border-black/20 rounded-[20px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-[#8B4513]/10 shrink-0">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-black/10 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#8B4513]/8 rounded-[10px]">
-                  <Pencil size={16} className="text-[#8B4513]" />
+                <div className="p-2 bg-black/8 rounded-[10px]">
+                  <Pencil size={16} className="text-[#8B5A2B]" />
                 </div>
                 <div>
-                  <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-widest block">Edit Internship</span>
-                  <h3 className="text-sm font-bold text-[#3D2B1F] line-clamp-1">{editingCourse.title}</h3>
+                  <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Edit Internship</span>
+                  <h3 className="text-sm font-bold text-black line-clamp-1">{editingCourse.title}</h3>
                 </div>
               </div>
               <button
                 onClick={() => setEditingCourse(null)}
-                className="p-1.5 text-[#3D2B1F]/40 hover:text-[#3D2B1F] hover:bg-[#8B4513]/5 rounded-[8px] transition-all"
+                className="p-1.5 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all"
               >
                 <X size={18} />
               </button>
@@ -2298,12 +2298,12 @@ export default function AdminPage() {
 
               {/* Title */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Internship / Course Name</label>
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Internship / Course Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Full Stack Web Development"
-                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
                   value={editingCourse.title}
                   onChange={(e) => setEditingCourse({ ...editingCourse, title: e.target.value })}
                 />
@@ -2311,11 +2311,11 @@ export default function AdminPage() {
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Description</label>
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Description</label>
                 <textarea
                   rows={3}
                   placeholder="Brief description of the internship..."
-                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] resize-none transition-colors"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black resize-none transition-colors"
                   value={editingCourse.description}
                   onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })}
                 />
@@ -2323,18 +2323,18 @@ export default function AdminPage() {
 
               {/* Cover Image URL */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block flex items-center gap-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block flex items-center gap-1.5">
                   <ImageIcon size={11} /> Cover Image URL
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. /img/cover.png or https://images.unsplash.com/..."
-                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
                   value={editingCourse.video_url}
                   onChange={(e) => setEditingCourse({ ...editingCourse, video_url: e.target.value })}
                 />
                 {editingCourse.video_url && (
-                  <div className="h-24 rounded-[8px] overflow-hidden border border-[#8B4513]/15 mt-2">
+                  <div className="h-24 rounded-[8px] overflow-hidden border border-black/15 mt-2">
                     <img
                       src={getYouTubeThumbnail(editingCourse.video_url)}
                       alt="preview"
@@ -2347,13 +2347,13 @@ export default function AdminPage() {
 
               {/* Price */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">Price (INR)</label>
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Price (INR)</label>
                 <input
                   type="number"
                   min="0"
                   required
                   placeholder="e.g. 500"
-                  className="w-full bg-[#F9F5F0]/60 border border-[#8B4513]/20 p-3 rounded-[10px] text-sm font-medium text-[#3D2B1F] focus:outline-none focus:border-[#8B4513] transition-colors"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
                   value={editingCourse.price}
                   onChange={(e) => setEditingCourse({ ...editingCourse, price: parseInt(e.target.value) || 0 })}
                 />
@@ -2361,11 +2361,11 @@ export default function AdminPage() {
 
               {/* Multi-Branch Selection */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest block">
-                  Branches <span className="text-[#3D2B1F]/40 normal-case font-normal">(select all that apply)</span>
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">
+                  Branches <span className="text-black/40 normal-case font-normal">(select all that apply)</span>
                 </label>
                 {departments.length === 0 ? (
-                  <p className="text-xs text-[#3D2B1F]/40 italic">No branches available. Add branches first.</p>
+                  <p className="text-xs text-black/40 italic">No branches available. Add branches first.</p>
                 ) : (
                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                     {departments.map((dept) => {
@@ -2375,12 +2375,12 @@ export default function AdminPage() {
                           key={dept.id}
                           className={`flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer transition-all group ${
                             isSelected
-                              ? "bg-[#8B4513]/5 border-[#8B4513]/30 text-[#8B4513]"
-                              : "bg-[#F9F5F0]/40 border-[#8B4513]/10 hover:border-[#8B4513]/25 text-[#3D2B1F]/70"
+                              ? "bg-black/5 border-black/30 text-[#8B5A2B]"
+                              : "bg-white border-black/10 hover:border-black/25 text-black/70"
                           }`}
                         >
                           <div className={`w-4 h-4 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-all ${
-                            isSelected ? "bg-[#8B4513] border-[#8B4513]" : "border-[#8B4513]/30 group-hover:border-[#8B4513]/60"
+                            isSelected ? "bg-black border-black" : "border-black/30 group-hover:border-black/60"
                           }`}>
                             {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
                           </div>
@@ -2392,10 +2392,10 @@ export default function AdminPage() {
                           />
                           <div className="flex-1 min-w-0">
                             <span className="text-xs font-bold block">{dept.name}</span>
-                            <span className="text-[9px] font-mono text-[#3D2B1F]/40">/{dept.slug}</span>
+                            <span className="text-[9px] font-mono text-black/40">/{dept.slug}</span>
                           </div>
                           {isSelected && (
-                            <span className="text-[8px] font-bold text-[#8B4513] bg-[#8B4513]/10 px-2 py-0.5 rounded-full shrink-0">Selected</span>
+                            <span className="text-[8px] font-bold text-[#8B5A2B] bg-black/10 px-2 py-0.5 rounded-full shrink-0">Selected</span>
                           )}
                         </label>
                       );
@@ -2410,19 +2410,19 @@ export default function AdminPage() {
               </div>
 
               {/* Footer */}
-              <div className="flex gap-2 pt-2 border-t border-[#8B4513]/10 sticky bottom-0 bg-white pb-1">
+              <div className="flex gap-2 pt-2 border-t border-black/10 sticky bottom-0 bg-white pb-1">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setEditingCourse(null)}
-                  className="flex-1 h-10 rounded-[10px] text-xs font-bold border-[#8B4513]/20 shadow-none text-[#3D2B1F]/70"
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold border-black/20 shadow-none text-black/70"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={editCourseSaving}
-                  className="flex-1 h-10 rounded-[10px] text-xs font-bold bg-[#8B4513] text-white hover:bg-[#72360f] shadow-none"
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold bg-black text-white hover:bg-neutral-900 shadow-none"
                 >
                   {editCourseSaving ? <Loader2 size={14} className="animate-spin" /> : <><Check size={13} className="mr-1.5" /> Save Changes</>}
                 </Button>

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 import OfferLetterPDF from "@/components/OfferLetterPDF";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -23,14 +22,12 @@ import {
   Award,
   PlayCircle,
   Layers,
-  Calendar,
   CheckCircle2,
   Clock,
   Menu,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EnrollmentModal } from "@/components/EnrollmentModal";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { getYouTubeThumbnail } from "@/lib/utils";
 
@@ -76,7 +73,6 @@ export default function DashboardPage() {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<{id: string, title: string} | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -84,14 +80,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      setSessionUser(session.user);
-
       try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          router.push("/login");
+          return;
+        }
+        setSessionUser(session.user);
+
         const [profileRes, courseRes, enrollRes, updatesRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("courses").select("*, departments(name, slug)"),
@@ -133,6 +129,7 @@ export default function DashboardPage() {
         if (updatesRes.data) setWeeklyUpdates(updatesRes.data);
       } catch (error) {
         console.error("Dashboard Load Error:", error);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -146,12 +143,10 @@ export default function DashboardPage() {
     window.location.href = "/login";
   };
 
-
-
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-white items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -159,38 +154,20 @@ export default function DashboardPage() {
   const activeEnrollment = enrollments.find(e => e.payment_status === "completed" || e.payment_status === "success");
   const departmentSlug = profile?.department_slug;
   const recommendedCourses = allCourses.filter(course => course.departments?.slug === departmentSlug);
-  const otherCourses = allCourses.filter(course => course.departments?.slug !== departmentSlug);
-
-  const navigateToWorkspace = () => {
-    if (!activeEnrollment) {
-      alert("Please enroll in a course to unlock your Workspace Hub.");
-      return;
-    }
-    const lessonsForActiveCourse = courseLessons.filter(l => l.course_id === activeEnrollment.course_id);
-    const completedForActiveCourse = userProgress.filter(p => p.course_id === activeEnrollment.course_id);
-    const isCompleted = lessonsForActiveCourse.length > 0 && completedForActiveCourse.length >= lessonsForActiveCourse.length;
-
-    if (!isCompleted) {
-      alert("Your Internship Workspace is locked. Please complete all course lessons in the Courses page to unlock it!");
-      router.push(`/dashboard/courses/${activeEnrollment.course_id}`);
-      return;
-    }
-    router.push(`/workspace/${activeEnrollment.course_id}`);
-  };
 
   return (
-    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar - Friendly Edtech layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
-        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-            <GraduationCap size={20} />
+    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
+      {/* Sidebar - Restore Original Navigation layout */}
+      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-black/10">
+          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+            <GraduationCap size={20} className="text-[#8B5A2B]" />
           </div>
-          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
+          <span className="font-bold text-base text-black">Matrix Root Studio</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
           <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
@@ -199,20 +176,20 @@ export default function DashboardPage() {
           <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
           
           <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
             <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
             <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
           </div>
         </nav>
 
-        <div className="p-4 border-t border-[#8B4513]/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#F9F5F0] border border-[#8B4513]/10">
-            <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-bold text-xs">
+        <div className="p-4 border-t border-black/10">
+          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
+            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
               {profile?.full_name?.charAt(0) || "S"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-[#3D2B1F] truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-[#3D2B1F]/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
+              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
+              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
             </div>
           </div>
         </div>
@@ -224,24 +201,24 @@ export default function DashboardPage() {
           className="fixed inset-0 z-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         >
-          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <motion.aside 
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+            <div className="p-6 flex items-center justify-between border-b border-black/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                  <GraduationCap size={20} />
+                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+                  <GraduationCap size={20} className="text-[#8B5A2B]" />
                 </div>
-                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+                <span className="font-bold text-base text-black">Matrix Root</span>
               </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
-                <X size={20} />
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
+                <X size={20} className="text-[#8B5A2B]" />
               </button>
             </div>
             
@@ -262,67 +239,59 @@ export default function DashboardPage() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
         {/* Header Navigation */}
-        <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
+        <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 lg:hidden text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+              className="p-2 -ml-2 lg:hidden text-black hover:bg-black/5 rounded-[8px]"
             >
-              <Menu size={20} />
+              <Menu size={20} className="text-[#8B5A2B]" />
             </button>
-            <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 px-2.5 py-1 rounded-[6px] border border-[#8B4513]/10">
-              Edtech Studio Mode
+            <span className="text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 px-2.5 py-1 rounded-[6px] border border-[#8B5A2B]/10">
+              Student Mode
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#3D2B1F]/40 h-4 w-4" />
-              <input 
-                type="text" 
-                placeholder="Search courses, classes, lessons..." 
-                className="pl-9 pr-4 py-1.5 bg-[#F9F5F0] border border-[#8B4513]/10 rounded-[8px] text-xs focus:outline-none focus:border-[#8B4513] w-64 text-[#3D2B1F] font-medium"
-              />
-            </div>
-            <Link href="/dashboard/support" className="flex items-center gap-1.5 text-xs font-semibold text-[#8B4513] bg-[#8B4513]/5 px-3 py-1.5 rounded-[8px] border border-[#8B4513]/10 hover:bg-[#8B4513]/10 transition-colors">
-              <Sparkles size={12} /> Live Support
+            <Link href="/dashboard/support" className="flex items-center gap-1.5 text-xs font-semibold text-[#8B5A2B] bg-[#8B5A2B]/5 px-3 py-1.5 rounded-[8px] border border-[#8B5A2B]/10 hover:bg-[#8B5A2B]/10 transition-colors">
+              <Sparkles size={12} className="text-[#8B5A2B]" /> Live Support
             </Link>
           </div>
         </header>
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] space-y-[32px] pb-20 max-w-7xl mx-auto w-full">
-          {/* Welcome Announcement Block - Edtech Style */}
+          {/* Welcome Announcement Block */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] md:p-[32px] flex flex-col md:flex-row md:items-center justify-between gap-[24px]"
+            className="bg-white border border-black/10 rounded-[12px] p-[24px] md:p-[32px] flex flex-col md:flex-row md:items-center justify-between gap-[24px]"
           >
             <div className="space-y-[8px]">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 px-2 py-0.5 rounded-[4px]">
-                  Academic term active
+                <span className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 px-2 py-0.5 rounded-[4px]">
+                  Current Academic Term
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[#3D2B1F]">
+              <h1 className="text-2xl md:text-3xl font-bold text-black">
                 Welcome back, {profile?.full_name?.split(' ')[0] || "Student"}! 👋
               </h1>
-              <p className="text-xs text-[#3D2B1F]/80 max-w-xl leading-[1.6] font-medium">
-                Pick up exactly where you left off. Review assigned course videos, submit evaluated projects, and earn accredited institutional certificates.
+              <p className="text-xs text-black/70 max-w-xl leading-[1.6] font-medium">
+                Resume your classes, submit tasks, and track your certificates.
               </p>
             </div>
             <div className="shrink-0 flex items-center gap-2">
-              <Button asChild className="rounded-[8px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] font-bold text-xs h-10 px-4 shadow-none">
+              <Button asChild className="rounded-[8px] bg-black text-white hover:bg-neutral-900 font-bold text-xs h-10 px-4 shadow-none border border-black/10">
                 <Link href="/dashboard/internships">
-                  View My Classes <ArrowRight size={14} className="ml-1.5" />
+                  View My Classes <ArrowRight size={14} className="ml-1.5 text-[#8B5A2B]" />
                 </Link>
               </Button>
             </div>
           </motion.div>
 
-          {/* Stats Grid - Productive Edtech badges */}
+          {/* Stats Grid */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -332,23 +301,23 @@ export default function DashboardPage() {
             <StatCard 
               label="Completed Sessions" 
               value={`${userProgress.length} / ${courseLessons.length}`} 
-              icon={<CheckCircle2 className="text-[#8B4513]" size={18} />} 
+              icon={<CheckCircle2 className="text-[#8B5A2B]" size={18} />} 
               progress={Math.round((userProgress.length / Math.max(1, courseLessons.length)) * 100)}
             />
             <StatCard 
               label="Certificates Earned" 
               value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
-              icon={<Award className="text-[#8B4513]" size={18} />} 
+              icon={<Award className="text-[#8B5A2B]" size={18} />} 
             />
             <StatCard 
               label="Core Department" 
               value={profile?.departments?.name || "General Study"} 
-              icon={<Layers className="text-[#8B4513]" size={18} />} 
+              icon={<Layers className="text-[#8B5A2B]" size={18} />} 
             />
             <StatCard 
               label="Current Standing" 
-              value="Enrolled Member" 
-              icon={<BadgeCheck className="text-[#8B4513]" size={18} />} 
+              value="Student" 
+              icon={<BadgeCheck className="text-[#8B5A2B]" size={18} />} 
             />
           </motion.div>
 
@@ -359,53 +328,153 @@ export default function DashboardPage() {
             const submittedWeeks = courseUpdates.length;
             const totalWeeks = activeEnrollment.courses?.timeline_weeks ?? 8;
             const activeBlueprint = activeEnrollment.selected_problem_statement;
+            
+            // Helper to parse problem statements
+            const parseBlueprintText = (text: string) => {
+              if (!text) return { title: "", description: "", features: [] };
+              const parts = text.split(/•\s*•\s*•\s*•\s*•/);
+              if (parts.length < 2) {
+                return {
+                  title: "Project Blueprint",
+                  description: text,
+                  features: []
+                };
+              }
+
+              const firstPart = parts[0].trim();
+              let title = "Project Blueprint";
+              let description = firstPart;
+
+              const titleMatch = firstPart.match(/^(\d+\.\s+[^.\n]+?)(?=\s+[A-Z][a-z]|\s+Build\s+)/);
+              if (titleMatch) {
+                title = titleMatch[1].trim();
+                description = firstPart.substring(titleMatch[0].length).trim();
+              }
+
+              const featuresText = parts[1].trim();
+              let features: string[] = [];
+              if (featuresText.includes('\n')) {
+                features = featuresText.split('\n').map(f => f.trim()).filter(Boolean);
+              } else {
+                const rawFeatures = featuresText.split(/(?=\s+[A-Z][a-z\s])/);
+                features = rawFeatures.map(f => f.trim()).filter(Boolean);
+              }
+
+              return { title, description, features };
+            };
+
+            const bp = parseBlueprintText(activeBlueprint || "");
 
             return (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="bg-white border border-[#8B4513]/20 rounded-[12px] p-[24px] space-y-[20px] shadow-none"
+                className="bg-white border border-black/10 rounded-[20px] p-6 md:p-8 space-y-6 shadow-sm"
               >
-                <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px]">
-                  <div className="flex items-center gap-[8px]">
-                    <Layers className="text-[#8B4513]" size={18} />
-                    <h3 className="text-sm font-bold text-[#3D2B1F]">Internship Progress Monitor</h3>
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/10 pb-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-black/5 rounded-[6px] text-[#8B5A2B]">
+                        <Layers size={18} className="text-[#8B5A2B]" />
+                      </div>
+                      <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Workspace Alignment</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-black tracking-tight">Active Internship Progress</h3>
                   </div>
-                  <span className="text-[10px] font-bold text-[#8B4513] uppercase bg-[#8B4513]/5 border border-[#8B4513]/10 px-2.5 py-1 rounded-[6px]">
-                    Track: {activeEnrollment.courses?.title || "Active Internship"}
-                  </span>
+                  
+                  <div className="flex items-center">
+                    <span className="text-[10px] font-extrabold text-[#8B5A2B] uppercase bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-3 py-1 rounded-full tracking-wider">
+                      Course: {activeEnrollment.courses?.title || "Active Internship"}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
-                  <div className="space-y-[8px] md:col-span-2">
-                    <p className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider">Active Problem Blueprint</p>
+                {/* Grid Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  {/* Left Column: Blueprint Details */}
+                  <div className="lg:col-span-7 space-y-4">
+                    <span className="text-[10px] font-bold text-black/45 uppercase tracking-wider block">Active Problem Blueprint</span>
+                    
                     {activeBlueprint ? (
-                      <p className="text-xs text-[#3D2B1F]/80 font-mono bg-[#F9F5F0]/50 border border-[#8B4513]/10 p-[12px] rounded-[8px] line-clamp-2">
-                        {activeBlueprint}
-                      </p>
+                      <div className="bg-neutral-50/70 border border-black/10 rounded-[16px] p-5 space-y-4">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest">{bp.title}</span>
+                          <p className="text-xs font-semibold text-black leading-relaxed">{bp.description}</p>
+                        </div>
+                        
+                        {bp.features.length > 0 && (
+                          <div className="pt-3 border-t border-black/5 space-y-2">
+                            <span className="text-[9px] font-bold text-black/40 uppercase tracking-wider block">Core Requirements</span>
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {bp.features.map((feat, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-[11px] text-black/80 font-medium">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#8B5A2B] mt-1.5 shrink-0" />
+                                  <span>{feat}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-xs text-[#8B4513] italic font-medium bg-amber-500/5 border border-amber-500/10 p-[12px] rounded-[8px]">
-                        Project blueprint selection pending. Enter the workspace hub to choose your assignment.
-                      </p>
+                      <div className="bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 p-5 rounded-[16px] space-y-3">
+                        <p className="text-xs text-[#8B5A2B] italic font-medium leading-relaxed">
+                          Project blueprint selection pending. Enter the workspace hub to choose your assignment.
+                        </p>
+                      </div>
                     )}
                   </div>
 
-                  <div className="space-y-[12px]">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider">Timeline Submission</span>
-                        <span className="text-xs font-bold text-[#8B4513]">{submittedWeeks} / {totalWeeks} Weeks Logs</span>
+                  {/* Right Column: Status, Weekly indicators & Workspace Action */}
+                  <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-black/45 uppercase tracking-wider">Weekly Deliverables</span>
+                        <span className="text-[11px] font-bold text-black">{submittedWeeks} of {totalWeeks} Submitted</span>
                       </div>
-                      <div className="h-2 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-                        <div className="h-full bg-[#8B4513]" style={{ width: `${Math.min(100, Math.round((submittedWeeks / totalWeeks) * 100))}%` }} />
+                      
+                      {/* Timeline segments representation */}
+                      <div className="flex gap-1.5 w-full">
+                        {Array.from({ length: totalWeeks }).map((_, i) => {
+                          const isSubmitted = i < submittedWeeks;
+                          const isCurrent = i === submittedWeeks;
+                          return (
+                            <div 
+                              key={i} 
+                              className={`h-2.5 flex-1 rounded-full border transition-all ${
+                                isSubmitted 
+                                  ? "bg-black border-black" 
+                                  : isCurrent 
+                                    ? "bg-[#8B5A2B]/20 border-[#8B5A2B] animate-pulse" 
+                                    : "bg-neutral-100 border-black/5"
+                              }`}
+                              title={`Week ${i + 1}: ${isSubmitted ? 'Submitted' : isCurrent ? 'Active' : 'Pending'}`}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div className="bg-neutral-50 border border-black/10 rounded-[12px] p-3 text-center">
+                          <span className="text-[9px] font-bold text-black/40 uppercase tracking-wider block">Approved Updates</span>
+                          <span className="text-sm font-bold text-black mt-0.5 block">{approvedWeeks} Weeks</span>
+                        </div>
+                        <div className="bg-neutral-50 border border-black/10 rounded-[12px] p-3 text-center">
+                          <span className="text-[9px] font-bold text-black/40 uppercase tracking-wider block">Remaining Plan</span>
+                          <span className="text-sm font-bold text-black mt-0.5 block">{Math.max(0, totalWeeks - submittedWeeks)} Weeks</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#3D2B1F]/70">
-                      <span>Approved: {approvedWeeks} Weeks</span>
-                      <Button size="sm" onClick={() => router.push(`/workspace/${activeEnrollment.course_id}`)} className="h-8 px-4 bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] text-[10px] font-bold rounded-[6px] shadow-none">
+                    <div className="pt-2">
+                      <Button 
+                        onClick={() => router.push(`/workspace/${activeEnrollment.course_id}`)} 
+                        className="w-full bg-black text-white hover:bg-neutral-900 text-xs font-bold py-3 rounded-[12px] shadow-none flex items-center justify-center gap-2 transition-all"
+                      >
                         Open Workspace Hub
+                        <ArrowRight size={14} className="text-[#8B5A2B]" />
                       </Button>
                     </div>
                   </div>
@@ -417,9 +486,9 @@ export default function DashboardPage() {
           {/* Enrolled Courses Grid */}
           {enrollments.length > 0 && (
             <section className="space-y-[16px]">
-              <div className="border-b border-[#8B4513]/10 pb-[12px]">
-                <h2 className="text-lg font-bold text-[#3D2B1F]">My Enrolled Tracks</h2>
-                <p className="text-xs text-[#3D2B1F]/60">Your active subscribed training & internship channels</p>
+              <div className="border-b border-black/10 pb-[12px]">
+                <h2 className="text-lg font-bold text-black">My Enrolled Tracks</h2>
+                <p className="text-xs text-black/60">Your active courses</p>
               </div>
               <motion.div 
                 variants={containerVariants}
@@ -449,13 +518,13 @@ export default function DashboardPage() {
 
           {/* Specialization / Branch Courses */}
           <section className="space-y-[16px]">
-            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px]">
+            <div className="flex items-center justify-between border-b border-black/10 pb-[12px]">
               <div>
-                <h2 className="text-lg font-bold text-[#3D2B1F]">Specialization Branch Pathways</h2>
-                <p className="text-xs text-[#3D2B1F]/60">Structured curriculum tracks aligned with your branch specialization</p>
+                <h2 className="text-lg font-bold text-black">Specialization Branch Pathways</h2>
+                <p className="text-xs text-black/60">Find courses matching your specialization</p>
               </div>
-              <Link href="/profile" className="text-xs font-bold text-[#8B4513] hover:underline flex items-center gap-1">
-                Change Branch / Specialization <ArrowRight size={12} />
+              <Link href="/profile" className="text-xs font-bold text-[#8B5A2B] hover:underline flex items-center gap-1">
+                Change Branch / Specialization <ArrowRight size={12} className="text-[#8B5A2B]" />
               </Link>
             </div>
 
@@ -478,8 +547,8 @@ export default function DashboardPage() {
                 />
               ))}
               {recommendedCourses.length === 0 && (
-                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No courses found matching your declared branch specialization.</p>
+                <div className="col-span-full p-[32px] text-center bg-white border border-black/10 rounded-[12px]">
+                  <p className="text-xs text-black/60 font-medium">No courses found matching your declared branch specialization.</p>
                 </div>
               )}
             </motion.div>
@@ -487,8 +556,6 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Enrollment Modal Integration */}
-      
       {showProfileModal && (
         <ProfileCompletionModal
           userId={sessionUser?.id}
@@ -512,11 +579,11 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
         active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
-        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+        ? "bg-black text-white" 
+        : "text-black/70 hover:bg-black/5 hover:text-black"
       }`}
     >
-      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
       <span className="truncate">{label}</span>
     </motion.button>
   );
@@ -524,24 +591,24 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
 
 function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
   return (
-    <div className="bg-white border border-[#8B4513]/15 rounded-[12px] p-[20px] flex flex-col justify-between hover:border-[#8B4513]/30 transition-colors">
+    <div className="bg-white border border-black/10 rounded-[12px] p-[20px] flex flex-col justify-between hover:border-black/20 transition-colors">
       <div className="flex items-start justify-between mb-[12px]">
-        <div className="w-9 h-9 rounded-[8px] bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-[8px] bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 flex items-center justify-center">
           {icon}
         </div>
         {progress !== undefined && (
-          <span className="text-[10px] font-bold text-[#8B4513] bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
+          <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px]">
             {progress}%
           </span>
         )}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-[#3D2B1F]/60 uppercase tracking-wider mb-[2px]">{label}</p>
-        <p className="text-xl font-bold text-[#3D2B1F]">{value}</p>
+        <p className="text-[10px] font-bold text-black/45 uppercase tracking-wider mb-[2px]">{label}</p>
+        <p className="text-xl font-bold text-black">{value}</p>
       </div>
       {progress !== undefined && (
-        <div className="mt-[12px] h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-          <div className="h-full bg-[#8B4513]" style={{ width: `${progress}%` }} />
+        <div className="mt-[12px] h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
+          <div className="h-full bg-black" style={{ width: `${progress}%` }} />
         </div>
       )}
     </div>
@@ -554,65 +621,65 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, se
   const progressPercent = Math.round((progress.length / totalLessons) * 100);
 
   return (
-    <div className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors shadow-none overflow-hidden group">
+    <div className="flex flex-col bg-white border border-black/10 rounded-[12px] hover:border-black/20 transition-colors shadow-none overflow-hidden group">
       {course.video_url && (
-        <div className="h-40 w-full overflow-hidden relative bg-[#F9F5F0] border-b border-[#8B4513]/10 shrink-0">
+        <div className="h-40 w-full overflow-hidden relative bg-neutral-50 border-b border-black/10 shrink-0">
           <img src={getYouTubeThumbnail(course.video_url)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10 flex items-center gap-1 text-[9px] font-bold text-[#3D2B1F]">
-            <Clock size={10} className="text-[#8B4513]" /> Self-Paced
+          <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-[4px] border border-black/10 flex items-center gap-1 text-[9px] font-bold text-black">
+            <Clock size={10} className="text-[#8B5A2B]" /> Self-Paced
           </div>
         </div>
       )}
 
       <div className="p-[20px] flex flex-col flex-1">
         <div className="flex items-center justify-between mb-[8px]">
-          <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
-            {course.departments?.name || "Program Stream"}
+          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px]">
+            {course.departments?.name || "Course"}
           </span>
-          <span className="text-[10px] font-semibold text-[#3D2B1F]/50">
+          <span className="text-[10px] font-semibold text-black/50">
             {lessons.length} Modules
           </span>
         </div>
         
-        <h3 className="text-base font-bold text-[#3D2B1F] mb-[6px] group-hover:text-[#8B4513] transition-colors leading-tight">
+        <h3 className="text-base font-bold text-black mb-[6px] group-hover:text-[#8B5A2B] transition-colors leading-tight">
           {course.title}
         </h3>
-        <p className="text-xs text-[#3D2B1F]/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
+        <p className="text-xs text-black/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
           {course.description}
         </p>
         
         {isEnrolled ? (
-          <div className="mb-[16px] space-y-1.5 pt-2 border-t border-[#8B4513]/5">
-            <div className="flex justify-between text-[10px] font-bold text-[#3D2B1F]/60">
+          <div className="mb-[16px] space-y-1.5 pt-2 border-t border-black/5">
+            <div className="flex justify-between text-[10px] font-bold text-black/60">
               <span>Class Completion</span>
-              <span className="text-[#8B4513]">{progressPercent}%</span>
+              <span className="text-[#8B5A2B]">{progressPercent}%</span>
             </div>
-            <div className="h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-              <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
+            <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
+              <div className="h-full bg-black" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         ) : (
-          <div className="mb-[16px] flex items-center gap-1.5 text-[10px] font-bold text-[#8B4513]/80 pt-2 border-t border-[#8B4513]/5">
-            <PlayCircle size={12} /> Live stream repository support
+          <div className="mb-[16px] flex items-center gap-1.5 text-[10px] font-bold text-[#8B5A2B] pt-2 border-t border-black/5">
+            <PlayCircle size={12} className="text-[#8B5A2B]" /> Course repository & guidelines included
           </div>
         )}
 
         <div className="space-y-[12px] mt-auto">
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
             <Button 
-              className="w-full rounded-[8px] h-9 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs flex items-center justify-center gap-1.5" 
+              className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
               onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
             >
               {isEnrolled ? (
-                <>Resume Learning <ArrowRight size={12} /></>
+                <>Resume Learning <ArrowRight size={12} className="text-[#8B5A2B]" /></>
               ) : (
-                <>Subscribe Course</>
+                <>Enroll in Course</>
               )}
             </Button>
           </motion.div>
 
           {isEnrolled && (
-            <div className="pt-1 border-t border-[#8B4513]/10">
+            <div className="pt-1 border-t border-black/10">
               <OfferLetterPDF 
                 studentName={profile?.full_name || "Intern"}
                 email={sessionUser?.email || ""}
@@ -624,7 +691,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, se
           )}
 
           {isEnrolled && enrolled?.certification_status === 'approved' && (
-             <div className="pt-2 border-t border-[#8B4513]/10">
+             <div className="pt-2 border-t border-black/10">
                <CertificatePDF 
                   studentName={profile?.full_name || "Graduate"} 
                   courseName={course.title} 

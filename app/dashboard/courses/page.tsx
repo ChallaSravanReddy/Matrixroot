@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 import OfferLetterPDF from "@/components/OfferLetterPDF";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -34,10 +33,8 @@ interface Course {
   title: string;
   description: string;
   video_url: string;
-  departments: {
-    name: string;
-    slug: string;
-  };
+  dept_id: string;
+  dept_ids: string[];
 }
 
 const containerVariants = {
@@ -45,13 +42,13 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
+      staggerChildren: 0.05,
     },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 15 },
   visible: { 
     opacity: 1, 
     y: 0, 
@@ -67,6 +64,7 @@ export default function CoursesPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [departmentsList, setDepartmentsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
@@ -74,21 +72,23 @@ export default function CoursesPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchCoursesPageData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      setSessionUser(session.user);
-
       try {
-        const [profileRes, courseRes, enrollRes] = await Promise.all([
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          router.push("/login");
+          return;
+        }
+        setSessionUser(session.user);
+
+        const [profileRes, courseRes, enrollRes, deptRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
-          supabase.from("courses").select("*, departments(name, slug)"),
-          supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id)
+          supabase.from("courses").select("*"),
+          supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id),
+          supabase.from("departments").select("*")
         ]);
 
         let enrolledCourseIds: string[] = [];
@@ -119,11 +119,13 @@ export default function CoursesPage() {
           setShowProfileModal(true);
         }
         if (courseRes.data) setAllCourses(courseRes.data as Course[]);
+        if (deptRes.data) setDepartmentsList(deptRes.data);
         if (enrollRes.data) setEnrollments(enrollRes.data);
         setUserProgress(progressData);
         setCourseLessons(lessonData);
       } catch (error) {
         console.error("Courses Page Load Error:", error);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -139,29 +141,50 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-white items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   const departmentSlug = profile?.department_slug;
-  const recommendedCourses = allCourses.filter(course => course.departments?.slug === departmentSlug);
-  const otherCourses = allCourses.filter(course => course.departments?.slug !== departmentSlug);
+  const recommendedCourses = allCourses.filter(course => {
+    const courseDepts = departmentsList.filter((d: any) => 
+      d.id === course.dept_id || (course.dept_ids && course.dept_ids.includes(d.id))
+    );
+    return courseDepts.some((d: any) => d.slug === departmentSlug);
+  });
+
+  const otherCourses = allCourses.filter(course => {
+    const courseDepts = departmentsList.filter((d: any) => 
+      d.id === course.dept_id || (course.dept_ids && course.dept_ids.includes(d.id))
+    );
+    return !courseDepts.some((d: any) => d.slug === departmentSlug);
+  });
+
+  // Client-side filtering logic
+  const filteredRecommended = recommendedCourses.filter(course =>
+    course.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredOther = otherCourses.filter(course =>
+    course.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar - Friendly Edtech layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
-        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-            <GraduationCap size={20} />
+    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
+      
+      {/* Sidebar - Restore Original Navigation layout */}
+      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-black/10">
+          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+            <GraduationCap size={20} className="text-[#8B5A2B]" />
           </div>
-          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
+          <span className="font-bold text-base text-black">Matrix Root Studio</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
@@ -170,20 +193,20 @@ export default function CoursesPage() {
           <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
           
           <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
             <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
             <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
           </div>
         </nav>
 
-        <div className="p-4 border-t border-[#8B4513]/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#F9F5F0] border border-[#8B4513]/10">
-            <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-bold text-xs">
+        <div className="p-4 border-t border-black/10">
+          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
+            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
               {profile?.full_name?.charAt(0) || "S"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-[#3D2B1F] truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-[#3D2B1F]/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
+              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
+              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
             </div>
           </div>
         </div>
@@ -195,24 +218,24 @@ export default function CoursesPage() {
           className="fixed inset-0 z-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         >
-          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <motion.aside 
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+            <div className="p-6 flex items-center justify-between border-b border-black/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                  <GraduationCap size={20} />
+                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+                  <GraduationCap size={20} className="text-[#8B5A2B]" />
                 </div>
-                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+                <span className="font-bold text-base text-black">Matrix Root</span>
               </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
-                <X size={20} />
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
+                <X size={20} className="text-[#8B5A2B]" />
               </button>
             </div>
             
@@ -220,11 +243,11 @@ export default function CoursesPage() {
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }} />
               <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
               <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
+              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/internships'); }} />
+              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/performance'); }} />
               <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
               <div className="pt-6">
-                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => { setIsSidebarOpen(false); router.push('/profile'); }} />
                 <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
               </div>
             </nav>
@@ -235,38 +258,67 @@ export default function CoursesPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header Navigation */}
-        <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
+        <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 lg:hidden text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+              className="p-2 -ml-2 lg:hidden text-black hover:bg-black/5 rounded-[8px]"
             >
-              <Menu size={20} />
+              <Menu size={20} className="text-[#8B5A2B]" />
             </button>
-            <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 px-2.5 py-1 rounded-[6px] border border-[#8B4513]/10">
-              Edtech Studio Mode
+            <span className="text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 px-2.5 py-1 rounded-[6px] border border-[#8B5A2B]/10">
+              Student Mode
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 px-2 py-0.5 rounded-[6px]">
+              {profile?.departments?.name || "Active Program"}
             </span>
           </div>
         </header>
 
         {/* Content View */}
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#3D2B1F] flex items-center gap-2">
-              <BookOpen className="text-[#8B4513]" size={24} /> Matrix Root Catalog
-            </h1>
-            <p className="text-xs text-[#3D2B1F]/60 mt-1">Explore all study tracks and specialization programs.</p>
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24 bg-white">
+          
+          {/* Centered live search bar & header */}
+          <div className="flex flex-col items-center text-center space-y-6 max-w-2xl mx-auto">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-extrabold tracking-tight text-black flex items-center justify-center gap-2">
+                <BookOpen className="text-[#8B5A2B]" size={28} /> Course Catalog
+              </h1>
+              <p className="text-xs text-black/60">Find and search for specialization tracks and training courses.</p>
+            </div>
+
+            {/* Crisp, Centered Live Course Search Engine */}
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search courses by title..."
+                className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black placeholder-black/40 shadow-xs"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                >
+                  <X size={14} className="text-[#8B5A2B]" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Specialization / Branch Courses */}
           <section className="space-y-[16px]">
-            <div className="flex items-center justify-between border-b border-[#8B4513]/10 pb-[12px]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-black/10 pb-[12px] gap-2">
               <div>
-                <h2 className="text-lg font-bold text-[#3D2B1F]">Specialization Branch Pathways</h2>
-                <p className="text-xs text-[#3D2B1F]/60">Structured curriculum tracks aligned with your branch specialization</p>
+                <h2 className="text-lg font-bold text-black">Specialization Branch Pathways</h2>
+                <p className="text-xs text-black/60">Find courses matching your specialization</p>
               </div>
-              <Link href="/profile" className="text-xs font-bold text-[#8B4513] hover:underline flex items-center gap-1">
-                Change Branch / Specialization <ArrowRight size={12} />
+              <Link href="/profile" className="text-xs font-bold text-[#8B5A2B] hover:underline flex items-center gap-1">
+                Change Branch / Specialization <ArrowRight size={12} className="text-[#8B5A2B]" />
               </Link>
             </div>
 
@@ -276,21 +328,22 @@ export default function CoursesPage() {
               animate="visible"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
             >
-              {recommendedCourses.map(course => (
-                <CourseCard 
-                  key={course.id} 
-                  course={course} 
-                  enrolled={enrollments.find(e => e.course_id === course.id)} 
-                  progress={userProgress.filter(p => p.course_id === course.id)}
-                  lessons={courseLessons.filter(l => l.course_id === course.id)}
-                  profile={profile}
-                  onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
-                  sessionUser={sessionUser}
-                />
+              {filteredRecommended.map(course => (
+                <motion.div key={course.id} variants={cardVariants}>
+                  <CourseCard 
+                    course={course} 
+                    enrolled={enrollments.find(e => e.course_id === course.id)} 
+                    progress={userProgress.filter(p => p.course_id === course.id)}
+                    lessons={courseLessons.filter(l => l.course_id === course.id)}
+                    profile={profile}
+                    departmentsList={departmentsList}
+                    sessionUser={sessionUser}
+                  />
+                </motion.div>
               ))}
-              {recommendedCourses.length === 0 && (
-                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No courses found matching your declared branch specialization.</p>
+              {filteredRecommended.length === 0 && (
+                <div className="col-span-full p-[32px] text-center bg-neutral-50 border border-black/10 rounded-[12px]">
+                  <p className="text-xs text-black/60 font-medium">No specialization courses found matching your query.</p>
                 </div>
               )}
             </motion.div>
@@ -298,9 +351,9 @@ export default function CoursesPage() {
 
           {/* Alternate Study Tracks */}
           <section className="space-y-[16px]">
-            <div className="border-b border-[#8B4513]/10 pb-[12px]">
-              <h2 className="text-lg font-bold text-[#3D2B1F]">Explore Parallel Study Tracks</h2>
-              <p className="text-xs text-[#3D2B1F]/60">Expand your skills across other technology sectors</p>
+            <div className="border-b border-black/10 pb-[12px]">
+              <h2 className="text-lg font-bold text-black">Explore Parallel Study Tracks</h2>
+              <p className="text-xs text-black/60">Learn skills from other branches</p>
             </div>
             <motion.div 
               variants={containerVariants}
@@ -308,21 +361,22 @@ export default function CoursesPage() {
               animate="visible"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]"
             >
-              {otherCourses.map(course => (
-                <CourseCard 
-                  key={course.id} 
-                  course={course} 
-                  enrolled={enrollments.find(e => e.course_id === course.id)}
-                  progress={userProgress.filter(p => p.course_id === course.id)}
-                  lessons={courseLessons.filter(l => l.course_id === course.id)}
-                  profile={profile}
-                  onEnroll={() => router.push(`/dashboard/courses/${course.id}`)}
-                  sessionUser={sessionUser}
-                />
+              {filteredOther.map(course => (
+                <motion.div key={course.id} variants={cardVariants}>
+                  <CourseCard 
+                    course={course} 
+                    enrolled={enrollments.find(e => e.course_id === course.id)}
+                    progress={userProgress.filter(p => p.course_id === course.id)}
+                    lessons={courseLessons.filter(l => l.course_id === course.id)}
+                    profile={profile}
+                    departmentsList={departmentsList}
+                    sessionUser={sessionUser}
+                  />
+                </motion.div>
               ))}
-              {otherCourses.length === 0 && (
-                <div className="col-span-full p-[32px] text-center bg-white border border-[#8B4513]/10 rounded-[12px]">
-                  <p className="text-xs text-[#3D2B1F]/60 font-medium">No alternate courses available.</p>
+              {filteredOther.length === 0 && (
+                <div className="col-span-full p-[32px] text-center bg-neutral-50 border border-black/10 rounded-[12px]">
+                  <p className="text-xs text-black/60 font-medium">No alternate courses available matching your query.</p>
                 </div>
               )}
             </motion.div>
@@ -353,81 +407,104 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
         active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
-        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+        ? "bg-black text-white" 
+        : "text-black/70 hover:bg-black/5 hover:text-black"
       }`}
     >
-      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
       <span className="truncate">{label}</span>
     </motion.button>
   );
 }
 
-function CourseCard({ course, enrolled, progress, lessons, profile, sessionUser }: any) {
+function CourseCard({ course, enrolled, progress, lessons, profile, departmentsList, sessionUser }: any) {
   const isEnrolled = enrolled?.payment_status === 'completed' || enrolled?.payment_status === 'success';
   const totalLessons = Math.max(1, lessons.length);
   const progressPercent = Math.round((progress.length / totalLessons) * 100);
 
+  // Filter departments mapped to this course (either primary dept_id or in dept_ids array)
+  const courseDepts = departmentsList.filter((d: any) => 
+    d.id === course.dept_id || (course.dept_ids && course.dept_ids.includes(d.id))
+  );
+
   return (
-    <div className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors shadow-none overflow-hidden group">
+    <div className="flex flex-col h-full bg-white border border-black/10 rounded-[12px] hover:border-black/20 transition-all shadow-none overflow-hidden group">
       {course.video_url && (
-        <div className="h-40 w-full overflow-hidden relative bg-[#F9F5F0] border-b border-[#8B4513]/10 shrink-0">
+        <div className="h-40 w-full overflow-hidden relative bg-neutral-50 border-b border-black/10 shrink-0">
           <img src={getYouTubeThumbnail(course.video_url)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-[4px] border border-[#8B4513]/10 flex items-center gap-1 text-[9px] font-bold text-[#3D2B1F]">
-            <Clock size={10} className="text-[#8B4513]" /> Self-Paced
+          <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-[4px] border border-black/10 flex items-center gap-1 text-[9px] font-bold text-black">
+            <Clock size={10} className="text-[#8B5A2B]" /> Self-Paced
           </div>
         </div>
       )}
 
       <div className="p-[20px] flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-[8px]">
-          <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
-            {course.departments?.name || "Program Stream"}
-          </span>
-          <span className="text-[10px] font-semibold text-[#3D2B1F]/50">
-            {lessons.length} Modules
-          </span>
+        {/* Department badges and belonging indicator */}
+        <div className="space-y-2 mb-[12px]">
+          <div className="flex flex-wrap gap-1">
+            {courseDepts.map((dept: any) => {
+              const isUserDept = dept.slug === profile?.department_slug;
+              const isItDept = dept.slug === 'it';
+              const badgeStyle = isUserDept 
+                ? (isItDept 
+                    ? "bg-[#8B5A2B] text-white border-[#8B5A2B]" // IT brown highlight
+                    : "bg-black text-white border-black"          // User's department (e.g. CSE)
+                  )
+                : "bg-black/5 text-black/60 border-black/10";
+              return (
+                <span key={dept.id} className={`text-[9px] font-bold uppercase tracking-wider border px-2 py-0.5 rounded-[4px] ${badgeStyle}`}>
+                  {dept.slug.toUpperCase()}
+                </span>
+              );
+            })}
+          </div>
+
+          {course.dept_ids && course.dept_ids.length > 1 && courseDepts.some((d: any) => d.slug === profile?.department_slug) && (
+            <span className="text-[9px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px] uppercase tracking-wider flex items-center gap-1">
+              <ShieldCheck size={10} className="text-[#8B5A2B]" /> This course belongs to your department
+            </span>
+          )}
         </div>
         
-        <h3 className="text-base font-bold text-[#3D2B1F] mb-[6px] group-hover:text-[#8B4513] transition-colors leading-tight">
+        <h3 className="text-base font-bold text-black mb-[6px] group-hover:text-[#8B5A2B] transition-colors leading-tight">
           {course.title}
         </h3>
-        <p className="text-xs text-[#3D2B1F]/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
+        <p className="text-xs text-black/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
           {course.description}
         </p>
         
         {isEnrolled ? (
-          <div className="mb-[16px] space-y-1.5 pt-2 border-t border-[#8B4513]/5">
-            <div className="flex justify-between text-[10px] font-bold text-[#3D2B1F]/60">
+          <div className="mb-[16px] space-y-1.5 pt-2 border-t border-black/5">
+            <div className="flex justify-between text-[10px] font-bold text-black/60">
               <span>Class Completion</span>
-              <span className="text-[#8B4513]">{progressPercent}%</span>
+              <span className="text-[#8B5A2B]">{progressPercent}%</span>
             </div>
-            <div className="h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-              <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
+            <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
+              <div className="h-full bg-black" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         ) : (
-          <div className="mb-[16px] flex items-center gap-1.5 text-[10px] font-bold text-[#8B4513]/80 pt-2 border-t border-[#8B4513]/5">
-            <PlayCircle size={12} /> Live stream repository support
+          <div className="mb-[16px] flex items-center gap-1.5 text-[10px] font-bold text-[#8B5A2B] pt-2 border-t border-black/5">
+            <PlayCircle size={12} className="text-[#8B5A2B]" /> Course repository & guidelines included
           </div>
         )}
 
         <div className="space-y-[12px] mt-auto">
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
             <Button 
-              className="w-full rounded-[8px] h-9 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs flex items-center justify-center gap-1.5" 
+              className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
               onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
             >
               {isEnrolled ? (
-                <>Resume Learning <ArrowRight size={12} /></>
+                <>Resume Learning <ArrowRight size={12} className="text-[#8B5A2B]" /></>
               ) : (
-                <>Subscribe Course</>
+                <>Enroll in Course</>
               )}
             </Button>
           </motion.div>
 
           {isEnrolled && (
-            <div className="pt-1 border-t border-[#8B4513]/10">
+            <div className="pt-1 border-t border-black/10">
               <OfferLetterPDF 
                 studentName={profile?.full_name || "Intern"}
                 email={sessionUser?.email || ""}
@@ -439,7 +516,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, sessionUser 
           )}
 
           {isEnrolled && enrolled?.certification_status === 'approved' && (
-             <div className="pt-2 border-t border-[#8B4513]/10">
+             <div className="pt-2 border-t border-black/10">
                <CertificatePDF 
                   studentName={profile?.full_name || "Graduate"} 
                   courseName={course.title} 

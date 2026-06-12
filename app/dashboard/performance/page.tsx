@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   TrendingUp, LayoutDashboard, BookOpen, User, LogOut,
   ArrowLeft, Award, ShieldCheck, CheckCircle2, Menu, X,
@@ -29,10 +28,10 @@ export default function PerformanceReportCardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push("/login"); return; }
-
       try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) { router.push("/login"); return; }
+
         const [profileRes, enrollRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single(),
           supabase.from("enrollments").select("*, courses(*)").eq("student_id", session.user.id).in("payment_status", ["completed", "success"]),
@@ -64,6 +63,7 @@ export default function PerformanceReportCardPage() {
         setAllLessons(lessonData);
       } catch (err) {
         console.error("Performance Page Load Error:", err);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -73,11 +73,16 @@ export default function PerformanceReportCardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center font-sans">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full" />
+      <div className="flex min-h-screen bg-white items-center justify-center font-sans">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full" />
       </div>
     );
   }
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   // ── Derived metrics ──────────────────────────────────────────────
   const totalEnrolled = enrollments.length;
@@ -113,24 +118,26 @@ export default function PerformanceReportCardPage() {
   const activeCompletedIds = new Set((activeStat?.completed || []).map((p: any) => p.lesson_id));
 
   return (
-    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
+    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={32} height={32} />
-          <span className="font-medium text-lg text-[#3D2B1F]">Matrix Root</span>
+      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-black/10">
+          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+            <GraduationCap size={20} className="text-[#8B5A2B]" />
+          </div>
+          <span className="font-bold text-base text-black">Matrix Root Studio</span>
         </div>
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Overview" onClick={() => router.push('/dashboard')} />
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
+          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
+          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
           <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
           <div className="pt-6">
-            <SidebarItem icon={<User size={18} />} label="Member Settings" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Terminate Session" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
+            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
+            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
           </div>
         </nav>
       </aside>
@@ -138,34 +145,34 @@ export default function PerformanceReportCardPage() {
       {/* Mobile Sidebar */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setIsSidebarOpen(false)}>
-          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <motion.aside
             initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+            <div className="p-6 flex items-center justify-between border-b border-black/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                  <GraduationCap size={20} />
+                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
+                  <GraduationCap size={20} className="text-[#8B5A2B]" />
                 </div>
-                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+                <span className="font-bold text-base text-black">Matrix Root</span>
               </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
-                <X size={20} />
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
+                <X size={20} className="text-[#8B5A2B]" />
               </button>
             </div>
             <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
               <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
               <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="My Internships" onClick={() => router.push('/dashboard/internships')} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Performance Metrics" active />
+              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
+              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
               <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
               <div className="pt-6">
                 <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))} />
+                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
               </div>
             </nav>
           </motion.aside>
@@ -173,69 +180,69 @@ export default function PerformanceReportCardPage() {
       )}
 
       {/* Main */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <header className="h-16 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+        <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]">
-              <Menu size={20} />
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-black hover:bg-black/5 rounded-[8px]">
+              <Menu size={20} className="text-[#8B5A2B]" />
             </button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-[#8B4513]/20 shadow-none">
-                <ArrowLeft size={16} className="text-[#8B4513]" />
+              <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-black/10 shadow-none">
+                <ArrowLeft size={16} className="text-[#8B5A2B]" />
               </Button>
             </motion.div>
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#3D2B1F]">Performance Metrics</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-black">Performance Metrics</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#8B4513]/5 text-[10px] font-medium text-[#8B4513] border border-[#8B4513]/10">
-              <Award size={12} />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#8B5A2B]/10 text-[10px] font-medium text-[#8B5A2B] border border-[#8B5A2B]/20">
+              <Award size={12} className="text-[#8B5A2B]" />
               <span>Live Student Data</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pb-20 max-w-[1400px] w-full mx-auto">
+        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pb-20 max-w-[1400px] w-full mx-auto bg-white">
 
           {/* Student Info Banner */}
           <motion.div variants={cardVariants} initial="hidden" animate="visible"
-            className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            className="bg-white border border-black/10 rounded-[12px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] text-lg font-bold shrink-0">
+              <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center text-black text-lg font-bold shrink-0">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || "S"}
               </div>
               <div>
-                <h1 className="text-base font-semibold text-[#3D2B1F]">{profile?.full_name || "Student"}</h1>
-                <p className="text-xs text-[#3D2B1F]/60 mt-0.5">
+                <h1 className="text-base font-semibold text-black">{profile?.full_name || "Student"}</h1>
+                <p className="text-xs text-black/60 mt-0.5">
                   {profile?.departments?.name || profile?.college || "Matrix Root Academy"}
                   {profile?.year ? ` · Year ${profile.year}` : ""}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-[12px] border border-emerald-200 self-start sm:self-auto">
-              <ShieldCheck size={13} />
+            <div className="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-[12px] border border-emerald-250 self-start sm:self-auto">
+              <ShieldCheck size={13} className="text-[#8B5A2B]" />
               <span>{totalEnrolled} Course{totalEnrolled !== 1 ? "s" : ""} Enrolled</span>
             </div>
           </motion.div>
 
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            <StatCard label="Overall Progress" value={`${overallProgress}%`} sub="Lessons completed" bar={overallProgress} barColor="#8B4513" delay={0} />
-            <StatCard label="Lessons Completed" value={`${totalLessonsCompleted}`} sub={`of ${totalLessonsAcrossEnrolled} total`} bar={totalLessonsAcrossEnrolled > 0 ? (totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100 : 0} barColor="#059669" delay={0.1} />
-            <StatCard label="Assignments Submitted" value={`${assignmentsSubmitted}`} sub="Task submissions" bar={totalLessonsCompleted > 0 ? (assignmentsSubmitted / totalLessonsCompleted) * 100 : 0} barColor="#d97706" delay={0.2} />
-            <StatCard label="Courses Enrolled" value={`${totalEnrolled}`} sub="Active tracks" bar={Math.min(totalEnrolled * 25, 100)} barColor="#7c3aed" delay={0.3} />
+            <StatCard label="Overall Progress" value={`${overallProgress}%`} sub="Lessons completed" bar={overallProgress} barColor="#000000" delay={0} />
+            <StatCard label="Lessons Completed" value={`${totalLessonsCompleted}`} sub={`of ${totalLessonsAcrossEnrolled} total`} bar={totalLessonsAcrossEnrolled > 0 ? (totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100 : 0} barColor="#000000" delay={0.1} />
+            <StatCard label="Assignments Submitted" value={`${assignmentsSubmitted}`} sub="Task submissions" bar={totalLessonsCompleted > 0 ? (assignmentsSubmitted / totalLessonsCompleted) * 100 : 0} barColor="#000000" delay={0.2} />
+            <StatCard label="Courses Enrolled" value={`${totalEnrolled}`} sub="Active tracks" bar={Math.min(totalEnrolled * 25, 100)} barColor="#000000" delay={0.3} />
           </div>
 
           {/* No enrollments state */}
           {enrollments.length === 0 && (
             <motion.div variants={cardVariants} initial="hidden" animate="visible"
-              className="bg-white border border-[#8B4513]/20 rounded-[12px] p-12 text-center space-y-3">
-              <BookMarked size={40} className="text-[#8B4513]/30 mx-auto" />
-              <h3 className="text-base font-medium text-[#3D2B1F]">No Courses Enrolled Yet</h3>
-              <p className="text-xs text-[#3D2B1F]/60">Enroll in a course to start tracking your performance here.</p>
+              className="bg-white border border-black/10 rounded-[12px] p-12 text-center space-y-3">
+              <BookMarked size={40} className="text-[#8B5A2B]/40 mx-auto" />
+              <h3 className="text-base font-medium text-black">No Courses Enrolled Yet</h3>
+              <p className="text-xs text-black/60">Enroll in a course to start tracking your performance here.</p>
               <button onClick={() => router.push('/dashboard/courses')}
-                className="mt-2 px-5 py-2 bg-[#8B4513] text-white text-xs font-semibold rounded-[10px] hover:bg-[#7a3c12] transition-colors">
+                className="mt-2 px-5 py-2 bg-black text-white text-xs font-semibold rounded-[10px] hover:bg-neutral-900 transition-colors">
                 Browse Courses
               </button>
             </motion.div>
@@ -245,12 +252,12 @@ export default function PerformanceReportCardPage() {
           {enrollments.length > 0 && (
             <div className="space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h3 className="text-lg font-medium tracking-[-0.02em] text-[#3D2B1F]">Course Progress Breakdown</h3>
-                <p className="text-xs text-[#3D2B1F]/60">Select a course below to view lesson-level details</p>
+                <h3 className="text-lg font-medium tracking-[-0.02em] text-black">Course Progress Breakdown</h3>
+                <p className="text-xs text-black/60">Select a course below to view lesson-level details</p>
               </div>
 
               {/* Course Tab Switcher */}
-              <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none border-b border-[#8B4513]/10">
+              <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none border-b border-black/10">
                 {courseStats.map((stat, i) => {
                   const isActive = stat.enr.course_id === activeCourseId;
                   return (
@@ -259,16 +266,16 @@ export default function PerformanceReportCardPage() {
                       whileHover={{ y: -1 }} whileTap={{ y: 0 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       onClick={() => setActiveCourseId(stat.enr.course_id)}
-                      className={`pb-3 text-xs font-medium transition-colors relative shrink-0 flex items-center gap-2 ${isActive ? "text-[#8B4513] font-semibold" : "text-[#3D2B1F]/60 hover:text-[#3D2B1F]"}`}
+                      className={`pb-3 text-xs font-medium transition-colors relative shrink-0 flex items-center gap-2 ${isActive ? "text-black font-semibold" : "text-black/60 hover:text-black"}`}
                     >
-                      <BookOpen size={12} className={isActive ? "text-[#8B4513]" : "text-[#3D2B1F]/40"} />
+                      <BookOpen size={12} className={isActive ? "text-[#8B5A2B]" : "text-[#8B5A2B]/60"} />
                       <span className="max-w-[160px] truncate">{stat.course?.title || `Course ${i + 1}`}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-[8px] border ${isActive ? "bg-[#8B4513]/5 text-[#8B4513] border-[#8B4513]/20" : "bg-white text-[#3D2B1F]/60 border-[#8B4513]/10"}`}>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-[8px] border ${isActive ? "bg-black text-white border-black" : "bg-white text-black/60 border-black/10"}`}>
                         {stat.pct}%
                       </span>
                       {isActive && (
                         <motion.div layoutId="activeTabUnderline"
-                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8B4513]"
+                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-black"
                           transition={{ type: "spring", stiffness: 400, damping: 25 }} />
                       )}
                     </motion.button>
@@ -279,13 +286,13 @@ export default function PerformanceReportCardPage() {
               {/* Active Course Detail */}
               {activeStat && (
                 <motion.div variants={cardVariants} initial="hidden" animate="visible" key={activeCourseId}
-                  className="bg-white border border-[#8B4513]/20 rounded-[12px] overflow-hidden shadow-none">
+                  className="bg-white border border-black/10 rounded-[12px] overflow-hidden shadow-none">
 
                   {/* Course Header */}
-                  <div className="p-6 md:p-8 border-b border-[#8B4513]/10 bg-[#F9F5F0]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="p-6 md:p-8 border-b border-black/10 bg-neutral-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h3 className="text-base font-semibold text-[#3D2B1F]">{activeStat.course?.title}</h3>
-                      <p className="text-xs text-[#3D2B1F]/60 mt-1">
+                      <h3 className="text-base font-semibold text-black">{activeStat.course?.title}</h3>
+                      <p className="text-xs text-black/60 mt-1">
                         {activeStat.completed.length} of {activeStat.lessons.length} lessons completed
                         {activeStat.lastActivity && ` · Last active ${new Date(activeStat.lastActivity).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}
                       </p>
@@ -294,18 +301,18 @@ export default function PerformanceReportCardPage() {
                       {/* Progress ring */}
                       <div className="relative w-14 h-14">
                         <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                          <circle cx="28" cy="28" r="22" fill="none" stroke="#F9F5F0" strokeWidth="5" />
-                          <circle cx="28" cy="28" r="22" fill="none" stroke="#8B4513" strokeWidth="5"
+                          <circle cx="28" cy="28" r="22" fill="none" stroke="#f3f4f6" strokeWidth="5" />
+                          <circle cx="28" cy="28" r="22" fill="none" stroke="#000000" strokeWidth="5"
                             strokeDasharray={`${2 * Math.PI * 22}`}
                             strokeDashoffset={`${2 * Math.PI * 22 * (1 - activeStat.pct / 100)}`}
                             strokeLinecap="round" />
                         </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#8B4513]">
+                        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black">
                           {activeStat.pct}%
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] uppercase font-medium text-[#3D2B1F]/60 block tracking-wider">Status</span>
+                        <span className="text-[10px] uppercase font-medium text-black/60 block tracking-wider">Status</span>
                         <span className="text-xs font-semibold text-emerald-800">
                           {activeStat.pct === 100 ? "Completed ✓" : activeStat.pct > 50 ? "In Progress" : activeStat.pct > 0 ? "Started" : "Not Started"}
                         </span>
@@ -317,7 +324,7 @@ export default function PerformanceReportCardPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-[#8B4513]/10 text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60 bg-[#F9F5F0]/20">
+                        <tr className="border-b border-black/10 text-[10px] font-medium uppercase tracking-wider text-black/60 bg-neutral-50/50">
                           <th className="p-4 pl-6">#</th>
                           <th className="p-4">Lesson Title</th>
                           <th className="p-4 text-center">Assignment</th>
@@ -325,42 +332,42 @@ export default function PerformanceReportCardPage() {
                           <th className="p-4 pr-6 text-right">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#8B4513]/5 text-xs">
+                      <tbody className="divide-y divide-black/5 text-xs">
                         {activeLessons.map((lesson, idx) => {
                           const progressEntry = activeStat.completed.find((p: any) => p.lesson_id === lesson.id);
                           const isDone = activeCompletedIds.has(lesson.id);
                           return (
-                            <tr key={lesson.id} className="hover:bg-[#F9F5F0]/30 transition-colors">
-                              <td className="p-4 pl-6 text-[#3D2B1F]/40 font-mono text-[11px]">{String(idx + 1).padStart(2, "0")}</td>
-                              <td className="p-4 font-normal text-[#3D2B1F] max-w-xs">
+                            <tr key={lesson.id} className="hover:bg-neutral-50 transition-colors">
+                              <td className="p-4 pl-6 text-black/40 font-mono text-[11px]">{String(idx + 1).padStart(2, "0")}</td>
+                              <td className="p-4 font-normal text-black max-w-xs">
                                 <span className="truncate block max-w-[260px]">{lesson.title}</span>
                               </td>
                               <td className="p-4 text-center">
                                 {lesson.has_assignment ? (
                                   progressEntry?.assignment_url ? (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#8B4513] bg-[#8B4513]/5 px-2 py-0.5 rounded border border-[#8B4513]/10">
-                                      <CheckCircle2 size={10} /> Submitted
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-black bg-black/5 px-2 py-0.5 rounded border border-black/10">
+                                      <CheckCircle2 size={10} className="text-[#8B5A2B]" /> Submitted
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Pending</span>
+                                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-250">Pending</span>
                                   )
                                 ) : (
-                                  <span className="text-[10px] text-[#3D2B1F]/30">—</span>
+                                  <span className="text-[10px] text-black/30">—</span>
                                 )}
                               </td>
-                              <td className="p-4 text-center text-[#3D2B1F]/60">
+                               <td className="p-4 text-center text-black/60">
                                 {progressEntry?.completed_at
                                   ? new Date(progressEntry.completed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
-                                  : <span className="text-[#3D2B1F]/30">—</span>}
+                                  : <span className="text-black/30">—</span>}
                               </td>
                               <td className="p-4 pr-6 text-right">
                                 {isDone ? (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-200">
-                                    <CheckCircle2 size={10} /> Done
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-250">
+                                    <CheckCircle2 size={10} className="text-[#8B5A2B]" /> Done
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#3D2B1F]/50 bg-slate-50 px-2 py-0.5 rounded-[12px] border border-slate-200">
-                                    <Clock size={10} /> Pending
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-black/50 bg-neutral-50 px-2 py-0.5 rounded-[12px] border border-black/10">
+                                    <Clock size={10} className="text-[#8B5A2B]" /> Pending
                                   </span>
                                 )}
                               </td>
@@ -369,7 +376,7 @@ export default function PerformanceReportCardPage() {
                         })}
                         {activeLessons.length === 0 && (
                           <tr>
-                            <td colSpan={5} className="text-center py-10 text-xs text-[#3D2B1F]/40 italic">No lessons found for this course.</td>
+                            <td colSpan={5} className="text-center py-10 text-xs text-black/40 italic">No lessons found for this course.</td>
                           </tr>
                         )}
                       </tbody>
@@ -377,13 +384,13 @@ export default function PerformanceReportCardPage() {
                   </div>
 
                   {/* Footer */}
-                  <div className="p-4 bg-[#F9F5F0]/30 border-t border-[#8B4513]/10 flex flex-wrap items-center justify-between gap-4 text-xs text-[#3D2B1F]/70">
+                  <div className="p-4 bg-neutral-50 border-t border-black/10 flex flex-wrap items-center justify-between gap-4 text-xs text-black/70">
                     <div className="flex items-center gap-2">
-                      <BarChart2 size={14} className="text-[#8B4513]" />
+                      <BarChart2 size={14} className="text-[#8B5A2B]" />
                       <span>{activeStat.assignments} assignment{activeStat.assignments !== 1 ? "s" : ""} submitted for this course</span>
                     </div>
-                    <div className="font-medium text-[#3D2B1F]">
-                      Lessons Done: <span className="text-[#8B4513]">{activeStat.completed.length} / {activeStat.lessons.length}</span>
+                    <div className="font-medium text-black">
+                      Lessons Done: <span className="text-black">{activeStat.completed.length} / {activeStat.lessons.length}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -404,15 +411,15 @@ function StatCard({ label, value, sub, bar, barColor, delay }: {
 }) {
   return (
     <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay }}
-      className="bg-white border border-[#8B4513]/20 rounded-[12px] p-6 flex flex-col justify-between shadow-none">
+      className="bg-white border border-black/10 rounded-[12px] p-6 flex flex-col justify-between shadow-none">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[#3D2B1F]/60">{label}</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-black/60">{label}</span>
       </div>
       <div>
-        <p className="text-3xl font-normal tracking-[-0.02em] text-[#3D2B1F]">{value}</p>
-        <p className="text-xs text-[#3D2B1F]/70 mt-1 leading-[1.6]">{sub}</p>
+        <p className="text-3xl font-normal tracking-[-0.02em] text-black">{value}</p>
+        <p className="text-xs text-black/70 mt-1 leading-[1.6]">{sub}</p>
       </div>
-      <div className="h-1 w-full bg-[#F9F5F0] rounded-full mt-4 overflow-hidden border border-[#8B4513]/10">
+      <div className="h-1 w-full bg-neutral-100 rounded-full mt-4 overflow-hidden border border-black/5">
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(bar, 100)}%`, backgroundColor: barColor }} />
       </div>
     </motion.div>
@@ -425,9 +432,13 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode; 
       whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${active ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10 font-semibold" : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"}`}
+      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
+        active 
+        ? "bg-black text-white" 
+        : "text-black/70 hover:bg-black/5 hover:text-black"
+      }`}
     >
-      <span className="text-[#8B4513]">{icon}</span>
+      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
       {label}
     </motion.button>
   );

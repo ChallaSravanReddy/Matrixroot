@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   GraduationCap, 
@@ -15,27 +13,14 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
-  Clock,
   Menu,
   X,
   Lock,
   Unlock,
-  CheckCircle,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  video_url: string;
-  departments: {
-    name: string;
-    slug: string;
-  };
-}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -73,14 +58,14 @@ export default function WorkspaceHubPage() {
 
   useEffect(() => {
     const fetchWorkspaceHubData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      setSessionUser(session.user);
-
       try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          router.push("/login");
+          return;
+        }
+        setSessionUser(session.user);
+
         const [profileRes, enrollRes] = await Promise.all([
           supabase.from("profiles").select("*, departments(id, name)").eq("id", session.user.id).single(),
           supabase.from("enrollments").select("*, courses(*, departments(*))").eq("student_id", session.user.id)
@@ -118,6 +103,7 @@ export default function WorkspaceHubPage() {
         setCourseLessons(lessonData);
       } catch (error) {
         console.error("Workspace Hub Load Error:", error);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -133,8 +119,8 @@ export default function WorkspaceHubPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#F9F5F0] items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B4513] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-white items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -143,18 +129,18 @@ export default function WorkspaceHubPage() {
   const activeEnrollments = enrollments.filter(e => e.payment_status === "completed" || e.payment_status === "success");
 
   return (
-    <div className="flex h-screen bg-[#F9F5F0] text-[#3D2B1F] overflow-hidden font-sans">
-      {/* Sidebar - Friendly Edtech layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-[#8B4513]/10 bg-white">
-        <div className="p-6 flex items-center gap-3 border-b border-[#8B4513]/10">
-          <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
+      {/* Sidebar - Restore Original Navigation layout */}
+      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
+        <div className="p-6 flex items-center gap-3 border-b border-black/10">
+          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black">
             <GraduationCap size={20} />
           </div>
-          <span className="font-bold text-base text-[#3D2B1F]">Matrix Root Studio</span>
+          <span className="font-bold text-base text-black">Matrix Root Studio</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">My Learning</p>
+          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
           <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
           <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
           <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" active />
@@ -163,20 +149,20 @@ export default function WorkspaceHubPage() {
           <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
           
           <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-[#8B4513] uppercase tracking-wider mb-2">Account Management</p>
+            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
             <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
             <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
           </div>
         </nav>
 
-        <div className="p-4 border-t border-[#8B4513]/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-[#F9F5F0] border border-[#8B4513]/10">
-            <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513] font-bold text-xs">
+        <div className="p-4 border-t border-black/10">
+          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
+            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
               {profile?.full_name?.charAt(0) || "S"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-[#3D2B1F] truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-[#3D2B1F]/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
+              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
+              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
             </div>
           </div>
         </div>
@@ -188,23 +174,23 @@ export default function WorkspaceHubPage() {
           className="fixed inset-0 z-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         >
-          <div className="absolute inset-0 bg-[#3D2B1F]/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <motion.aside 
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-[#8B4513]/10"
+            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 flex items-center justify-between border-b border-[#8B4513]/10">
+            <div className="p-6 flex items-center justify-between border-b border-black/10">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black">
                   <GraduationCap size={20} />
                 </div>
-                <span className="font-bold text-base text-[#3D2B1F]">Matrix Root</span>
+                <span className="font-bold text-base text-black">Matrix Root</span>
               </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-[#3D2B1F]/40 hover:text-[#3D2B1F]">
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
                 <X size={20} />
               </button>
             </div>
@@ -226,29 +212,29 @@ export default function WorkspaceHubPage() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
         {/* Header Navigation */}
-        <header className="h-16 border-b border-[#8B4513]/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
+        <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 lg:hidden text-[#8B4513] hover:bg-[#8B4513]/5 rounded-[8px]"
+              className="p-2 -ml-2 lg:hidden text-black hover:bg-black/5 rounded-[8px]"
             >
               <Menu size={20} />
             </button>
-            <span className="text-xs font-bold text-[#8B4513] bg-[#8B4513]/5 px-2.5 py-1 rounded-[6px] border border-[#8B4513]/10">
+            <span className="text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 px-2.5 py-1 rounded-[6px] border border-[#8B5A2B]/10">
               Edtech Studio Mode
             </span>
           </div>
         </header>
 
         {/* Content View */}
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24">
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24 bg-white">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#3D2B1F] flex items-center gap-2">
-              <Layers className="text-[#8B4513]" size={24} /> Workspace Hub
+            <h1 className="text-2xl font-bold tracking-tight text-black flex items-center gap-2">
+              <Layers className="text-[#8B5A2B]" size={24} /> Workspace Hub
             </h1>
-            <p className="text-xs text-[#3D2B1F]/60 mt-1">Submit weekly task deliverables and view grading status for your enrolled study tracks.</p>
+            <p className="text-xs text-black/60 mt-1">Submit weekly task deliverables and view grading status for your enrolled study tracks.</p>
           </div>
 
           <motion.div 
@@ -272,14 +258,14 @@ export default function WorkspaceHubPage() {
                 <motion.div 
                   key={enroll.id} 
                   variants={cardVariants}
-                  className="flex flex-col bg-white border border-[#8B4513]/20 rounded-[12px] hover:border-[#8B4513]/40 transition-colors overflow-hidden relative"
+                  className="flex flex-col bg-white border border-black/10 rounded-[12px] hover:border-black/20 transition-colors overflow-hidden relative"
                 >
                   <div className="p-[20px] flex flex-col flex-1">
                     <div className="flex items-center justify-between mb-[8px]">
-                      <span className="text-[9px] font-bold text-[#8B4513] uppercase tracking-wider bg-[#8B4513]/5 border border-[#8B4513]/10 px-2 py-0.5 rounded-[4px]">
+                      <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px]">
                         {course.departments?.name || "Internship"}
                       </span>
-                      <span className="flex items-center gap-1 text-[9px] font-bold text-[#3D2B1F]/60">
+                      <span className="flex items-center gap-1 text-[9px] font-bold text-black/60">
                         {isCompleted ? (
                           <span className="text-green-600 flex items-center gap-0.5"><Unlock size={10} /> Unlocked</span>
                         ) : (
@@ -288,20 +274,20 @@ export default function WorkspaceHubPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-[#3D2B1F] mb-[6px] leading-tight">
+                    <h3 className="text-base font-bold text-black mb-[6px] leading-tight">
                       {course.title}
                     </h3>
-                    <p className="text-xs text-[#3D2B1F]/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
+                    <p className="text-xs text-black/70 line-clamp-2 mb-[16px] leading-[1.6] flex-1 font-medium">
                       {course.description}
                     </p>
 
-                    <div className="mb-[20px] space-y-1.5 pt-2 border-t border-[#8B4513]/5">
-                      <div className="flex justify-between text-[10px] font-bold text-[#3D2B1F]/60">
+                    <div className="mb-[20px] space-y-1.5 pt-2 border-t border-black/5">
+                      <div className="flex justify-between text-[10px] font-bold text-black/60">
                         <span>Course Lessons Progress</span>
-                        <span className="text-[#8B4513]">{progressPercent}%</span>
+                        <span className="text-[#8B5A2B]">{progressPercent}%</span>
                       </div>
-                      <div className="h-1.5 w-full bg-[#F9F5F0] rounded-full overflow-hidden border border-[#8B4513]/5">
-                        <div className="h-full bg-[#8B4513]" style={{ width: `${progressPercent}%` }} />
+                      <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
+                        <div className="h-full bg-black" style={{ width: `${progressPercent}%` }} />
                       </div>
                     </div>
 
@@ -309,7 +295,7 @@ export default function WorkspaceHubPage() {
                       {isCompleted ? (
                         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
                           <Button 
-                            className="w-full rounded-[8px] h-9 font-bold bg-[#8B4513] text-white hover:bg-[#723910] shadow-none text-xs flex items-center justify-center gap-1.5" 
+                            className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
                             onClick={() => router.push(`/workspace/${course.id}`)}
                           >
                             Enter Workspace <ArrowRight size={12} />
@@ -317,12 +303,12 @@ export default function WorkspaceHubPage() {
                         </motion.div>
                       ) : (
                         <div className="space-y-2">
-                          <p className="text-[10px] text-amber-600 font-bold bg-amber-50 border border-amber-200/50 p-2 rounded-[8px] text-center">
+                          <p className="text-[10px] text-amber-600 font-bold bg-amber-500/5 border border-amber-500/10 p-2 rounded-[8px] text-center">
                             Complete all lessons to unlock your screenshot submissions board.
                           </p>
                           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
                             <Button 
-                              className="w-full rounded-[8px] h-9 font-bold bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none text-xs flex items-center justify-center gap-1.5" 
+                              className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
                               onClick={() => router.push(`/dashboard/courses/${course.id}`)}
                             >
                               Go to Lessons <ArrowRight size={12} />
@@ -337,16 +323,16 @@ export default function WorkspaceHubPage() {
             })}
 
             {activeEnrollments.length === 0 && (
-              <div className="col-span-full py-[64px] text-center bg-white border border-[#8B4513]/10 rounded-[12px] space-y-[16px]">
-                <div className="w-12 h-12 bg-[#8B4513]/5 border border-[#8B4513]/10 rounded-[12px] flex items-center justify-center mx-auto text-[#8B4513]">
+              <div className="col-span-full py-[64px] text-center bg-white border border-black/10 rounded-[12px] space-y-[16px]">
+                <div className="w-12 h-12 bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 rounded-[12px] flex items-center justify-center mx-auto text-[#8B5A2B]">
                   <Layers size={20} />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-base font-bold text-[#3D2B1F]">No Active Workspaces Found</h3>
-                  <p className="text-xs text-[#3D2B1F]/70 max-w-sm mx-auto font-medium">You need to enroll in a study track to start submitting screenshot deliverables.</p>
+                  <h3 className="text-base font-bold text-black">No Active Workspaces Found</h3>
+                  <p className="text-xs text-black/70 max-w-sm mx-auto font-medium">You need to enroll in a study track to start submitting screenshot deliverables.</p>
                 </div>
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
-                  <Button className="rounded-[8px] bg-[#D2B48C] text-[#3D2B1F] hover:bg-[#C1A37B] shadow-none h-10 px-6 text-xs font-bold" onClick={() => router.push('/dashboard/courses')}>
+                  <Button className="rounded-[8px] bg-black text-white hover:bg-neutral-900 shadow-none h-10 px-6 text-xs font-bold" onClick={() => router.push('/dashboard/courses')}>
                     Browse Course Catalog
                   </Button>
                 </motion.div>
@@ -379,11 +365,11 @@ function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, 
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
         active 
-        ? "bg-[#8B4513]/5 text-[#8B4513] border border-[#8B4513]/10" 
-        : "text-[#3D2B1F]/70 hover:bg-[#8B4513]/5 hover:text-[#3D2B1F]"
+        ? "bg-black text-white" 
+        : "text-black/70 hover:bg-black/5 hover:text-black"
       }`}
     >
-      <span className="text-[#8B4513] shrink-0">{icon}</span>
+      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
       <span className="truncate">{label}</span>
     </motion.button>
   );

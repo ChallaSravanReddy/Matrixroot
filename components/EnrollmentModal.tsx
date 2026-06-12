@@ -28,83 +28,73 @@ export function EnrollmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-white text-slate-900 border-slate-200">
+      <DialogContent className="max-w-lg bg-white text-black border-black/10">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-slate-900">Enroll in {courseTitle}</DialogTitle>
-          <DialogDescription className="text-slate-500">
-            Review the training terms and manual payment verification process before enrolling.
+          <DialogTitle className="text-xl font-bold text-black font-sans">Enroll in {courseTitle}</DialogTitle>
+          <DialogDescription className="text-black/60 font-sans">
+            Review the terms and manual payment verification process before enrolling.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 my-4">
-          <div className="text-sm font-semibold text-slate-700">Terms of Enrollment</div>
-          <ScrollArea className="h-72 border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-600">
+        <div className="space-y-4 my-4 font-sans">
+          <div className="text-sm font-semibold text-black/80">Terms of Enrollment</div>
+          <ScrollArea className="h-72 border border-black/10 bg-neutral-50 p-4 text-xs leading-relaxed text-black/70 rounded-[8px]">
             <div className="space-y-4">
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">1. Enrollment.</strong>  */}
                 → By enrolling you agree to complete the training modules, pass the assigned tasks, and uphold Matrix Root's code of conduct.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">2. Training Fee.</strong>  */}
                 → A one-time training fee of ₹{price ?? 500} is applicable and is non-refundable once content access is granted. All payments are securely processed and verified manually via our Google Form.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">3. Certification.</strong>  */}
                 → A verifiable industrial internship certificate is issued only after successful submission and approval of all assignments by our mentors.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">4. Plagiarism.</strong>  */}
                 → Any form of plagiarism in assignments will result in immediate disqualification from the program without refund.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">5. Mentorship.</strong>  */}
                 → Mentor reviews and feedback are provided within 5 working days of task submission through the portal.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">6. Intellectual Property.</strong>  */}
                 → All course content and materials remain the property of Matrix Root. Unauthorized redistribution is prohibited.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">7. Privacy.</strong>  */}
                 → Your personal data is protected as per our privacy policy and is used solely for certification and academic records.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">8. Verification.</strong>  */}
                 → Issued certificates include a unique ID that can be verified via the Matrix Root official verification portal.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">9. MSME Compliance.</strong>  */}
                 → Matrix Root is a registered industrial training provider under MSME, Government of India.
               </p>
               <p>
-                {/* <strong className="text-slate-900 font-bold block mb-1">10. Access Period.</strong>  */}
                 → Enrolled students get lifetime access to the course materials for the specific track they have enrolled in.
               </p>
             </div>
           </ScrollArea>
         </div>
 
-        <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
-          <Button 
-            variant="outline" 
+        <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2 font-sans">
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-slate-200 text-slate-600 hover:bg-slate-50"
+            className="border-black/15 text-black hover:bg-black/5"
             disabled={loading}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={onPay}
-            className="flex-1 bg-[#8B4513] hover:bg-[#723910] text-white font-bold gap-2 shadow-lg"
+            className="flex-1 bg-black text-white hover:bg-neutral-900 font-bold gap-2 shadow-none border-0"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-[#8B5A2B]" />
                 Requesting Enrollment...
               </>
             ) : (
               <>
-                <ShieldCheck className="h-4 w-4" /> 
+                <ShieldCheck className="h-4 w-4 text-[#8B5A2B]" />
                 Proceed to Payment Form
               </>
             )}
