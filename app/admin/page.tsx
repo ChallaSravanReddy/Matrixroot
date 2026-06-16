@@ -21,8 +21,12 @@ import {
   deleteBranchAction,
   updateCourseAction,
   approveManualPaymentAction,
-  rejectManualPaymentAction
+  rejectManualPaymentAction,
+  issueOfflineCertificateAction,
+  revokeOfflineCertificateAction
 } from "./actions";
+
+import CertificatePDF from "@/components/CertificatePDF";
 
 import { getYouTubeThumbnail } from "@/lib/utils";
 import Image from "next/image";
@@ -130,8 +134,28 @@ export default function AdminPage() {
   const [editingCourse, setEditingCourse] = useState<any | null>(null);
   const [editCourseSaving, setEditCourseSaving] = useState(false);
 
+  // Offline Certificates Generator states
+  const [offlineCerts, setOfflineCerts] = useState<any[]>([]);
+  const [offlineCertsFilter, setOfflineCertsFilter] = useState("");
+  const [offlineForm, setOfflineForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    courseId: "", // Empty means Custom Course
+    customCourseTitle: "",
+    customBranchName: "",
+    score: 90,
+    enrolledAt: ""
+  });
+  const [offlineGenerating, setOfflineGenerating] = useState(false);
+  const [offlineStatus, setOfflineStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   useEffect(() => {
     checkAdmin();
+    setOfflineForm(prev => ({
+      ...prev,
+      enrolledAt: new Date().toISOString().split("T")[0]
+    }));
   }, []);
 
   useEffect(() => {
@@ -201,6 +225,11 @@ export default function AdminPage() {
         setDepartments(data.departments);
         if (data.courses) setCourses(data.courses);
       }
+      if (activeTab === "offline_certificates") {
+        if (data.offlineCertificates) setOfflineCerts(data.offlineCertificates);
+        if (data.courses) setCourses(data.courses);
+        if (data.departments) setDepartments(data.departments);
+      }
     } catch (err) {
       console.error("Fetch Data Error:", err);
     }
@@ -241,6 +270,67 @@ export default function AdminPage() {
     if (res.success) {
       alert(`Certificate ${status}!`);
       fetchData();
+    }
+  };
+
+  const handleGenerateOfflineCertificate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOfflineGenerating(true);
+    setOfflineStatus(null);
+
+    if (!offlineForm.fullName || !offlineForm.email) {
+      setOfflineStatus({ type: "error", message: "Full Name and Email are required." });
+      setOfflineGenerating(false);
+      return;
+    }
+
+    if (!offlineForm.courseId && !offlineForm.customCourseTitle) {
+      setOfflineStatus({ type: "error", message: "Please specify a Course Track or Custom Course Title." });
+      setOfflineGenerating(false);
+      return;
+    }
+
+    const payload = {
+      fullName: offlineForm.fullName,
+      email: offlineForm.email,
+      phone: offlineForm.phone || undefined,
+      courseId: offlineForm.courseId || undefined,
+      customCourseTitle: offlineForm.courseId ? undefined : offlineForm.customCourseTitle,
+      customBranchName: offlineForm.courseId ? undefined : offlineForm.customBranchName,
+      score: Number(offlineForm.score),
+      enrolledAt: new Date(offlineForm.enrolledAt).toISOString()
+    };
+
+    const res = await issueOfflineCertificateAction(payload);
+    setOfflineGenerating(false);
+
+    if (res.success) {
+      setOfflineStatus({ type: "success", message: "Certificate generated successfully and registered!" });
+      setOfflineForm({
+        fullName: "",
+        email: "",
+        phone: "",
+        courseId: "",
+        customCourseTitle: "",
+        customBranchName: "",
+        score: 90,
+        enrolledAt: new Date().toISOString().split("T")[0]
+      });
+      fetchData();
+    } else {
+      setOfflineStatus({ type: "error", message: res.error || "Failed to generate certificate." });
+    }
+  };
+
+  const handleRevokeOfflineCertificate = async (enrollmentId: string) => {
+    if (!confirm("Are you sure you want to revoke and delete this certificate? This action cannot be undone and will delete the associated enrollment record.")) return;
+    
+    const res = await revokeOfflineCertificateAction(enrollmentId);
+    if (res.success) {
+      alert("Certificate revoked and deleted successfully.");
+      fetchData();
+    } else {
+      alert("Error revoking certificate: " + res.error);
     }
   };
 
@@ -580,6 +670,7 @@ export default function AdminPage() {
             { id: "enrollments", label: "Enrollment Approvals", icon: <CreditCard size={18} /> },
             { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
             { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
+            { id: "offline_certificates", label: "Certificate Generator", icon: <ShieldCheck size={18} /> },
             { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
           ].map((tab) => (
             <button
@@ -632,6 +723,7 @@ export default function AdminPage() {
                 { id: "enrollments", label: "Enrollment Approvals", icon: <CreditCard size={18} /> },
                 { id: "grading", label: "Artifact Evaluation", icon: <FileCheck2 size={18} /> },
                 { id: "certificates", label: "Issuance Approvals", icon: <Award size={18} /> },
+                { id: "offline_certificates", label: "Certificate Generator", icon: <ShieldCheck size={18} /> },
                 { id: "branches", label: "Branches", icon: <GitBranch size={18} /> }
               ].map((tab) => (
                 <button
@@ -1955,6 +2047,273 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === "offline_certificates" && (
+            <div className="grid lg:grid-cols-[400px_1fr] gap-[32px] animate-in fade-in duration-300">
+              
+              {/* Left Column: Issuance Form */}
+              <div className="space-y-[24px]">
+                <div>
+                  <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Issue Offline Certificate</h3>
+                  <p className="text-xs text-black/50 mt-1">
+                    Directly register and generate verifiable credentials for offline internship students.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={handleGenerateOfflineCertificate}
+                  className="space-y-[16px] p-[24px] bg-white border border-black/20 rounded-[16px] shadow-none"
+                >
+                  {offlineStatus && (
+                    <div className={`p-3.5 rounded-[10px] text-xs font-semibold border ${
+                      offlineStatus.type === "success" 
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200" 
+                        : "bg-rose-50 text-rose-800 border-rose-200"
+                    }`}>
+                      {offlineStatus.message}
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Recipient Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sravan Reddy"
+                      required
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                      value={offlineForm.fullName}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, fullName: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Recipient Email</label>
+                    <input
+                      type="email"
+                      placeholder="e.g. sravan@gmail.com"
+                      required
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                      value={offlineForm.email}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, email: e.target.value })}
+                    />
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const randomId = Math.random().toString(36).substring(2, 8);
+                          setOfflineForm({ ...offlineForm, email: `offline_${randomId}@matrixroot.com` });
+                        }}
+                        className="text-[9px] text-[#8B5A2B] hover:underline font-bold"
+                      >
+                        Generate offline email
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Phone Number <span className="text-black/40 normal-case font-normal">(optional)</span></label>
+                    <input
+                      type="text"
+                      placeholder="e.g. +91 9876543210"
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                      value={offlineForm.phone}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Course / Program Track</label>
+                    <select
+                      className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                      value={offlineForm.courseId}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, courseId: e.target.value })}
+                    >
+                      <option value="">-- Use Custom Course Track --</option>
+                      {courses.filter(c => !String(c.id).startsWith("temp-")).map(c => (
+                        <option key={c.id} value={c.id}>{c.title}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Custom Course Form Fields */}
+                  {!offlineForm.courseId && (
+                    <div className="space-y-[12px] p-3.5 bg-neutral-50 border border-black/10 rounded-[12px] animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider block">Custom Course Title</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Advanced Embedded Systems"
+                          required={!offlineForm.courseId}
+                          className="w-full bg-white border border-black/20 p-2.5 rounded-[8px] text-xs focus:outline-none focus:border-black text-black font-medium"
+                          value={offlineForm.customCourseTitle}
+                          onChange={(e) => setOfflineForm({ ...offlineForm, customCourseTitle: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider block">Custom Branch (Specialization)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Electronics Engineering"
+                          required={!offlineForm.courseId}
+                          className="w-full bg-white border border-black/20 p-2.5 rounded-[8px] text-xs focus:outline-none focus:border-black text-black font-medium"
+                          value={offlineForm.customBranchName}
+                          onChange={(e) => setOfflineForm({ ...offlineForm, customBranchName: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block font-sans">Final Score (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        required
+                        className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                        value={offlineForm.score}
+                        onChange={(e) => setOfflineForm({ ...offlineForm, score: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Issue Date</label>
+                      <input
+                        type="date"
+                        required
+                        className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm focus:outline-none focus:border-black text-black font-medium"
+                        value={offlineForm.enrolledAt}
+                        onChange={(e) => setOfflineForm({ ...offlineForm, enrolledAt: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={offlineGenerating}
+                    className="w-full h-11 rounded-[12px] font-bold text-xs bg-black text-white hover:bg-neutral-900 shadow-none mt-2"
+                  >
+                    {offlineGenerating ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <>Register & Generate Certificate</>
+                    )}
+                  </Button>
+                </form>
+              </div>
+
+              {/* Right Column: Issued Registry */}
+              <div className="space-y-[20px]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
+                  <div>
+                    <h3 className="text-xl font-medium tracking-[-0.02em] text-black">Verifiable Registry</h3>
+                    <p className="text-xs text-black/50 mt-0.5">
+                      {offlineCerts.length} active certificates registered.
+                    </p>
+                  </div>
+                  <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" size={14} />
+                    <input 
+                      type="text" 
+                      placeholder="Search recipient or course..." 
+                      className="w-full bg-white border border-black/20 pl-9 pr-4 py-2 rounded-[12px] text-xs font-normal focus:border-black outline-none transition-all text-black" 
+                      value={offlineCertsFilter}
+                      onChange={(e) => setOfflineCertsFilter(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-white border border-black/20 rounded-[12px] overflow-hidden shadow-none">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-black/10 bg-white text-[10px] font-medium uppercase tracking-wider text-black/60">
+                        <th className="px-6 py-4">Recipient</th>
+                        <th className="px-6 py-4">Specialization</th>
+                        <th className="px-6 py-4 text-center">Score</th>
+                        <th className="px-6 py-4">Issue Date</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#8B5A2B]/10">
+                      {offlineCerts
+                        .filter(c => {
+                          if (!offlineCertsFilter) return true;
+                          const q = offlineCertsFilter.toLowerCase();
+                          return (
+                            (c.student_name || "").toLowerCase().includes(q) ||
+                            (c.student_email || "").toLowerCase().includes(q) ||
+                            (c.course_title || "").toLowerCase().includes(q) ||
+                            (c.id || "").toLowerCase().includes(q)
+                          );
+                        })
+                        .map(cert => (
+                          <tr key={cert.id} className="hover:bg-neutral-50 transition-colors group">
+                            <td className="px-6 py-3.5">
+                              <div className="font-medium text-xs text-black">{cert.student_name}</div>
+                              <div className="text-[10px] text-black/50 font-mono truncate max-w-[180px]" title={cert.student_email}>
+                                {cert.student_email}
+                              </div>
+                            </td>
+                            <td className="px-6 py-3.5">
+                              <div className="text-xs text-black font-medium">{cert.course_title}</div>
+                              <div className="text-[9px] text-[#8B5A2B] font-bold uppercase tracking-wider">{cert.branch_name}</div>
+                            </td>
+                            <td className="px-6 py-3.5 text-center text-xs font-bold text-black">{cert.final_score}%</td>
+                            <td className="px-6 py-3.5 text-xs text-black/60 font-medium">
+                              {cert.enrolled_at ? new Date(cert.enrolled_at).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                              }) : "N/A"}
+                            </td>
+                            <td className="px-6 py-3.5">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {/* Download Trigger PDF */}
+                                <CertificatePDF
+                                  studentName={cert.student_name}
+                                  courseName={cert.course_title}
+                                  branch={cert.branch_name}
+                                  score={cert.final_score}
+                                  certId={cert.id}
+                                  trigger={
+                                    <button
+                                      className="p-2 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all flex items-center justify-center"
+                                      title="Download Certificate PDF"
+                                    >
+                                      <FileText size={14} />
+                                    </button>
+                                  }
+                                />
+                                <a
+                                  href={`/verify/${cert.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-black/40 hover:text-[#8B5A2B] hover:bg-black/5 rounded-[8px] transition-all flex items-center justify-center"
+                                  title="Open Public Verification Page"
+                                >
+                                  <ExternalLink size={14} />
+                                </a>
+                                <button
+                                  onClick={() => handleRevokeOfflineCertificate(cert.id)}
+                                  className="p-2 text-black/40 hover:text-red-600 hover:bg-red-50 rounded-[8px] transition-all flex items-center justify-center"
+                                  title="Revoke Certificate"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                  {offlineCerts.length === 0 && (
+                    <div className="py-[64px] text-center text-xs text-black/60 font-medium">No certificates issued yet. Fill the form on the left to get started.</div>
+                  )}
+                </div>
+              </div>
+
             </div>
           )}
 

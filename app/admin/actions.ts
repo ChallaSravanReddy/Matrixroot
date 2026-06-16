@@ -135,6 +135,47 @@ export async function fetchAdminData(activeTab: string) {
       result.weeklyUpdates = weeklyUpdates || [];
     }
 
+    if (activeTab === "offline_certificates") {
+      const { data: enrolls, error: enrollsErr } = await supabaseAdmin
+        .from("enrollments")
+        .select("*")
+        .eq("is_certified", true)
+        .eq("certification_status", "approved")
+        .order("enrolled_at", { ascending: false });
+      if (enrollsErr) console.error("Offline Certs Fetch Error:", enrollsErr);
+
+      const { data: profiles } = await supabaseAdmin.from("profiles").select("id, full_name, phone");
+      const { data: courses } = await supabaseAdmin.from("courses").select("*, departments(name)");
+      
+      let users: any[] = [];
+      try {
+        const { data } = await supabaseAdmin.auth.admin.listUsers();
+        if (data?.users) users = data.users;
+      } catch (authEx) {
+        console.error("Auth Users Fetch Error:", authEx);
+      }
+
+      const mappedCerts = (enrolls || []).map((e: any) => {
+        const student = profiles?.find((p: any) => p.id === e.student_id);
+        const course = courses?.find((c: any) => String(c.id) === String(e.course_id));
+        const authUser = users?.find((u: any) => u.id === e.student_id);
+        return {
+          ...e,
+          student_name: student?.full_name || "Unknown Scholar",
+          student_phone: student?.phone || "No Phone",
+          student_email: authUser?.email || "No Email",
+          course_title: course?.title || "Unknown Track",
+          branch_name: course?.departments?.name || "Foundational"
+        };
+      });
+
+      result.offlineCertificates = mappedCerts;
+      
+      const { data: depts } = await supabaseAdmin.from("departments").select("*").order("name", { ascending: true });
+      result.courses = courses || [];
+      result.departments = depts || [];
+    }
+
     return result;
   } catch (error) {
     console.error("Error fetching admin data:", error);
@@ -423,5 +464,173 @@ export async function rejectManualPaymentAction(enrollmentId: string) {
   } catch (err: any) {
     console.error("Error in rejectManualPaymentAction:", err);
     return { success: false, error: err.message };
+  }
+}
+
+export async function issueOfflineCertificateAction(payload: {
+  fullName: string;
+  email: string;
+  phone?: string;
+  courseId?: string;
+  customCourseTitle?: string;
+  customBranchName?: string;
+  score: number;
+  enrolledAt: string;
+}) {
+  try {
+    let userId: string;
+
+    // 1. Check if user already exists
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    if (listError) throw listError;
+    const existingUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === payload.email.toLowerCase());
+
+    if (existingUser) {
+      userId = existingUser.id;
+      const { error: profUpdateErr } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          full_name: payload.fullName,
+          phone: payload.phone || null
+        })
+        .eq("id", userId);
+      if (profUpdateErr) throw profUpdateErr;
+    } else {
+      const tempPassword = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: payload.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { full_name: payload.fullName }
+      });
+
+      if (createError) throw createError;
+      userId = newUser.user.id;
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const { error: profInsertErr } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          full_name: payload.fullName,
+          phone: payload.phone || null,
+          role: "student"
+        })
+        .eq("id", userId);
+      if (profInsertErr) throw profInsertErr;
+    }
+
+    // 2. Resolve Course ID
+    let courseId = payload.courseId;
+    if (!courseId) {
+      const title = payload.customCourseTitle || "Offline Internship";
+      const { data: existingCourse } = await supabaseAdmin
+        .from("courses")
+        .select("id")
+        .eq("title", title)
+        .maybeSingle();
+
+      if (existingCourse) {
+        courseId = existingCourse.id;
+      } else {
+        let deptId = null;
+        const branchName = payload.customBranchName || "General";
+        const { data: existingDept } = await supabaseAdmin
+          .from("departments")
+          .select("id")
+          .eq("name", branchName)
+          .maybeSingle();
+
+        if (existingDept) {
+          deptId = existingDept.id;
+        } else {
+          const slug = branchName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+          const { data: newDept, error: newDeptErr } = await supabaseAdmin
+            .from("departments")
+            .insert([{ name: branchName, slug }])
+            .select()
+            .single();
+          if (newDeptErr) throw newDeptErr;
+          deptId = newDept.id;
+        }
+
+        const { data: newCourse, error: newCourseErr } = await supabaseAdmin
+          .from("courses")
+          .insert([{
+            title,
+            description: `Offline Internship track in ${title}`,
+            dept_id: deptId,
+            price: 0,
+            timeline_weeks: 8
+          }])
+          .select()
+          .single();
+
+        if (newCourseErr) throw newCourseErr;
+        courseId = newCourse.id;
+      }
+    }
+
+    // 3. Create the enrollment
+    const { data: newEnrollment, error: enrollError } = await supabaseAdmin
+      .from("enrollments")
+      .insert([
+        {
+          student_id: userId,
+          course_id: courseId,
+          payment_status: "completed",
+          is_certified: true,
+          certification_status: "approved",
+          final_score: payload.score,
+          enrolled_at: payload.enrolledAt
+        }
+      ])
+      .select()
+      .single();
+
+    if (enrollError) throw enrollError;
+
+    return { success: true, enrollmentId: newEnrollment.id };
+  } catch (error: any) {
+    console.error("issueOfflineCertificateAction error:", error);
+    return { success: false, error: error.message || "Failed to generate certificate." };
+  }
+}
+
+export async function revokeOfflineCertificateAction(enrollmentId: string) {
+  try {
+    const { data: enrollment, error: fetchErr } = await supabaseAdmin
+      .from("enrollments")
+      .select("student_id")
+      .eq("id", enrollmentId)
+      .single();
+    
+    if (fetchErr) throw fetchErr;
+
+    const { error: deleteErr } = await supabaseAdmin
+      .from("enrollments")
+      .delete()
+      .eq("id", enrollmentId);
+      
+    if (deleteErr) throw deleteErr;
+
+    if (enrollment?.student_id) {
+      const { data: otherEnrollments } = await supabaseAdmin
+        .from("enrollments")
+        .select("id")
+        .eq("student_id", enrollment.student_id);
+
+      if (!otherEnrollments || otherEnrollments.length === 0) {
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(enrollment.student_id);
+        if (userData?.user?.email?.startsWith("offline_")) {
+          await supabaseAdmin.auth.admin.deleteUser(enrollment.student_id);
+        }
+      }
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("revokeOfflineCertificateAction error:", error);
+    return { success: false, error: error.message || "Failed to revoke certificate." };
   }
 }

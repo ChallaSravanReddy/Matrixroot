@@ -12,9 +12,10 @@ interface CertificateProps {
   branch: string;
   score: number;
   certId: string;
+  trigger?: React.ReactNode;
 }
 
-const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, branch, score, certId }) => {
+const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, branch, score, certId, trigger }) => {
   const certificateRef = useRef<HTMLDivElement>(null);
 
   const downloadCertificate = async () => {
@@ -120,9 +121,9 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
               <div className="flex flex-col items-center pb-2">
                   <div className="h-[44px] flex items-end justify-center mb-1">
                       <img 
-                          src="/img/signature.png" 
-                          alt="Program Director Signature" 
-                          className="max-h-full max-w-[150px] object-contain" 
+                           src="/img/signature.png" 
+                           alt="Program Director Signature" 
+                           className="max-h-full max-w-[150px] object-contain" 
                       />
                   </div>
                   <div className="w-48 h-[2px] bg-black/10 mb-3"></div>
@@ -134,15 +135,21 @@ const CertificatePDF: React.FC<CertificateProps> = ({ studentName, courseName, b
         </div>
       </div>
 
-      <button 
-        onClick={downloadCertificate}
-        className="w-full min-h-[44px] py-3 px-6 bg-black hover:bg-neutral-900 text-white font-medium rounded-[12px] transition-colors shadow-none flex items-center justify-center gap-2 text-sm border-0"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-        </svg>
-        Download Internship Certificate
-      </button>
+      {trigger ? (
+        <div onClick={downloadCertificate} className="cursor-pointer w-full">
+          {trigger}
+        </div>
+      ) : (
+        <button 
+          onClick={downloadCertificate}
+          className="w-full min-h-[44px] py-3 px-6 bg-black hover:bg-neutral-900 text-white font-medium rounded-[12px] transition-colors shadow-none flex items-center justify-center gap-2 text-sm border-0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          Download Internship Certificate
+        </button>
+      )}
     </div>
   );
 };
