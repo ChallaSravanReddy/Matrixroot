@@ -166,7 +166,7 @@ export default function SignupPage() {
                 className="mt-0.5 w-4 h-4 rounded-[4px] border-black/20 text-[#8B5A2B] focus:ring-0"
               />
               <label htmlFor="terms" className="text-xs text-black/80 font-normal leading-relaxed cursor-pointer">
-                I agree to the <span className="font-medium text-[#8B5A2B]">Terms and Conditions</span>
+                I agree to the <Link href="/terms" target="_blank" className="font-medium text-[#8B5A2B] hover:underline">Terms and Conditions</Link>
               </label>
             </div>
 
