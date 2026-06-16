@@ -634,3 +634,35 @@ export async function revokeOfflineCertificateAction(enrollmentId: string) {
     return { success: false, error: error.message || "Failed to revoke certificate." };
   }
 }
+
+export async function updateLessonAction(lessonId: string, payload: {
+  module_id?: string | null;
+  title?: string;
+  content_url?: string;
+  notes?: string;
+  is_preview?: boolean;
+  has_assignment?: boolean;
+  order_index?: number;
+  start_seconds?: number;
+}) {
+  const { error } = await supabaseAdmin
+    .from("lessons")
+    .update(payload)
+    .eq("id", lessonId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+export async function updateModuleAction(moduleId: string, payload: {
+  title?: string;
+  description?: string;
+  has_assessment?: boolean;
+  order_index?: number;
+}) {
+  const { error } = await supabaseAdmin
+    .from("course_modules")
+    .update(payload)
+    .eq("id", moduleId);
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}

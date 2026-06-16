@@ -23,7 +23,9 @@ import {
   approveManualPaymentAction,
   rejectManualPaymentAction,
   issueOfflineCertificateAction,
-  revokeOfflineCertificateAction
+  revokeOfflineCertificateAction,
+  updateModuleAction,
+  updateLessonAction
 } from "./actions";
 
 import CertificatePDF from "@/components/CertificatePDF";
@@ -91,7 +93,7 @@ export default function AdminPage() {
   });
   const [selectedTaskCourse, setSelectedTaskCourse] = useState<string>("");
   const [newModule, setNewModule] = useState({ course_id: "", title: "", description: "", has_assessment: false });
-  const [newLesson, setNewLesson] = useState({ course_id: "", module_id: "", title: "", content_url: "", notes: "", is_preview: false, has_assignment: false });
+  const [newLesson, setNewLesson] = useState({ course_id: "", module_id: "", title: "", content_url: "", notes: "", is_preview: false, has_assignment: false, start_seconds: 0 });
   const [uploadingFile, setUploadingFile] = useState(false);
 
   // Base Track Modal States
@@ -133,6 +135,12 @@ export default function AdminPage() {
   // Course editing state
   const [editingCourse, setEditingCourse] = useState<any | null>(null);
   const [editCourseSaving, setEditCourseSaving] = useState(false);
+
+  // Module & Lesson editing state
+  const [editingModule, setEditingModule] = useState<any | null>(null);
+  const [editingLesson, setEditingLesson] = useState<any | null>(null);
+  const [editModuleSaving, setEditModuleSaving] = useState(false);
+  const [editLessonSaving, setEditLessonSaving] = useState(false);
 
   // Offline Certificates Generator states
   const [offlineCerts, setOfflineCerts] = useState<any[]>([]);
@@ -504,6 +512,50 @@ export default function AdminPage() {
       fetchData();
     } else {
       alert("Error saving course: " + res.error);
+    }
+  };
+
+  const handleUpdateModule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingModule) return;
+    setEditModuleSaving(true);
+    const res = await updateModuleAction(editingModule.id, {
+      title: editingModule.title,
+      description: editingModule.description,
+      has_assessment: editingModule.has_assessment,
+      order_index: editingModule.order_index,
+    });
+    setEditModuleSaving(false);
+    if (res.success) {
+      alert("Module updated successfully!");
+      setEditingModule(null);
+      fetchData();
+    } else {
+      alert("Error saving module: " + res.error);
+    }
+  };
+
+  const handleUpdateLesson = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLesson) return;
+    setEditLessonSaving(true);
+    const res = await updateLessonAction(editingLesson.id, {
+      module_id: editingLesson.module_id || null,
+      title: editingLesson.title,
+      content_url: editingLesson.content_url || "",
+      notes: editingLesson.notes || "",
+      is_preview: editingLesson.is_preview,
+      has_assignment: editingLesson.has_assignment,
+      order_index: editingLesson.order_index,
+      start_seconds: editingLesson.start_seconds || 0,
+    });
+    setEditLessonSaving(false);
+    if (res.success) {
+      alert("Lesson updated successfully!");
+      setEditingLesson(null);
+      fetchData();
+    } else {
+      alert("Error saving lesson: " + res.error);
     }
   };
 
@@ -1015,7 +1067,7 @@ export default function AdminPage() {
                           course_id: selectedCourseFilter
                         });
                         if (res.success) {
-                          setNewLesson({ ...newLesson, title: "", content_url: "", notes: "", has_assignment: false });
+                          setNewLesson({ ...newLesson, title: "", content_url: "", notes: "", has_assignment: false, start_seconds: 0 });
                           fetchData();
                         } else {
                           alert("Error: " + res.error);
@@ -1047,6 +1099,17 @@ export default function AdminPage() {
                           value={newLesson.content_url}
                           onChange={(e) => setNewLesson({...newLesson, content_url: e.target.value})}
                         />
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-[#8B5A2B] uppercase tracking-wider block">Lock Start Time (seconds)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="e.g. 15 (students can't seek before this second)"
+                            className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-xs focus:outline-none focus:border-black text-black font-medium"
+                            value={newLesson.start_seconds || 0}
+                            onChange={(e) => setNewLesson({...newLesson, start_seconds: parseInt(e.target.value) || 0})}
+                          />
+                        </div>
                         <div className="space-y-1">
                           <label className="text-[10px] font-semibold text-[#8B5A2B] uppercase tracking-wider block">Lesson Notes / Study Material</label>
                           <RichTextEditor
@@ -1107,24 +1170,39 @@ export default function AdminPage() {
                             return (
                               <div key={mod.id} className="bg-white border border-black/15 rounded-[12px] overflow-hidden shadow-sm flex flex-col">
                                 <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 border-b border-black/10">
-                                  <div className="min-w-0">
+                                  <div className="min-w-0 flex-1">
                                     <div className="text-xs font-bold text-black truncate">{mod.title}</div>
                                     {mod.has_assessment && (
                                       <span className="text-[9px] font-semibold text-[#8B5A2B]">Assessment Required</span>
                                     )}
                                   </div>
-                                  <button onClick={() => handleDeleteModule(mod.id)} className="p-1 text-[#8B5A2B]/40 hover:text-red-600 hover:bg-red-50 rounded transition-all shrink-0 ml-2" title="Delete module">
-                                    <Trash2 size={12} />
-                                  </button>
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                    <button 
+                                      onClick={() => setEditingModule({
+                                        id: mod.id,
+                                        title: mod.title,
+                                        description: mod.description || "",
+                                        has_assessment: !!mod.has_assessment,
+                                        order_index: mod.order_index ?? 0
+                                      })} 
+                                      className="p-1 text-black/40 hover:text-black hover:bg-black/5 rounded transition-all" 
+                                      title="Edit module"
+                                    >
+                                      <Pencil size={12} />
+                                    </button>
+                                    <button onClick={() => handleDeleteModule(mod.id)} className="p-1 text-[#8B5A2B]/40 hover:text-red-600 hover:bg-red-50 rounded transition-all" title="Delete module">
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
                                 </div>
                                 <div className="p-3 space-y-1 flex-1">
                                   {modLessons.length === 0 ? (
                                     <div className="text-[10px] text-black/30 italic py-3 text-center">No lessons yet</div>
                                   ) : modLessons.map((lsn, i) => (
                                     <div key={lsn.id} className="flex items-start justify-between p-2 rounded-[8px] hover:bg-neutral-100 group transition-colors">
-                                      <div className="flex items-start gap-2 min-w-0">
+                                      <div className="flex items-start gap-2 min-w-0 flex-1">
                                         <span className="text-[9px] font-bold text-[#8B5A2B]/40 mt-0.5 shrink-0 w-4 text-center">{i + 1}</span>
-                                        <div className="min-w-0">
+                                        <div className="min-w-0 flex-1">
                                           <div className="text-xs font-medium text-black truncate">{lsn.title}</div>
                                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                             {lsn.content_url && <span className="text-[9px] text-black/40">Video</span>}
@@ -1134,9 +1212,29 @@ export default function AdminPage() {
                                           </div>
                                         </div>
                                       </div>
-                                      <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 rounded transition-all shrink-0">
-                                        <Trash2 size={11} />
-                                      </button>
+                                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                                        <button 
+                                          onClick={() => setEditingLesson({
+                                            id: lsn.id,
+                                            course_id: lsn.course_id,
+                                            module_id: lsn.module_id || "",
+                                            title: lsn.title,
+                                            content_url: lsn.content_url || "",
+                                            notes: lsn.notes || "",
+                                            is_preview: !!lsn.is_preview,
+                                            has_assignment: !!lsn.has_assignment,
+                                            order_index: lsn.order_index ?? 0,
+                                            start_seconds: lsn.start_seconds ?? 0
+                                          })} 
+                                          className="opacity-0 group-hover:opacity-100 p-1 text-black/40 hover:text-black hover:bg-black/5 rounded transition-all"
+                                          title="Edit lesson"
+                                        >
+                                          <Pencil size={11} />
+                                        </button>
+                                        <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 rounded transition-all">
+                                          <Trash2 size={11} />
+                                        </button>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
@@ -1151,10 +1249,30 @@ export default function AdminPage() {
                               <div className="p-3 space-y-1">
                                 {unassigned.map((lsn) => (
                                   <div key={lsn.id} className="flex items-center justify-between p-2 rounded-[8px] hover:bg-neutral-100 group transition-colors">
-                                    <span className="text-xs text-black/70 truncate">{lsn.title}</span>
-                                    <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 rounded transition-all shrink-0">
-                                      <Trash2 size={11} />
-                                    </button>
+                                    <span className="text-xs text-black/70 truncate flex-1 min-w-0">{lsn.title}</span>
+                                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                                      <button 
+                                        onClick={() => setEditingLesson({
+                                          id: lsn.id,
+                                          course_id: lsn.course_id,
+                                          module_id: lsn.module_id || "",
+                                          title: lsn.title,
+                                          content_url: lsn.content_url || "",
+                                          notes: lsn.notes || "",
+                                          is_preview: !!lsn.is_preview,
+                                          has_assignment: !!lsn.has_assignment,
+                                          order_index: lsn.order_index ?? 0,
+                                          start_seconds: lsn.start_seconds ?? 0
+                                        })} 
+                                        className="opacity-0 group-hover:opacity-100 p-1 text-black/40 hover:text-black hover:bg-black/5 rounded transition-all"
+                                        title="Edit lesson"
+                                      >
+                                        <Pencil size={11} />
+                                      </button>
+                                      <button onClick={() => handleDeleteLesson(lsn.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 rounded transition-all">
+                                        <Trash2 size={11} />
+                                      </button>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -2616,6 +2734,260 @@ export default function AdminPage() {
                   className="rounded-[12px] bg-black hover:bg-neutral-900 text-white px-6 h-10 font-bold text-xs shadow-none border-none transition-colors"
                 >
                   Save Blueprints
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Module Modal ── */}
+      {editingModule && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingModule(null); }}
+        >
+          <div
+            className="w-full max-w-lg bg-white border border-black/20 rounded-[20px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-black/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-black/8 rounded-[10px]">
+                  <Pencil size={16} className="text-[#8B5A2B]" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Edit Module</span>
+                  <h3 className="text-sm font-bold text-black line-clamp-1">{editingModule.title}</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingModule(null)}
+                className="p-1.5 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Form body */}
+            <form onSubmit={handleUpdateModule} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Module Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Phase 1: Basics"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingModule.title}
+                  onChange={(e) => setEditingModule({ ...editingModule, title: e.target.value })}
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Description (optional)</label>
+                <textarea
+                  rows={3}
+                  placeholder="Brief description of the module..."
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black resize-none transition-colors"
+                  value={editingModule.description}
+                  onChange={(e) => setEditingModule({ ...editingModule, description: e.target.value })}
+                />
+              </div>
+
+              {/* Order Index */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Order Index (sorting)</label>
+                <input
+                  type="number"
+                  required
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingModule.order_index}
+                  onChange={(e) => setEditingModule({ ...editingModule, order_index: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              {/* Has Assessment Checkbox */}
+              <label className="flex items-center gap-3 p-3 bg-neutral-50 border border-black/10 rounded-[10px] cursor-pointer transition-all hover:bg-neutral-100">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-black/20 text-black focus:ring-0"
+                  checked={editingModule.has_assessment}
+                  onChange={(e) => setEditingModule({ ...editingModule, has_assessment: e.target.checked })}
+                />
+                <span className="text-xs font-semibold text-black">Requires assessment to unlock next module</span>
+              </label>
+
+              {/* Footer */}
+              <div className="flex gap-2 pt-2 border-t border-black/10 sticky bottom-0 bg-white pb-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingModule(null)}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold border-black/20 shadow-none text-black/70"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={editModuleSaving}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold bg-black text-white hover:bg-neutral-900 shadow-none"
+                >
+                  {editModuleSaving ? <Loader2 size={14} className="animate-spin" /> : <><Check size={13} className="mr-1.5" /> Save Changes</>}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Lesson Modal ── */}
+      {editingLesson && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingLesson(null); }}
+        >
+          <div
+            className="w-full max-w-lg bg-white border border-black/20 rounded-[20px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-black/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-black/8 rounded-[10px]">
+                  <Pencil size={16} className="text-[#8B5A2B]" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Edit Lesson</span>
+                  <h3 className="text-sm font-bold text-black line-clamp-1">{editingLesson.title}</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingLesson(null)}
+                className="p-1.5 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Form body */}
+            <form onSubmit={handleUpdateLesson} className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              
+              {/* Module selection */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Module</label>
+                <select
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingLesson.module_id || ""}
+                  onChange={(e) => setEditingLesson({ ...editingLesson, module_id: e.target.value || null })}
+                >
+                  <option value="">Unassigned / General</option>
+                  {modules.filter(m => String(m.course_id) === String(editingLesson.course_id)).map(m => (
+                    <option key={m.id} value={m.id}>{m.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Lesson Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Introduction to APIs"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingLesson.title}
+                  onChange={(e) => setEditingLesson({ ...editingLesson, title: e.target.value })}
+                />
+              </div>
+
+              {/* Video URL */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Video URL</label>
+                <input
+                  type="text"
+                  placeholder="e.g. YouTube URL or video MP4 link"
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingLesson.content_url}
+                  onChange={(e) => setEditingLesson({ ...editingLesson, content_url: e.target.value })}
+                />
+              </div>
+
+              {/* Locked Start Time (seconds) */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Lock Start Time (seconds)</label>
+                <input
+                  type="number"
+                  min={0}
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingLesson.start_seconds || 0}
+                  onChange={(e) => setEditingLesson({ ...editingLesson, start_seconds: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              {/* Order Index */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Order Index (sorting)</label>
+                <input
+                  type="number"
+                  required
+                  className="w-full bg-neutral-50 border border-black/20 p-3 rounded-[10px] text-sm font-medium text-black focus:outline-none focus:border-black transition-colors"
+                  value={editingLesson.order_index}
+                  onChange={(e) => setEditingLesson({ ...editingLesson, order_index: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+
+              {/* Notes (Rich text editor) */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Lesson Notes / Study Material</label>
+                <RichTextEditor
+                  value={editingLesson.notes}
+                  onChange={(val) => setEditingLesson({ ...editingLesson, notes: val })}
+                  placeholder="Add lesson notes or study material..."
+                />
+              </div>
+
+              {/* Checkboxes */}
+              <div className="flex gap-5 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-black/20 text-black focus:ring-0" 
+                    checked={editingLesson.is_preview} 
+                    onChange={(e) => setEditingLesson({ ...editingLesson, is_preview: e.target.checked })} 
+                  />
+                  <span className="text-xs font-semibold text-black">Free preview</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-black/20 text-black focus:ring-0" 
+                    checked={editingLesson.has_assignment} 
+                    onChange={(e) => setEditingLesson({ ...editingLesson, has_assignment: e.target.checked })} 
+                  />
+                  <span className="text-xs font-semibold text-black">Requires assignment</span>
+                </label>
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-2 pt-2 border-t border-black/10 sticky bottom-0 bg-white pb-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingLesson(null)}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold border-black/20 shadow-none text-black/70"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={editLessonSaving}
+                  className="flex-1 h-10 rounded-[10px] text-xs font-bold bg-black text-white hover:bg-neutral-900 shadow-none"
+                >
+                  {editLessonSaving ? <Loader2 size={14} className="animate-spin" /> : <><Check size={13} className="mr-1.5" /> Save Changes</>}
                 </Button>
               </div>
             </form>

@@ -120,8 +120,8 @@ export default function VerificationPage() {
       <div className="absolute inset-0 matrix-bg -z-10 opacity-10" />
       
       {/* Verification Card */}
-      <div className="max-w-2xl w-full bg-card border border-border rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-700">
-        <div className="bg-primary p-8 text-primary-foreground text-center relative">
+      <div className="max-w-2xl w-full bg-card border border-border rounded-3xl sm:rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-700">
+        <div className="bg-primary p-6 sm:p-8 text-primary-foreground text-center relative">
           <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
             ID: {certId.substring(0,13).toUpperCase()}
           </div>
@@ -134,7 +134,7 @@ export default function VerificationPage() {
           <p className="text-primary-foreground/80 text-sm font-medium">This credential has been verified and recorded on our secure servers.</p>
         </div>
 
-        <div className="p-10 space-y-10">
+        <div className="p-6 sm:p-10 space-y-8 sm:space-y-10">
           {/* Status Badge */}
           <div className="flex items-center justify-center gap-3 py-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-500">
             <BadgeCheck size={24} />
@@ -158,7 +158,7 @@ export default function VerificationPage() {
               label="Department" 
               value={data.courses?.departments?.name} 
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                <DetailRow 
                 icon={<Calendar className="text-primary" />} 
                 label="Enrolled On" 
@@ -179,9 +179,9 @@ export default function VerificationPage() {
                 <div className="h-8 w-px bg-border" />
                 <div className="text-left">
                    <p className="text-xs font-black uppercase tracking-tight">Matrix Root Engineering</p>
-                   <p className="text-[10px] text-muted-foreground font-bold">Bangalore, India</p>
-                </div>
-             </div>
+                   <p className="text-[10px] text-muted-foreground font-bold">Hyderabad, Telangana</p>
+                 </div>
+              </div>
           </div>
         </div>
       </div>

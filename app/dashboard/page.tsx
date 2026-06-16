@@ -163,7 +163,7 @@ export default function DashboardPage() {
           <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
             <GraduationCap size={20} className="text-[#8B5A2B]" />
           </div>
-          <span className="font-bold text-base text-black">Matrix Root Studio</span>
+          <span className="font-bold text-base text-black">Matrix Root</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">

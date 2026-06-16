@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import LockedVideoPlayer from "@/components/LockedVideoPlayer";
 import { useNotification } from "@/components/NotificationProvider";
 import { EnrollmentModal } from "@/components/EnrollmentModal";
 import {
@@ -30,6 +31,7 @@ interface Lesson {
   is_preview?: boolean;
   order_index?: number;
   has_assignment?: boolean;
+  start_seconds?: number;
 }
 
 export default function CourseDetailPage() {
@@ -131,6 +133,24 @@ export default function CourseDetailPage() {
       setOpenModuleIds(prev => prev.includes(currentLesson.module_id!) ? prev : [...prev, currentLesson.module_id!]);
     } else if (currentLesson && !currentLesson.module_id) {
       setOpenModuleIds(prev => prev.includes("general") ? prev : [...prev, "general"]);
+    }
+  }, [currentLesson]);
+
+  // Scroll main content to top and active lesson in sidebar into view on lesson change
+  useEffect(() => {
+    if (currentLesson) {
+      const mainContent = document.getElementById("main-content-area");
+      if (mainContent) {
+        mainContent.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      const timer = setTimeout(() => {
+        const activeEl = document.querySelector('.active-sidebar-lesson');
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [currentLesson]);
 
@@ -257,28 +277,14 @@ export default function CourseDetailPage() {
       }
     }
 
-    // Embed URL parsing to attach custom layout parameters hiding distractions
-    if (secureUrl.includes("youtube.com/embed/")) {
-      const separator = secureUrl.includes("?") ? "&" : "?";
-      secureUrl += `${separator}modestbranding=1&rel=0&showinfo=0&controls=1&disablekb=1`;
-      if (isPlaying) {
-        secureUrl += `&autoplay=1`;
-      }
-    }
-
-    if (secureUrl.endsWith('.mp4')) {
-      return <video src={secureUrl} controls className="w-full h-full object-cover absolute inset-0" />;
-    } else {
-      return (
-        <iframe
-          src={secureUrl}
-          className="w-full h-full border-0 absolute inset-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-        ></iframe>
-      );
-    }
+    return (
+      <LockedVideoPlayer
+        videoUrl={secureUrl}
+        className="w-full h-full absolute inset-0"
+        startSeconds={currentLesson?.start_seconds ?? 0}
+        autoPlay={isPlaying}
+      />
+    );
   };
 
   const sortedLessons = [...lessons].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
@@ -344,11 +350,10 @@ export default function CourseDetailPage() {
                           onClick={() => {
                             if (!isLocked) {
                               setCurrentLesson(lesson);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
                             }
                           }}
                           className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
-                              ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20"
+                              ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20 active-sidebar-lesson"
                               : isLocked
                                 ? "opacity-40 cursor-not-allowed text-black/50"
                                 : "hover:bg-black/5 text-black/80 font-medium"
@@ -419,11 +424,10 @@ export default function CourseDetailPage() {
                         onClick={() => {
                           if (!isLocked) {
                             setCurrentLesson(lesson);
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
                           }
                         }}
                         className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
-                            ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20"
+                            ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20 active-sidebar-lesson"
                             : isLocked
                               ? "opacity-40 cursor-not-allowed text-black/50"
                               : "hover:bg-black/5 text-black/80 font-medium"
@@ -604,7 +608,7 @@ export default function CourseDetailPage() {
             </aside>
 
             {/* Right Side: Content Player Area */}
-            <main className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 bg-white scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
+            <main id="main-content-area" className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 bg-white scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
               <div className="max-w-4xl mx-auto">
                 {isLocked ? (
                   <div className="bg-white border border-black/10 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
@@ -647,7 +651,9 @@ export default function CourseDetailPage() {
                     {/* Embedded Video Player at the top of the content area */}
                     {hasVideo && (
                       <div className="w-full aspect-video bg-neutral-900 rounded-[12px] overflow-hidden border border-black/10 relative shadow-none shrink-0 mb-[24px]">
-                        {!isPlaying && (
+                        {isPlaying ? (
+                          renderVideoPlayer(currentLesson.content_url || "")
+                        ) : (
                           <div
                             onClick={() => setIsPlaying(true)}
                             className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-6 text-center cursor-pointer group z-20 transition-all duration-300"
@@ -666,7 +672,6 @@ export default function CourseDetailPage() {
                             </p>
                           </div>
                         )}
-                        {renderVideoPlayer(currentLesson.content_url || "")}
                       </div>
                     )}
 
@@ -696,9 +701,6 @@ export default function CourseDetailPage() {
                   variant="outline"
                   onClick={() => {
                     setCurrentLesson(prevLesson);
-                    const mainContainers = document.querySelectorAll('.overflow-y-auto');
-                    mainContainers.forEach(container => container.scrollTo({ top: 0, behavior: 'smooth' }));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="px-4 h-10 border-black/15 font-bold text-xs rounded-[8px] shadow-none text-black/80"
                 >
@@ -716,9 +718,6 @@ export default function CourseDetailPage() {
                       await handleCompleteLesson(currentLesson);
                     }
                     setCurrentLesson(nextLesson);
-                    const mainContainers = document.querySelectorAll('.overflow-y-auto');
-                    mainContainers.forEach(container => container.scrollTo({ top: 0, behavior: 'smooth' }));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="px-6 h-10 bg-black hover:bg-neutral-900 text-white font-bold text-xs rounded-[8px] shadow-none flex items-center gap-1.5"
                 >

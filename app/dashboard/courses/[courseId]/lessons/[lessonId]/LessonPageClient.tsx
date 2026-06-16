@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import LockedVideoPlayer from "@/components/LockedVideoPlayer";
 
 interface Lesson {
   id: string;
@@ -14,6 +15,7 @@ interface Lesson {
   is_preview: boolean;
   order_index: number;
   has_assignment?: boolean;
+  start_seconds?: number;
 }
 
 export default function LessonPage() {
@@ -125,6 +127,19 @@ export default function LessonPage() {
     }
   }, [currentLesson]);
 
+  // Scroll active lesson in sidebar into view on load/change
+  useEffect(() => {
+    if (currentLesson) {
+      const timer = setTimeout(() => {
+        const activeEl = document.querySelector('.active-sidebar-lesson');
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentLesson]);
+
   const toggleModule = (modId: string) => {
     setOpenModuleIds(prev =>
       prev.includes(modId) ? prev.filter(id => id !== modId) : [...prev, modId]
@@ -200,20 +215,13 @@ export default function LessonPage() {
       }
     }
 
-    if (secureUrl.endsWith('.mp4')) {
-      return <video src={secureUrl} controls className="w-full h-full object-cover" />;
-    } else {
-      // Assuming it's an embeddable iframe URL (like YouTube embed)
-      return (
-        <iframe
-          src={secureUrl}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          loading="lazy"
-        ></iframe>
-      );
-    }
+    return (
+      <LockedVideoPlayer
+        videoUrl={secureUrl}
+        className="w-full h-full"
+        startSeconds={currentLesson?.start_seconds ?? 0}
+      />
+    );
   };
 
   const parentModule = modules.find(m => currentLesson?.module_id ? String(m.id) === String(currentLesson.module_id) : false);
@@ -267,7 +275,7 @@ export default function LessonPage() {
                           key={lesson.id}
                           onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
                           className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
-                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
+                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold active-sidebar-lesson"
                               : "hover:bg-slate-50 text-slate-700"
                             }`}
                         >
@@ -323,7 +331,7 @@ export default function LessonPage() {
                         key={lesson.id}
                         onClick={() => window.location.href = `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
                         className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all group ${isActive
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold"
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 font-semibold active-sidebar-lesson"
                             : "hover:bg-slate-50 text-slate-700"
                           }`}
                       >
@@ -544,7 +552,7 @@ export default function LessonPage() {
             </aside>
 
             {/* Right Side Main Content View: Video + Document Notes + Assessment Submission */}
-            <main className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+            <main id="main-content-area" className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
               <div className="max-w-4xl mx-auto space-y-8">
                 
                 {/* Title & Metadata Section */}
