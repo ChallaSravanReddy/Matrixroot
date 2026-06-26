@@ -30,13 +30,17 @@ export const supabase = createClient(
   supabaseUrl || 'https://your-project.supabase.co',
   supabaseAnonKey || 'your-anon-key',
   {
+    global: {
+      // Custom fetch wrapper: converts "TypeError: Failed to fetch" (network offline /
+      // unreachable host) into a plain Error with a clear message so Supabase internals
+      // catch it gracefully instead of surfacing an unhandled rejection.
+      fetch: resilientFetch,
+    },
     auth: {
       // Only persist the session in the browser — prevents double-init on the server.
       persistSession: typeof window !== 'undefined',
       // Detect session from URL hash (magic links / OAuth) only in the browser.
       detectSessionInUrl: typeof window !== 'undefined',
-      // Use our resilient fetch so network errors surface cleanly.
-      fetch: resilientFetch,
     },
   }
 );
