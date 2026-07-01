@@ -1,364 +1,212 @@
 "use client";
 
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Brain,
-  Globe,
-  Terminal,
-  Award,
-  BookOpen,
-  CheckCircle2,
-  Sparkles,
-  ShieldCheck
-} from "@/components/icons";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { ShieldCheck, Loader2 } from "lucide-react";
+import { AuthLayout } from "@/components/AuthLayout";
+import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-white text-black overflow-hidden font-sans">
-      <Navbar />
-      <Hero />
-      <PremiumTicker />
-      <Services />
-      <CurriculumShowcase />
-      <ExcellenceSection />
-      <CTASection />
-      <Footer />
-    </div>
-  );
-}
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-function Hero() {
-  return (
-    <section className="relative py-[64px] md:py-[112px] bg-white border-b border-black/10 overflow-hidden">
-      {/* Subtle background grid pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-5 flex items-center justify-center">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="edtechGrid" width="64" height="64" patternUnits="userSpaceOnUse">
-              <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#8B5A2B" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#edtechGrid)" />
-        </svg>
-      </div>
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!agreedToTerms) return;
 
-      <div className="container relative mx-auto max-w-6xl px-4 text-center z-10">
-        {/* Trust Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 text-xs font-bold text-[#8B5A2B] mb-[32px]"
-        >
-          <ShieldCheck className="h-4 w-4 text-[#8B5A2B]" />
-          A Government Registered MSME Enterprise (UDYAM-TS-31-0053124)
-        </motion.div>
+    setLoading(true);
+    setError(null);
 
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.1 }}
-          className="text-4xl md:text-6xl font-bold tracking-tight text-black leading-[1.15] mb-[24px] max-w-5xl mx-auto"
-        >
-          Matrix Root | Custom Software & <br />
-          <span className="text-[#8B5A2B] relative">
-            AI Development.
-            <motion.span
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-              className="absolute bottom-0 left-0 w-full h-[3px] bg-[#8B5A2B] origin-left -z-10"
-            />
-          </span>
-        </motion.h1>
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        {/* Sub-headline */}
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.2 }}
-          className="text-base md:text-lg text-black/80 leading-[1.6] max-w-3xl mx-auto font-medium mb-[48px]"
-        >
-          We build web applications, custom AI automations, and backend infrastructure.
-        </motion.p>
+      if (signInError) throw signInError;
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-[16px]"
-        >
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button asChild size="lg" className="bg-black text-white hover:bg-neutral-900 rounded-[8px] px-[32px] h-[48px] font-bold text-sm shadow-none border-0">
-              <Link href="/#services">Explore Services</Link>
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button asChild size="lg" variant="outline" className="border-black/15 bg-white text-black hover:bg-black/5 rounded-[8px] px-[32px] h-[48px] font-bold text-sm shadow-none">
-              <Link href="/careers">Internships</Link>
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function PremiumTicker() {
-  const tickerItems = [
-    "✦ WEB PORTALS",
-    "✦ CUSTOM AI AGENTS",
-    "✦ BACKEND SYSTEM ARCHITECTURE",
-    "✦ SUPABASE & SQL DATABASE DESIGN",
-    "✦ HIGH-PERFORMANCE INFRASTRUCTURE",
-    "✦ PRACTICAL DEVELOPMENT OUTCOMES"
-  ];
-
-  return (
-    <div className="w-full overflow-hidden bg-white border-b border-black/10 py-[16px] select-none">
-      <div className="flex whitespace-nowrap">
-        <motion.div
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ ease: "linear", duration: 30, repeat: Infinity }}
-          className="flex gap-[64px] text-xs font-bold tracking-[0.15em] uppercase text-black/70 pr-[64px]"
-        >
-          {tickerItems.concat(tickerItems).map((item, idx) => (
-            <span key={idx} className="hover:text-[#8B5A2B] transition-colors cursor-default">
-              {item}
-            </span>
-          ))}
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function Services() {
-  const services = [
-    {
-      title: "Web & App Development",
-      icon: Globe,
-      desc: "Fast, secure, and responsive web applications built using React, Next.js, and modern tools.",
-      graphic: (
-        <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B5A2B]/10 stroke-current stroke-[1.5] fill-none">
-          <circle cx="50" cy="50" r="40" strokeDasharray="4 4" />
-          <line x1="10" y1="50" x2="90" y2="50" />
-          <line x1="50" y1="10" x2="50" y2="90" />
-        </svg>
-      )
-    },
-    {
-      title: "AI & Business Automation",
-      icon: Brain,
-      desc: "Streamline operations with custom AI workflows, integrations, and automation layers.",
-      graphic: (
-        <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B5A2B]/10 stroke-current stroke-[1.5] fill-none">
-          <polygon points="50,10 90,85 10,85" />
-          <circle cx="50" cy="60" r="15" />
-        </svg>
-      )
-    },
-    {
-      title: "Technical Consulting",
-      icon: Terminal,
-      desc: "Database optimization, database setup (SQL/Supabase), and clean backend architecture design.",
-      graphic: (
-        <svg viewBox="0 0 100 100" className="w-full h-full text-[#8B5A2B]/10 stroke-current stroke-[1.5] fill-none">
-          <rect x="20" y="20" width="60" height="60" rx="8" />
-          <line x1="30" y1="40" x2="50" y2="40" />
-          <line x1="30" y1="60" x2="70" y2="60" />
-        </svg>
-      )
+      if (data.user) {
+        // Accept terms automatically since they clicked it in login
+        await supabase.from("profiles").update({ has_accepted_terms: true }).eq("id", data.user.id);
+        window.location.href = "/dashboard";
+      }
+    } catch (err: unknown) {
+      setError(getFriendlyAuthErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleSocialLogin = async (provider: "google" | "apple" | "facebook") => {
+    setError(null);
+    try {
+      const { error: oAuthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (oAuthError) throw oAuthError;
+    } catch (err: unknown) {
+      setError(getFriendlyAuthErrorMessage(err));
+    }
+  };
 
   return (
-    <section id="services" className="py-[64px] md:py-[112px] bg-white border-b border-black/10">
-      <div className="container mx-auto max-w-6xl px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="text-center max-w-2xl mx-auto mb-[64px]"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-[16px]">
-            The Results We Deliver
+    <AuthLayout>
+      <div className="w-full min-h-screen sm:min-h-fit sm:max-w-[430px] bg-white rounded-none sm:rounded-[32px] border-0 sm:border sm:border-neutral-100 shadow-none sm:shadow-[0_15px_50px_-15px_rgba(0,0,0,0.04)] p-6 sm:p-10 flex flex-col justify-center items-stretch relative">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-[32px] font-extrabold tracking-tight text-neutral-900 leading-none mb-2">
+            Student Login
           </h2>
-          <p className="text-sm md:text-base text-black/80 leading-[1.6] font-medium">
-            Robust deliverables designed to automate workflows and securely scale digital interfaces.
+          <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
+            Hey, Enter your details to get sign in to your account
           </p>
-        </motion.div>
-
-        <div className="grid gap-[24px] md:grid-cols-3">
-          {services.map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25, delay: i * 0.1 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              className="group relative bg-white border border-black/10 rounded-[12px] p-[32px] overflow-hidden hover:border-black/20 transition-colors shadow-none flex flex-col justify-between"
-            >
-              {/* Graphical background */}
-              <div className="absolute -right-12 -bottom-12 w-48 h-48 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none transform group-hover:rotate-12 transition-transform">
-                {s.graphic}
-              </div>
-
-              <div className="relative z-10 flex-1">
-                <div className="h-10 w-10 rounded-[8px] bg-[#8B5A2B]/10 flex items-center justify-center text-[#8B5A2B] mb-[24px] group-hover:scale-105 transition-transform duration-300 font-bold">
-                  <s.icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-bold text-black mb-[12px] group-hover:text-[#8B5A2B] transition-colors leading-tight">
-                  {s.title}
-                </h3>
-                <p className="text-xs text-black/80 leading-[1.6] font-medium">
-                  {s.desc}
-                </p>
-              </div>
-
-              <div className="relative z-10 pt-[16px]">
-                <div className="w-0 h-[2px] bg-[#8B5A2B] transition-all duration-300 group-hover:w-12 rounded-full" />
-              </div>
-            </motion.div>
-          ))}
         </div>
-      </div>
-    </section>
-  );
-}
 
-function CurriculumShowcase() {
-  return (
-    <section className="py-[64px] md:py-[112px] bg-white border-b border-black/10">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="grid md:grid-cols-2 gap-[48px] items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="space-y-[24px]"
-          >
-            <div className="text-xs font-bold uppercase tracking-wider text-[#8B5A2B]">
-              Internships
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black leading-[1.2]">
-              Join our internship program
-            </h2>
-            <p className="text-xs md:text-sm text-black/80 leading-[1.6] font-medium">
-              We offer structured 8-week internship tracks designed to build production-ready developer skills in full-stack web applications and AI engineering.
-            </p>
-            <div className="pt-[8px]">
-              <Link
-                href="/careers"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8B5A2B] group py-1"
-              >
-                Apply for Internship Tracks
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.2 }}
-            className="relative bg-white border border-black/10 rounded-[12px] p-[40px] space-y-[20px] overflow-hidden group hover:border-black/20 transition-colors shadow-none"
-          >
-            {/* Architectural accent ring graphic */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#8B5A2B]/5 rounded-bl-full pointer-events-none group-hover:scale-105 transition-transform duration-500" />
-
-            <div className="border-b border-black/10 pb-[12px] flex items-center justify-between relative z-10">
-              <span className="text-xs font-bold text-black/60 flex items-center gap-1.5"><BookOpen size={14} className="text-[#8B5A2B]" /> Full-Stack Track</span>
-              <span className="text-xs font-bold text-black">Modern Foundations</span>
-            </div>
-            <div className="border-b border-black/10 pb-[12px] flex items-center justify-between relative z-10">
-              <span className="text-xs font-bold text-black/60 flex items-center gap-1.5"><Award size={14} className="text-[#8B5A2B]" /> AI Solutions Track</span>
-              <span className="text-xs font-bold text-black">Applied Automation</span>
-            </div>
-            <div className="flex items-center justify-between pt-[4px] relative z-10">
-              <span className="text-xs font-bold text-black/60 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#8B5A2B]" /> Enterprise Standing</span>
-              <span className="text-xs font-bold text-[#8B5A2B]">Govt Registered MSME</span>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ExcellenceSection() {
-  return (
-    <section className="py-[48px] md:py-[80px] bg-white border-b border-black/10">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
-          {[
-            { label: "Government Registry", value: "MSME Certified" },
-            { label: "Target Outcomes", value: "Production-Ready" },
-            { label: "Automation Layer", value: "Custom AI Agents" },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ type: "spring", stiffness: 400, damping: 25, delay: i * 0.1 }}
-              className="text-center border-r last:border-0 border-black/10 px-[16px] group"
-            >
-              <div className="text-xl md:text-2xl font-bold text-black mb-[6px] group-hover:text-[#8B5A2B] transition-colors">
-                {s.value}
-              </div>
-              <div className="text-[9px] font-bold text-black/60 uppercase tracking-wider">
-                {s.label}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function CTASection() {
-  return (
-    <section className="py-[64px] md:py-[112px] bg-white">
-      <div className="container mx-auto max-w-4xl px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="bg-white border border-black/10 rounded-[12px] p-[40px] md:p-[64px]"
-        >
-          <h2 className="text-2xl md:text-4xl font-bold text-black mb-[12px]">
-            Start your internship today
-          </h2>
-          <p className="text-xs md:text-sm text-black/80 leading-[1.6] max-w-lg mx-auto mb-[32px] font-medium">
-            Sign up for our 8-week tracks to learn practical skills, submit assignments, and earn certification.
-          </p>
-          <div className="flex flex-wrap justify-center gap-[16px]">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <Button asChild size="lg" className="bg-black text-white hover:bg-neutral-900 rounded-[8px] px-[32px] h-[44px] font-bold text-xs shadow-none border-0">
-                <Link href="/careers">Apply for Internship</Link>
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <Button asChild size="lg" variant="outline" className="border-black/15 bg-white text-black hover:bg-black/5 rounded-[8px] px-[32px] h-[44px] font-bold text-xs shadow-none">
-                <Link href="/login">Student Login</Link>
-              </Button>
-            </motion.div>
+        {/* Form */}
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          
+          {/* Email Address */}
+          <div className="relative">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] px-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Enter Email / Phone No"
+            />
+            {/* Outline Circle Icon on the right */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
           </div>
-        </motion.div>
+
+          {/* Passcode (Password) */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] pl-4 pr-12 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Passcode"
+            />
+            {/* Show/Hide Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-700 hover:text-neutral-900 select-none cursor-pointer"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          {/* Having trouble in sign in? Link */}
+          <div className="text-left mt-0.5">
+            <Link
+              href="/forgot-password"
+              className="text-[12px] font-semibold text-neutral-800 hover:underline"
+            >
+              Having trouble in sign in?
+            </Link>
+          </div>
+
+          {/* Terms checkbox */}
+          <div className="flex items-start gap-3 mt-1 p-3.5 rounded-[14px] bg-neutral-50/80 border border-neutral-100/50">
+            <input
+              id="terms"
+              type="checkbox"
+              required
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-[#FDBF84] focus:ring-0 cursor-pointer"
+            />
+            <label htmlFor="terms" className="text-xs text-neutral-500 font-semibold leading-relaxed cursor-pointer select-none">
+              I agree to the <Link href="/terms" target="_blank" className="font-bold text-neutral-800 hover:underline">Terms and Conditions</Link>.
+            </label>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 text-xs font-semibold text-neutral-800 bg-[#FDBF84]/15 border border-[#FDBF84]/35 rounded-[14px] flex items-center gap-2">
+              <ShieldCheck size={16} className="text-neutral-700 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={!agreedToTerms || loading}
+            className="w-full bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold py-3.5 px-6 rounded-[14px] transition-all shadow-[0_4px_14px_rgba(253,191,132,0.3)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center text-sm mt-2 cursor-pointer"
+          >
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin text-neutral-800" />
+            ) : (
+              "Sign in"
+            )}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <div className="flex-1 border-t border-neutral-200/60"></div>
+          <span className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">— Or Sign in with —</span>
+          <div className="flex-1 border-t border-neutral-200/60"></div>
+        </div>
+
+        {/* Social Logins */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleSocialLogin("google")}
+            className="flex-1 py-3 px-2 border border-neutral-200 hover:border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs font-bold text-neutral-800 shadow-sm"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+            </svg>
+            Google
+          </button>
+          
+          <button
+            onClick={() => handleSocialLogin("apple")}
+            className="flex-1 py-3 px-2 border border-neutral-200 hover:border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs font-bold text-neutral-800 shadow-sm"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.75.8.01 2.05-.8 3.68-.63 1.7.17 2.97.86 3.64 2.05-3.57 2.12-2.99 6.74.55 8.16-.72 1.83-1.88 3.69-2.95 4.64zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.26 2.5-2.05 4.41-3.74 4.25z"/>
+            </svg>
+            Apple ID
+          </button>
+          
+          <button
+            onClick={() => handleSocialLogin("facebook")}
+            className="flex-1 py-3 px-2 border border-neutral-200 hover:border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs font-bold text-neutral-800 shadow-sm"
+          >
+            <svg className="w-4 h-4 shrink-0 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Facebook
+          </button>
+        </div>
+
+        {/* Footer Link */}
+        <p className="text-xs text-neutral-500 font-semibold text-center mt-8 select-none">
+          Don't have an account?
+          <Link href="/signup" className="text-neutral-800 font-bold hover:underline ml-1">
+            Request Now
+          </Link>
+        </p>
+
       </div>
-    </section>
+    </AuthLayout>
   );
 }

@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import Image from "next/image";
 import Link from "next/link";
-import { User, Mail, Lock, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, Loader2 } from "lucide-react";
+import { AuthLayout } from "@/components/AuthLayout";
 import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
 
 export default function SignupPage() {
@@ -13,6 +12,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function SignupPage() {
         return;
       }
 
-      // 2. Attempt signup and check if email already exists
+      // 2. Attempt signup
       const signUpResult = await supabase.auth.signUp({
         email,
         password,
@@ -53,7 +53,6 @@ export default function SignupPage() {
       }
 
       if (data.user && data.user.identities && data.user.identities.length === 0) {
-        // Supabase returns an empty identities array for existing users to prevent email enumeration
         setError("Email already exists");
         setLoading(false);
         return;
@@ -65,7 +64,7 @@ export default function SignupPage() {
           has_accepted_terms: true,
           full_name: fullName,
           phone: phone,
-          role: 'student'
+          role: "student"
         });
         window.location.href = "/dashboard";
       } else {
@@ -79,127 +78,136 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-[32px] md:p-[64px] text-black font-sans">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-[40px]">
-          <Link href="/" className="inline-flex items-center gap-2 mb-[24px]">
-            <Image src="/img/Matrixroot_onlyimglogo-removebg-preview.png" alt="Logo" width={40} height={40} className="object-contain" />
-            <span className="font-medium text-xl tracking-tight text-black">Matrix Root</span>
-          </Link>
-          <h2 className="text-2xl md:text-3xl font-normal tracking-[-0.02em] text-black">Student Sign Up</h2>
-          <p className="text-sm text-black/80 mt-1">Create your student account to get started</p>
+    <AuthLayout>
+      <div className="w-full min-h-screen sm:min-h-fit sm:max-w-[430px] bg-white rounded-none sm:rounded-[32px] border-0 sm:border sm:border-neutral-100 shadow-none sm:shadow-[0_15px_50px_-15px_rgba(0,0,0,0.04)] p-6 sm:p-10 flex flex-col justify-center items-stretch relative">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-[32px] font-extrabold tracking-tight text-neutral-900 leading-none mb-2">
+            Student Sign Up
+          </h2>
+          <p className="text-xs text-neutral-500 font-semibold leading-relaxed">
+            Hey, Enter your details to get started with your account
+          </p>
         </div>
 
-        <div className="bg-white border border-black/10 rounded-[12px] p-[32px] shadow-none">
-          <form onSubmit={handleSignup} className="space-y-[24px]">
-            <div className="space-y-[16px]">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-black/60">Full Name</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
-                    placeholder="Jane Doe"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-black/60">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
-                    placeholder="name@institution.edu"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-black/60">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A2B] h-4 w-4" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
-                    placeholder="Minimum 6 characters"
-                    minLength={6}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-black/60">Phone Number</label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B5A2B] text-xs font-bold">+91</div>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black"
-                    placeholder="9876543210"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3 rounded-[12px] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20">
-              <input
-                id="terms"
-                type="checkbox"
-                required
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded-[4px] border-black/20 text-[#8B5A2B] focus:ring-0"
-              />
-              <label htmlFor="terms" className="text-xs text-black/80 font-normal leading-relaxed cursor-pointer">
-                I agree to the <Link href="/terms" target="_blank" className="font-medium text-[#8B5A2B] hover:underline">Terms and Conditions</Link>
-              </label>
-            </div>
-
-            {error && (
-              <div className={`p-3 text-xs font-medium rounded-[12px] flex items-center gap-2 ${error.includes('Success') ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20'}`}>
-                <ShieldCheck size={16} className="text-[#8B5A2B]" />
-                {error}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={!agreedToTerms || loading}
-              className="w-full h-11 rounded-[12px] bg-black text-white hover:bg-neutral-900 shadow-none font-medium mt-2 border-0"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-[#8B5A2B]" />
-              ) : (
-                <>Sign Up <ArrowRight className="ml-2 h-4 w-4 text-[#8B5A2B]" /></>
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-[32px] text-center border-t border-black/10 pt-[24px]">
-            <p className="text-xs text-black/60">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[#8B5A2B] font-medium hover:underline">
-                Log In
-              </Link>
-            </p>
+        {/* Form */}
+        <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          
+          {/* Full Name */}
+          <div className="relative">
+            <input
+              type="text"
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] px-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Full Name"
+            />
+            {/* Outline Circle Icon */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
           </div>
-        </div>
+
+          {/* Email Address */}
+          <div className="relative">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] px-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Email Address"
+            />
+            {/* Outline Circle Icon */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
+          </div>
+
+          {/* Password (Passcode) */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] pl-4 pr-12 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Password (Min 6 chars)"
+              minLength={6}
+            />
+            {/* Show/Hide Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-700 hover:text-neutral-900 select-none cursor-pointer"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          {/* Phone Number */}
+          <div className="relative flex items-center">
+            {/* Prefix indicator styled nicely inside input */}
+            <div className="absolute left-4 text-xs font-bold text-neutral-700 select-none">
+              +91
+            </div>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] pl-12 pr-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
+              placeholder="Phone Number (10 digits)"
+              pattern="[0-9]{10}"
+            />
+            {/* Outline Circle Icon */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
+          </div>
+
+          {/* Terms checkbox */}
+          <div className="flex items-start gap-3 mt-1 p-3.5 rounded-[14px] bg-neutral-50/80 border border-neutral-100/50">
+            <input
+              id="terms"
+              type="checkbox"
+              required
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-[#FDBF84] focus:ring-0 cursor-pointer"
+            />
+            <label htmlFor="terms" className="text-xs text-neutral-500 font-semibold leading-relaxed cursor-pointer select-none">
+              I agree to the <Link href="/terms" target="_blank" className="font-bold text-neutral-800 hover:underline">Terms and Conditions</Link>.
+            </label>
+          </div>
+
+          {/* Error / Success Message */}
+          {error && (
+            <div className={`p-3 text-xs font-semibold rounded-[14px] flex items-center gap-2 ${error.includes('Success') ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : 'text-neutral-800 bg-[#FDBF84]/15 border border-[#FDBF84]/35'}`}>
+              <ShieldCheck size={16} className={`shrink-0 ${error.includes('Success') ? 'text-emerald-600' : 'text-neutral-700'}`} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Sign Up Button */}
+          <button
+            type="submit"
+            disabled={!agreedToTerms || loading}
+            className="w-full bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold py-3.5 px-6 rounded-[14px] transition-all shadow-[0_4px_14px_rgba(253,191,132,0.3)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center text-sm mt-2 cursor-pointer"
+          >
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin text-neutral-800" />
+            ) : (
+              "Sign up"
+            )}
+          </button>
+        </form>
+
+        {/* Footer Link */}
+        <p className="text-xs text-neutral-500 font-semibold text-center mt-8 select-none">
+          Already have an account?
+          <Link href="/" className="text-neutral-800 font-bold hover:underline ml-1">
+            Log In
+          </Link>
+        </p>
+
       </div>
-    </div>
+    </AuthLayout>
   );
 }
