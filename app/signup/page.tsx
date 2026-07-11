@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
+import Image from "next/image";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
 import { getFriendlyAuthErrorMessage } from "@/lib/authErrors";
@@ -82,7 +83,22 @@ export default function SignupPage() {
       <div className="w-full min-h-screen sm:min-h-fit sm:max-w-[430px] bg-white rounded-none sm:rounded-[32px] border-0 sm:border sm:border-neutral-100 shadow-none sm:shadow-[0_15px_50px_-15px_rgba(0,0,0,0.04)] p-6 sm:p-10 flex flex-col justify-center items-stretch relative">
         
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="flex flex-col items-center text-center mb-8">
+          {/* Logo & Brand Name */}
+          <div className="flex items-center gap-2 mb-6 select-none">
+            <Image
+              src="/img/Matrixroot_onlyimglogo-removebg-preview.png"
+              alt="Matrix Root Logo"
+              width={42}
+              height={42}
+              className="object-contain animate-fade-in"
+              priority
+            />
+            <span className="font-extrabold text-xl tracking-tight text-neutral-900">
+              Matrix Root
+            </span>
+          </div>
+
           <h2 className="text-[32px] font-extrabold tracking-tight text-neutral-900 leading-none mb-2">
             Student Sign Up
           </h2>
@@ -104,8 +120,6 @@ export default function SignupPage() {
               className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] px-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
               placeholder="Full Name"
             />
-            {/* Outline Circle Icon */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
           </div>
 
           {/* Email Address */}
@@ -118,8 +132,6 @@ export default function SignupPage() {
               className="w-full bg-white border border-neutral-200 focus:border-neutral-400 focus:outline-none rounded-[14px] px-4 py-3.5 text-sm text-neutral-800 placeholder-neutral-400 font-semibold transition-all"
               placeholder="Email Address"
             />
-            {/* Outline Circle Icon */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
           </div>
 
           {/* Password (Passcode) */}
@@ -158,8 +170,6 @@ export default function SignupPage() {
               placeholder="Phone Number (10 digits)"
               pattern="[0-9]{10}"
             />
-            {/* Outline Circle Icon */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-neutral-300"></div>
           </div>
 
           {/* Terms checkbox */}

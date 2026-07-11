@@ -15,7 +15,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           {/* ================= LEFT SIDE DIAGRAMS ================= */}
 
           {/* 1. Open Book (Study / Education) */}
-          <div className="absolute left-[3%] top-[8%] rotate-[-6deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute left-[3%] top-[8%] rotate-[-6deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="100" height="70" viewBox="0 0 100 70" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10 20C10 20 25 15 50 25C75 15 90 20 90 20V55C90 55 75 50 50 60C25 50 10 55 10 55V20Z" fill="white" stroke="#1A1A1A" strokeWidth="2.5" strokeLinejoin="round" />
               <path d="M50 25V60" stroke="#1A1A1A" strokeWidth="2.5" />
@@ -25,7 +25,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 2. Big Cartesian Geometry Graph (Math/Physics) */}
-          <div className="absolute left-[8%] top-[20%] rotate-[3deg] hover:scale-102 transition-transform duration-300 pointer-events-auto cursor-default opacity-85">
+          <div className="absolute left-[8%] top-[20%] rotate-[3deg] hover:scale-102 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="220" height="200" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M20 180H200" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
               <path d="M20 180V10" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
@@ -43,7 +43,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 3. Big Mechanical Gear Assembly (Mechanical Engineering) */}
-          <div className="absolute left-[2%] top-[45%] rotate-[-4deg] hover:scale-102 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute left-[2%] top-[45%] rotate-[-4deg] hover:scale-102 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="240" height="200" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g transform="translate(70, 110)">
                 <circle cx="0" cy="0" r="50" fill="white" stroke="#1A1A1A" strokeWidth="3" />
@@ -62,7 +62,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 4. Electrical Circuit Schematic (Electrical Engineering) */}
-          <div className="absolute left-[8%] top-[72%] rotate-[6deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default opacity-85">
+          <div className="absolute left-[8%] top-[72%] rotate-[6deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="130" height="70" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10 30H30L35 15L43 45L51 15L59 45L67 15L75 45L80 30H110" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="20" cy="30" r="4.5" fill="#FDBF84" stroke="#1A1A1A" strokeWidth="1.5" />
@@ -72,7 +72,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 5. Drafting Compass (Mechanical / Math) */}
-          <div className="absolute left-[3%] top-[84%] rotate-[-12deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute left-[3%] top-[84%] rotate-[-12deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M50 10L30 85" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
               <path d="M50 10L70 85" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
@@ -86,7 +86,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           {/* ================= RIGHT SIDE DIAGRAMS ================= */}
 
           {/* 1. Graduation Cap (Study / Edtech) */}
-          <div className="absolute right-[3%] top-[8%] rotate-[8deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute right-[3%] top-[8%] rotate-[8deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="100" height="70" viewBox="0 0 100 70" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M50 10L90 28L50 46L10 28L50 10Z" fill="white" stroke="#1A1A1A" strokeWidth="2.5" strokeLinejoin="round" />
               <path d="M26 36V48C26 54 36 58 50 58C64 58 74 54 74 48V36" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
@@ -95,7 +95,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 2. Big Logic Gates & Op-Amp Circuit (Electrical / Programming) */}
-          <div className="absolute right-[8%] top-[20%] rotate-[-2deg] hover:scale-102 transition-transform duration-300 pointer-events-auto cursor-default opacity-85">
+          <div className="absolute right-[8%] top-[20%] rotate-[-2deg] hover:scale-102 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="250" height="180" viewBox="0 0 250 180" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Logic gate - AND */}
               <path d="M30 40H60C75 40 85 50 85 65C85 80 75 90 60 90H30V40Z" fill="white" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round" />
@@ -114,7 +114,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 3. Big Bohr Atom & energy transition (Physics / Chemistry) */}
-          <div className="absolute right-[2%] top-[45%] rotate-[5deg] hover:scale-102 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute right-[2%] top-[45%] rotate-[5deg] hover:scale-102 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="240" height="220" viewBox="0 0 240 220" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="120" cy="110" r="90" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="4 4" />
               <circle cx="120" cy="110" r="60" stroke="#1A1A1A" strokeWidth="2" strokeDasharray="3 3" />
@@ -133,7 +133,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 4. Code Monitor (Programming / Development) */}
-          <div className="absolute right-[8%] top-[72%] rotate-[-4deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default opacity-85">
+          <div className="absolute right-[8%] top-[72%] rotate-[-4deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="105" height="85" viewBox="0 0 110 90" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="5" y="5" width="100" height="65" rx="8" fill="white" stroke="#1A1A1A" strokeWidth="2.5" />
               <path d="M35 70L25 82H85L75 70" fill="none" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -144,7 +144,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 5. Idea Light Bulb (Innovation / Study) */}
-          <div className="absolute right-[3%] top-[84%] rotate-[6deg] hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default">
+          <div className="absolute right-[3%] top-[84%] rotate-[6deg] hover:scale-105 hover:opacity-60 transition-all duration-300 pointer-events-auto cursor-default opacity-20">
             <svg width="80" height="90" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M40 10C23 10 15 22 15 38C15 48 23 54 28 60V72H52V60C57 54 65 48 65 38C65 22 57 10 40 10Z" fill="white" stroke="#1A1A1A" strokeWidth="2.5" strokeLinejoin="round" />
               <path d="M32 78H48M35 84H45" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
@@ -157,7 +157,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           {/* ================= OVERLAPPING BACKGROUND DIAGRAMS (Go under/around widget) ================= */}
 
           {/* 1. Programming Flowchart / Binary Tree (behind/left of card) */}
-          <div className="absolute left-[31%] top-[12%] rotate-[10deg] opacity-25 z-0">
+          <div className="absolute left-[31%] top-[12%] rotate-[10deg] opacity-[0.08] z-0">
             <svg width="220" height="180" viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="120" y="10" width="60" height="30" rx="8" fill="white" stroke="#1A1A1A" strokeWidth="2.5" />
               <text x="132" y="28" fill="#1A1A1A" fontSize="11" fontFamily="monospace" fontWeight="bold">Node</text>
@@ -175,7 +175,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 2. Chemistry Benzene Ring & organic compounds (behind/right of card) */}
-          <div className="absolute right-[31%] top-[12%] rotate-[-8deg] opacity-25 z-0">
+          <div className="absolute right-[31%] top-[12%] rotate-[-8deg] opacity-[0.08] z-0">
             <svg width="180" height="180" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M60 10L100 33V79L60 102L20 79V33L60 10Z" fill="white" stroke="#1A1A1A" strokeWidth="2.5" strokeLinejoin="round" />
               <path d="M60 20L92 38V74L60 92L28 74V38L60 20Z" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="3 3" />
@@ -185,7 +185,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 3. Calculus Integration and area limit diagram (behind/bottom-left of card) */}
-          <div className="absolute left-[33%] bottom-[12%] rotate-[-6deg] opacity-25 z-0">
+          <div className="absolute left-[33%] bottom-[12%] rotate-[-6deg] opacity-[0.08] z-0">
             <svg width="200" height="150" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M20 100H140M20 10V100" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
               <path d="M30 80C50 40 90 30 130 50" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
@@ -198,7 +198,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* 4. Electrical power equation & electromagnetic vectors (behind/bottom-right of card) */}
-          <div className="absolute right-[33%] bottom-[12%] rotate-[6deg] opacity-25 z-0">
+          <div className="absolute right-[33%] bottom-[12%] rotate-[6deg] opacity-[0.08] z-0">
             <svg width="200" height="150" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M10 90L90 10M90 10L170 90M90 10V110" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
               <path d="M40 60C60 45 120 45 140 60" stroke="#FDBF84" strokeWidth="2" strokeLinecap="round" />
