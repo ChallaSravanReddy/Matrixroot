@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useSidebarContext } from "@/components/SidebarContext";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
@@ -28,7 +29,7 @@ export default function SupportPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { setIsSidebarOpen } = useSidebarContext();
   const [sessionUser, setSessionUser] = useState<any>(null);
 
   // Time calculations for the Live Session (6 PM - 8 PM IST, Link reveal at 5:50 PM IST)
@@ -140,97 +141,14 @@ export default function SupportPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#FAF6F0] items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#FDBF84] border-t-[#8B5A2B] rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
-      {/* Sidebar - Restore Original Navigation layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-black/10">
-          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-            <GraduationCap size={20} className="text-[#8B5A2B]" />
-          </div>
-          <span className="font-bold text-base text-black">Matrix Root Studio</span>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
-          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
-          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" active />
-          
-          <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
-            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-black/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
-            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
-              {profile?.full_name?.charAt(0) || "S"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-      
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <motion.aside 
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 flex items-center justify-between border-b border-black/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-                  <GraduationCap size={20} className="text-[#8B5A2B]" />
-                </div>
-                <span className="font-bold text-base text-black">Matrix Root</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
-                <X size={20} className="text-[#8B5A2B]" />
-              </button>
-            </div>
-            
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
-              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/internships'); }} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/performance'); }} />
-              <SidebarItem icon={<Sparkles size={18} />} label="Live Support" active />
-              <div className="pt-6">
-                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => { setIsSidebarOpen(false); router.push('/profile'); }} />
-                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-              </div>
-            </nav>
-          </motion.aside>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#FAF6F0]">
         {/* Header Navigation */}
         <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
@@ -249,7 +167,7 @@ export default function SupportPage() {
             <h2 className="text-xs font-bold text-black">Live Doubt Resolution Studio</h2>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs font-bold bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-3.5 py-1.5 rounded-[8px] text-[#8B5A2B]">
+            <div className="flex items-center gap-2 text-xs font-bold bg-[#FDBF84]/25 border border-[#FDBF84]/40 px-3.5 py-1.5 rounded-[8px] text-[#8B5A2B]">
               <span className="relative flex h-2 w-2">
                 {timeState.isLive && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -262,7 +180,7 @@ export default function SupportPage() {
         </header>
 
         {/* Content Scroll View */}
-        <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] space-y-[32px] pb-24 max-w-5xl mx-auto w-full bg-white">
+        <div className="flex-1 overflow-y-auto p-[24px] md:p-[48px] space-y-[32px] pb-24 max-w-5xl mx-auto w-full bg-[#FAF6F0]">
           
           {/* Main Status Callout */}
           <div className="bg-white border border-black/10 rounded-[16px] p-[24px] md:p-[40px] space-y-[24px] relative overflow-hidden shadow-none">
@@ -271,7 +189,7 @@ export default function SupportPage() {
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-[16px] border-b border-black/10 pb-[20px]">
               <div className="space-y-[6px]">
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 px-2.5 py-1 rounded-[4px] border border-[#8B5A2B]/20">
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#FDBF84]/25 px-2.5 py-1 rounded-[4px] border border-[#FDBF84]/40">
                   <Sparkles size={11} className="text-[#8B5A2B]" /> Interactive Doubt Clearing
                 </div>
                 <h1 className="text-xl md:text-2xl font-bold text-black">Live Video Support Portal</h1>
@@ -328,9 +246,9 @@ export default function SupportPage() {
                           The live classroom room is open. Click the join link below.
                         </p>
                       </div>
-                      <Button asChild className="w-full bg-black hover:bg-neutral-900 text-white font-bold text-xs h-10 rounded-[8px] shadow-none flex items-center justify-center gap-1.5 mt-4 transition-colors">
+                      <Button asChild className="w-full bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold text-xs h-10 rounded-[8px] shadow-none flex items-center justify-center gap-1.5 mt-4 transition-colors cursor-pointer border border-[#FDBF84]/25">
                         <a href="https://meet.google.com/lookup/matrixroot-support" target="_blank" rel="noopener noreferrer">
-                          Join Live Meet Section <ExternalLink size={14} className="text-[#8B5A2B]" />
+                          Join Live Meet Section <ExternalLink size={14} className="text-neutral-900" />
                         </a>
                       </Button>
                     </>
@@ -410,29 +328,11 @@ export default function SupportPage() {
           </div>
 
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
-        active 
-        ? "bg-black text-white" 
-        : "text-black/70 hover:bg-black/5 hover:text-black"
-      }`}
-    >
-      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
-      <span className="truncate">{label}</span>
-    </motion.button>
-  );
-}
+
 
 function FaqItem({ question, answer }: { question: string, answer: string }) {
   return (

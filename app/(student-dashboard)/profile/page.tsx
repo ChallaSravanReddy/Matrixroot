@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { 
+  Menu,
   User, 
   Mail, 
   Code, 
@@ -19,8 +20,10 @@ import {
   Layers,
   Sparkles
 } from "lucide-react";
+import { useSidebarContext } from "@/components/SidebarContext";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const DEPARTMENTS = [
   { id: "cse", name: "Computer Science & Allied Branches", icon: "🖥️" },
@@ -30,6 +33,9 @@ const DEPARTMENTS = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+  const { setIsSidebarOpen } = useSidebarContext();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -54,9 +60,10 @@ export default function ProfilePage() {
         }
         setUserId(session.user.id);
 
-        const profileRes = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+        const profileRes = await supabase.from("profiles").select("*, departments(name)").eq("id", session.user.id).single();
 
         if (profileRes.data) {
+          setProfile(profileRes.data);
           setFormData({
             full_name: profileRes.data.full_name || "",
             email: session.user.email || "",
@@ -108,46 +115,21 @@ export default function ProfilePage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF6F0] flex items-center justify-center">
         <Loader2 className="animate-spin text-[#8B5A2B]" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
-      {/* Sidebar - Restore Original Navigation layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-black/10">
-          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-            <GraduationCap size={20} className="text-[#8B5A2B]" />
-          </div>
-          <span className="font-bold text-base text-black">Matrix Root Studio</span>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => window.location.href = '/dashboard'} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => window.location.href = '/dashboard/courses'} />
-          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => window.location.href = '/workspace'} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => window.location.href = '/dashboard/internships'} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => window.location.href = '/dashboard/performance'} />
-          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => window.location.href = '/dashboard/support'} />
-          
-          <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
-            <SidebarItem icon={<User size={18} />} label="Profile Setup" active />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-          </div>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#FAF6F0]">
         <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-black hover:bg-black/5 rounded-[8px]">
+              <Menu size={20} className="text-[#8B5A2B]" />
+            </button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <Button variant="outline" size="icon" onClick={() => window.location.href = '/dashboard'} className="rounded-[12px] h-8 w-8 border-black/10 shadow-none">
+              <Button variant="outline" size="icon" onClick={() => router.push('/dashboard')} className="rounded-[12px] h-8 w-8 border-black/10 shadow-none">
                 <ArrowLeft size={16} className="text-[#8B5A2B]" />
               </Button>
             </motion.div>
@@ -155,7 +137,7 @@ export default function ProfilePage() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] pb-20 bg-white">
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[64px] pb-20 bg-[#FAF6F0]">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -171,7 +153,7 @@ export default function ProfilePage() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-[32px] p-[16px] bg-[#8B5A2B]/10 text-[#8B5A2B] border border-[#8B5A2B]/20 rounded-[12px] flex items-center gap-3 text-xs font-medium"
+                className="mb-[32px] p-[16px] bg-[#FDBF84]/25 text-[#8B5A2B] border border-[#FDBF84]/40 rounded-[12px] flex items-center gap-3 text-xs font-medium"
               >
                 <ShieldCheck size={16} className="text-[#8B5A2B]" />
                 {successMsg}
@@ -182,7 +164,7 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <div className="bg-white border border-black/10 rounded-[12px] p-[32px] md:p-[48px] space-y-[32px] shadow-none">
                 <div className="flex items-center gap-[24px]">
-                   <div className="w-14 h-14 rounded-[12px] bg-black/5 border border-black/10 flex items-center justify-center text-[#8B5A2B] text-lg font-medium shrink-0">
+                   <div className="w-14 h-14 rounded-[12px] bg-[#FDBF84]/20 border border-[#FDBF84]/35 flex items-center justify-center text-[#8B5A2B] text-lg font-medium shrink-0">
                       {formData.full_name?.charAt(0) || "M"}
                    </div>
                    <div>
@@ -283,35 +265,17 @@ export default function ProfilePage() {
                   <Button 
                     type="submit" 
                     disabled={loading} 
-                    className="w-full h-10 rounded-[12px] bg-black text-white hover:bg-neutral-900 shadow-none font-medium text-xs"
+                    className="w-full h-10 rounded-[12px] bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] border border-[#FDBF84]/25 shadow-none font-extrabold text-xs cursor-pointer"
                   >
-                    {loading ? <Loader2 className="animate-spin h-4 w-4 text-white" /> : <><Save size={14} className="mr-2 text-[#8B5A2B]" /> Save Profile Changes</>}
+                    {loading ? <Loader2 className="animate-spin h-4 w-4 text-neutral-900" /> : <><Save size={14} className="mr-2 text-neutral-900" /> Save Profile Changes</>}
                   </Button>
                 </motion.div>
               </div>
             </form>
           </motion.div>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors text-left ${
-        active 
-        ? "bg-black text-white" 
-        : "text-black/70 hover:bg-black/5 hover:text-black"
-      }`}
-    >
-      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
-      <span className="truncate">{label}</span>
-    </motion.button>
-  );
-}
+

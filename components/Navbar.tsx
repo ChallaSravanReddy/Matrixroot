@@ -16,7 +16,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white/80 backdrop-blur-[10px] transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-[#FAF6F0]/80 backdrop-blur-[10px] transition-all">
       {/* 3-column grid: logo (left) | nav links (center) | login (right) */}
       <div className="container mx-auto max-w-7xl px-4 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
@@ -50,10 +50,10 @@ export function Navbar() {
                 {link.label}
                 {/* Underline expanding from center on hover / active */}
                 <span
-                  className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300 ${
+                  className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 h-[3px] rounded-full transition-all duration-300 ${
                     isActive
-                      ? "w-[calc(100%-20px)] bg-[#8B5A2B]"
-                      : "w-0 bg-[#8B5A2B] group-hover:w-[calc(100%-20px)]"
+                      ? "w-[calc(100%-20px)] bg-[#FDBF84]"
+                      : "w-0 bg-[#FDBF84] group-hover:w-[calc(100%-20px)]"
                   }`}
                 />
               </Link>
@@ -71,7 +71,7 @@ export function Navbar() {
           className="relative text-xs font-bold tracking-tight text-black group py-1 px-2 hidden sm:block whitespace-nowrap"
         >
           Student Login
-          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#8B5A2B] transition-all duration-300 group-hover:w-full rounded-full" />
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[3px] bg-[#FDBF84] transition-all duration-300 group-hover:w-full rounded-full" />
         </Link>
 
         {/* Mobile: outlined button */}

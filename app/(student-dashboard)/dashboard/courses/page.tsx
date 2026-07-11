@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 import OfferLetterPDF from "@/components/OfferLetterPDF";
+import { useSidebarContext } from "@/components/SidebarContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -69,7 +70,7 @@ export default function CoursesPage() {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { setIsSidebarOpen } = useSidebarContext();
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,8 +142,8 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#FAF6F0] items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#FDBF84] border-t-[#8B5A2B] rounded-full"></div>
       </div>
     );
   }
@@ -172,91 +173,7 @@ export default function CoursesPage() {
   );
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
-      
-      {/* Sidebar - Restore Original Navigation layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-black/10">
-          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-            <GraduationCap size={20} className="text-[#8B5A2B]" />
-          </div>
-          <span className="font-bold text-base text-black">Matrix Root Studio</span>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
-          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
-          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
-          
-          <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
-            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-black/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
-            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
-              {profile?.full_name?.charAt(0) || "S"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <motion.aside 
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 flex items-center justify-between border-b border-black/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-                  <GraduationCap size={20} className="text-[#8B5A2B]" />
-                </div>
-                <span className="font-bold text-base text-black">Matrix Root</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
-                <X size={20} className="text-[#8B5A2B]" />
-              </button>
-            </div>
-            
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Courses" active />
-              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/internships'); }} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/performance'); }} />
-              <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
-              <div className="pt-6">
-                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => { setIsSidebarOpen(false); router.push('/profile'); }} />
-                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-              </div>
-            </nav>
-          </motion.aside>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#FAF6F0]">
         {/* Header Navigation */}
         <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
@@ -266,19 +183,16 @@ export default function CoursesPage() {
             >
               <Menu size={20} className="text-[#8B5A2B]" />
             </button>
-            <span className="text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 px-2.5 py-1 rounded-[6px] border border-[#8B5A2B]/10">
-              Student Mode
-            </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 px-2 py-0.5 rounded-[6px]">
+            <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#FDBF84]/20 border border-[#FDBF84]/30 px-2 py-0.5 rounded-[6px]">
               {profile?.departments?.name || "Active Program"}
             </span>
           </div>
         </header>
 
         {/* Content View */}
-        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24 bg-white">
+        <div className="flex-1 overflow-y-auto p-[32px] md:p-[48px] space-y-[40px] pb-24 bg-[#FAF6F0]">
           
           {/* Centered live search bar & header */}
           <div className="flex flex-col items-center text-center space-y-6 max-w-2xl mx-auto">
@@ -297,7 +211,7 @@ export default function CoursesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search courses by title..."
-                className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black placeholder-black/40 shadow-xs"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-black/10 rounded-[12px] focus:outline-none focus:border-black transition-all text-sm text-black placeholder-black/40 shadow-xs"
               />
               {searchQuery && (
                 <button 
@@ -382,42 +296,14 @@ export default function CoursesPage() {
             </motion.div>
           </section>
         </div>
-      </main>
-
-      {showProfileModal && (
-        <ProfileCompletionModal
-          userId={sessionUser?.id}
-          initialData={profile}
-          onComplete={() => {
-            setShowProfileModal(false);
-            window.location.reload();
-          }}
-        />
-      )}
-    </div>
+    </main>
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
-        active 
-        ? "bg-black text-white" 
-        : "text-black/70 hover:bg-black/5 hover:text-black"
-      }`}
-    >
-      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
-      <span className="truncate">{label}</span>
-    </motion.button>
-  );
-}
+
 
 function CourseCard({ course, enrolled, progress, lessons, profile, departmentsList, sessionUser }: any) {
+  const router = useRouter();
   const isEnrolled = enrolled?.payment_status === 'completed' || enrolled?.payment_status === 'success';
   const totalLessons = Math.max(1, lessons.length);
   const progressPercent = Math.round((progress.length / totalLessons) * 100);
@@ -448,7 +334,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, departmentsL
               const badgeStyle = isUserDept 
                 ? (isItDept 
                     ? "bg-[#8B5A2B] text-white border-[#8B5A2B]" // IT brown highlight
-                    : "bg-black text-white border-black"          // User's department (e.g. CSE)
+                    : "bg-[#FDBF84] text-neutral-900 border-[#FDBF84]/60" // User's department peach highlight
                   )
                 : "bg-black/5 text-black/60 border-black/10";
               return (
@@ -460,7 +346,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, departmentsL
           </div>
 
           {course.dept_ids && course.dept_ids.length > 1 && courseDepts.some((d: any) => d.slug === profile?.department_slug) && (
-            <span className="text-[9px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px] uppercase tracking-wider flex items-center gap-1">
+            <span className="text-[9px] font-bold text-[#8B5A2B] bg-[#FDBF84]/20 border border-[#FDBF84]/40 px-2 py-0.5 rounded-[4px] uppercase tracking-wider flex items-center gap-1">
               <ShieldCheck size={10} className="text-[#8B5A2B]" /> This course belongs to your department
             </span>
           )}
@@ -480,7 +366,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, departmentsL
               <span className="text-[#8B5A2B]">{progressPercent}%</span>
             </div>
             <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
-              <div className="h-full bg-black" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full bg-[#8B5A2B]" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         ) : (
@@ -492,11 +378,11 @@ function CourseCard({ course, enrolled, progress, lessons, profile, departmentsL
         <div className="space-y-[12px] mt-auto">
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
             <Button 
-              className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
-              onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
+              className="w-full rounded-[8px] h-9 font-extrabold bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] shadow-none text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-[#FDBF84]/25" 
+              onClick={() => router.push(`/dashboard/courses/${course.id}`)}
             >
               {isEnrolled ? (
-                <>Resume Learning <ArrowRight size={12} className="text-[#8B5A2B]" /></>
+                <>Resume Learning <ArrowRight size={12} className="text-neutral-900" /></>
               ) : (
                 <>Enroll in Course</>
               )}

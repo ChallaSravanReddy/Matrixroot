@@ -38,7 +38,7 @@ export function EnrollmentModal({
 
         <div className="space-y-4 my-4 font-sans">
           <div className="text-sm font-semibold text-black/80">Terms of Enrollment</div>
-          <ScrollArea className="h-72 border border-black/10 bg-neutral-50 p-4 text-xs leading-relaxed text-black/70 rounded-[8px]">
+          <ScrollArea className="h-72 border border-black/10 bg-[#FAF6F0] p-4 text-xs leading-relaxed text-black/70 rounded-[8px]">
             <div className="space-y-4">
               <p>
                 → By enrolling you agree to complete the training modules, pass the assigned tasks, and uphold Matrix Root's code of conduct.
@@ -85,16 +85,16 @@ export function EnrollmentModal({
           </Button>
           <Button
             onClick={onPay}
-            className="flex-1 bg-black text-white hover:bg-neutral-900 font-bold gap-2 shadow-none border-0"
+            className="flex-1 bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] border border-[#FDBF84]/25 font-extrabold gap-2 shadow-none cursor-pointer"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-[#8B5A2B]" />
+                <Loader2 className="h-4 w-4 animate-spin text-neutral-900" />
                 Requesting Enrollment...
               </>
             ) : (
               <>
-                <ShieldCheck className="h-4 w-4 text-[#8B5A2B]" />
+                <ShieldCheck className="h-4 w-4 text-neutral-900" />
                 Proceed to Payment Form
               </>
             )}

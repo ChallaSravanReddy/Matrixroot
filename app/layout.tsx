@@ -34,7 +34,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://api.razorpay.com" />
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-white text-black" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans bg-[#FAF6F0] text-[#1A1A1A]" suppressHydrationWarning>
         <NotificationProvider>
           <AuthGuard />
           {children}

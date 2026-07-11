@@ -13,7 +13,7 @@ export function Footer() {
   }, []);
 
   return (
-    <footer className="border-t border-black/10 bg-white py-[64px] mt-[64px]">
+    <footer className="border-t border-black/10 bg-[#FAF6F0] py-[64px] mt-[64px]">
       <div className="container mx-auto max-w-7xl px-4">
         <div className="grid gap-16 md:grid-cols-4">
           <div className="md:col-span-2 space-y-6">
@@ -24,7 +24,7 @@ export function Footer() {
             <p className="max-w-md text-black/80 font-medium leading-relaxed text-xs">
               Web development, custom AI automation, and software solutions.
             </p>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 text-xs font-bold text-[#8B5A2B]">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FDBF84]/20 border border-[#FDBF84]/40 text-xs font-bold text-[#8B5A2B]">
               <ShieldCheck className="h-4 w-4 shrink-0" />
               <span>A Government Registered MSME Enterprise (UDYAM-TS-31-0053124)</span>
             </div>

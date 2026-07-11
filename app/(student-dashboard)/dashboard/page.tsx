@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import CertificatePDF from "@/components/CertificatePDF";
 import OfferLetterPDF from "@/components/OfferLetterPDF";
+import { useSidebarContext } from "@/components/SidebarContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -73,7 +74,7 @@ export default function DashboardPage() {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [courseLessons, setCourseLessons] = useState<any[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { setIsSidebarOpen } = useSidebarContext();
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [weeklyUpdates, setWeeklyUpdates] = useState<any[]>([]);
@@ -145,8 +146,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#FAF6F0] items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#FDBF84] border-t-[#8B5A2B] rounded-full"></div>
       </div>
     );
   }
@@ -156,90 +157,7 @@ export default function DashboardPage() {
   const recommendedCourses = allCourses.filter(course => course.departments?.slug === departmentSlug);
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
-      {/* Sidebar - Restore Original Navigation layout */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-black/10">
-          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-            <GraduationCap size={20} className="text-[#8B5A2B]" />
-          </div>
-          <span className="font-bold text-base text-black">Matrix Root</span>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">My Learning</p>
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
-          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
-          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
-          
-          <div className="pt-6">
-            <p className="px-3 text-[10px] font-bold text-black/40 uppercase tracking-wider mb-2">Account Management</p>
-            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-black/10">
-          <div className="flex items-center gap-3 p-2 rounded-[12px] bg-neutral-50 border border-black/10">
-            <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-black font-bold text-xs">
-              {profile?.full_name?.charAt(0) || "S"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-black truncate">{profile?.full_name || "Student Account"}</p>
-              <p className="text-[10px] text-black/60 truncate font-medium">{profile?.departments?.name || "Active Program"}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
-      
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <motion.aside 
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 flex items-center justify-between border-b border-black/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-                  <GraduationCap size={20} className="text-[#8B5A2B]" />
-                </div>
-                <span className="font-bold text-base text-black">Matrix Root</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
-                <X size={20} className="text-[#8B5A2B]" />
-              </button>
-            </div>
-            
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" active />
-              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
-              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" onClick={() => router.push('/dashboard/performance')} />
-              <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
-              <div className="pt-6">
-                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-              </div>
-            </nav>
-          </motion.aside>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#FAF6F0]">
         {/* Header Navigation */}
         <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 shadow-none">
           <div className="flex items-center gap-3">
@@ -249,12 +167,23 @@ export default function DashboardPage() {
             >
               <Menu size={20} className="text-[#8B5A2B]" />
             </button>
-            <span className="text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/5 px-2.5 py-1 rounded-[6px] border border-[#8B5A2B]/10">
-              Student Mode
-            </span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/support" className="flex items-center gap-1.5 text-xs font-semibold text-[#8B5A2B] bg-[#8B5A2B]/5 px-3 py-1.5 rounded-[8px] border border-[#8B5A2B]/10 hover:bg-[#8B5A2B]/10 transition-colors">
+            <div className="hidden md:flex items-center gap-2 bg-[#FAF6F0] border border-black/10 px-3 py-1.5 rounded-[8px]">
+              <CheckCircle2 size={13} className="text-[#8B5A2B]" />
+              <span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Sessions:</span>
+              <span className="text-xs font-bold text-black">
+                {userProgress.length} / {courseLessons.length}
+              </span>
+            </div>
+            <div className="hidden md:flex items-center gap-2 bg-[#FAF6F0] border border-black/10 px-3 py-1.5 rounded-[8px]">
+              <Award size={13} className="text-[#8B5A2B]" />
+              <span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Certificates:</span>
+              <span className="text-xs font-bold text-black">
+                {enrollments.filter(e => e.certification_status === 'approved').length}
+              </span>
+            </div>
+            <Link href="/dashboard/support" className="flex items-center gap-1.5 text-xs font-bold text-[#8B5A2B] bg-[#FDBF84]/20 px-3 py-1.5 rounded-[8px] border border-[#FDBF84]/40 hover:bg-[#FDBF84]/35 transition-colors">
               <Sparkles size={12} className="text-[#8B5A2B]" /> Live Support
             </Link>
           </div>
@@ -271,7 +200,7 @@ export default function DashboardPage() {
           >
             <div className="space-y-[8px]">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 px-2 py-0.5 rounded-[4px]">
+                <span className="text-[10px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#FDBF84]/25 px-2 py-0.5 rounded-[4px]">
                   Current Academic Term
                 </span>
               </div>
@@ -283,42 +212,12 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="shrink-0 flex items-center gap-2">
-              <Button asChild className="rounded-[8px] bg-black text-white hover:bg-neutral-900 font-bold text-xs h-10 px-4 shadow-none border border-black/10">
+              <Button asChild className="rounded-[8px] bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] font-bold text-xs h-10 px-4 shadow-none border border-[#FDBF84]/20 cursor-pointer">
                 <Link href="/dashboard/internships">
-                  View My Classes <ArrowRight size={14} className="ml-1.5 text-[#8B5A2B]" />
+                  View My Classes <ArrowRight size={14} className="ml-1.5 text-neutral-900" />
                 </Link>
               </Button>
             </div>
-          </motion.div>
-
-          {/* Stats Grid */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]"
-          >
-            <StatCard 
-              label="Completed Sessions" 
-              value={`${userProgress.length} / ${courseLessons.length}`} 
-              icon={<CheckCircle2 className="text-[#8B5A2B]" size={18} />} 
-              progress={Math.round((userProgress.length / Math.max(1, courseLessons.length)) * 100)}
-            />
-            <StatCard 
-              label="Certificates Earned" 
-              value={enrollments.filter(e => e.certification_status === 'approved').length.toString()} 
-              icon={<Award className="text-[#8B5A2B]" size={18} />} 
-            />
-            <StatCard 
-              label="Core Department" 
-              value={profile?.departments?.name || "General Study"} 
-              icon={<Layers className="text-[#8B5A2B]" size={18} />} 
-            />
-            <StatCard 
-              label="Current Standing" 
-              value="Student" 
-              icon={<BadgeCheck className="text-[#8B5A2B]" size={18} />} 
-            />
           </motion.div>
 
           {/* Internship Progress Widget */}
@@ -376,7 +275,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/10 pb-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-black/5 rounded-[6px] text-[#8B5A2B]">
+                      <div className="p-1.5 bg-[#FDBF84]/20 border border-[#FDBF84]/30 rounded-[6px] text-[#8B5A2B]">
                         <Layers size={18} className="text-[#8B5A2B]" />
                       </div>
                       <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Workspace Alignment</span>
@@ -385,7 +284,7 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="flex items-center">
-                    <span className="text-[10px] font-extrabold text-[#8B5A2B] uppercase bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-3 py-1 rounded-full tracking-wider">
+                    <span className="text-[10px] font-extrabold text-[#8B5A2B] uppercase bg-[#FDBF84]/25 border border-[#FDBF84]/40 px-3 py-1 rounded-full tracking-wider">
                       Course: {activeEnrollment.courses?.title || "Active Internship"}
                     </span>
                   </div>
@@ -419,7 +318,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                     ) : (
-                      <div className="bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 p-5 rounded-[16px] space-y-3">
+                      <div className="bg-[#FDBF84]/15 border border-[#FDBF84]/30 p-5 rounded-[16px] space-y-3">
                         <p className="text-xs text-[#8B5A2B] italic font-medium leading-relaxed">
                           Project blueprint selection pending. Enter the workspace hub to choose your assignment.
                         </p>
@@ -445,9 +344,9 @@ export default function DashboardPage() {
                               key={i} 
                               className={`h-2.5 flex-1 rounded-full border transition-all ${
                                 isSubmitted 
-                                  ? "bg-black border-black" 
+                                  ? "bg-[#8B5A2B] border-[#8B5A2B]" 
                                   : isCurrent 
-                                    ? "bg-[#8B5A2B]/20 border-[#8B5A2B] animate-pulse" 
+                                    ? "bg-[#FDBF84]/30 border-[#FDBF84] animate-pulse" 
                                     : "bg-neutral-100 border-black/5"
                               }`}
                               title={`Week ${i + 1}: ${isSubmitted ? 'Submitted' : isCurrent ? 'Active' : 'Pending'}`}
@@ -457,11 +356,11 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 pt-2">
-                        <div className="bg-neutral-50 border border-black/10 rounded-[12px] p-3 text-center">
+                        <div className="bg-[#FAF6F0] border border-black/10 rounded-[12px] p-3 text-center">
                           <span className="text-[9px] font-bold text-black/40 uppercase tracking-wider block">Approved Updates</span>
                           <span className="text-sm font-bold text-black mt-0.5 block">{approvedWeeks} Weeks</span>
                         </div>
-                        <div className="bg-neutral-50 border border-black/10 rounded-[12px] p-3 text-center">
+                        <div className="bg-[#FAF6F0] border border-black/10 rounded-[12px] p-3 text-center">
                           <span className="text-[9px] font-bold text-black/40 uppercase tracking-wider block">Remaining Plan</span>
                           <span className="text-sm font-bold text-black mt-0.5 block">{Math.max(0, totalWeeks - submittedWeeks)} Weeks</span>
                         </div>
@@ -471,10 +370,10 @@ export default function DashboardPage() {
                     <div className="pt-2">
                       <Button 
                         onClick={() => router.push(`/workspace/${activeEnrollment.course_id}`)} 
-                        className="w-full bg-black text-white hover:bg-neutral-900 text-xs font-bold py-3 rounded-[12px] shadow-none flex items-center justify-center gap-2 transition-all"
+                        className="w-full bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] text-xs font-extrabold py-3 rounded-[12px] shadow-none flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#FDBF84]/25"
                       >
                         Open Workspace Hub
-                        <ArrowRight size={14} className="text-[#8B5A2B]" />
+                        <ArrowRight size={14} className="text-neutral-900" />
                       </Button>
                     </div>
                   </div>
@@ -554,7 +453,6 @@ export default function DashboardPage() {
             </motion.div>
           </section>
         </div>
-      </main>
 
       {showProfileModal && (
         <ProfileCompletionModal
@@ -566,38 +464,21 @@ export default function DashboardPage() {
           }}
         />
       )}
-    </div>
+    </main>
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active?: boolean, onClick?: () => void }) {
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-2.5 px-3.5 min-h-[36px] rounded-[8px] text-xs font-bold transition-colors ${
-        active 
-        ? "bg-black text-white" 
-        : "text-black/70 hover:bg-black/5 hover:text-black"
-      }`}
-    >
-      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
-      <span className="truncate">{label}</span>
-    </motion.button>
-  );
-}
+
 
 function StatCard({ label, value, icon, progress }: { label: string, value: string, icon: React.ReactNode, progress?: number }) {
   return (
     <div className="bg-white border border-black/10 rounded-[12px] p-[20px] flex flex-col justify-between hover:border-black/20 transition-colors">
       <div className="flex items-start justify-between mb-[12px]">
-        <div className="w-9 h-9 rounded-[8px] bg-[#8B5A2B]/5 border border-[#8B5A2B]/10 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-[8px] bg-[#FDBF84]/15 border border-[#FDBF84]/30 flex items-center justify-center text-[#8B5A2B]">
           {icon}
         </div>
         {progress !== undefined && (
-          <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px]">
+          <span className="text-[10px] font-bold text-[#8B5A2B] bg-[#FDBF84]/20 border border-[#FDBF84]/40 px-2 py-0.5 rounded-[4px]">
             {progress}%
           </span>
         )}
@@ -608,7 +489,7 @@ function StatCard({ label, value, icon, progress }: { label: string, value: stri
       </div>
       {progress !== undefined && (
         <div className="mt-[12px] h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
-          <div className="h-full bg-black" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-[#8B5A2B]" style={{ width: `${progress}%` }} />
         </div>
       )}
     </div>
@@ -616,6 +497,7 @@ function StatCard({ label, value, icon, progress }: { label: string, value: stri
 }
 
 function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, sessionUser }: any) {
+  const router = useRouter();
   const isEnrolled = enrolled?.payment_status === 'completed' || enrolled?.payment_status === 'success';
   const totalLessons = Math.max(1, lessons.length);
   const progressPercent = Math.round((progress.length / totalLessons) * 100);
@@ -633,7 +515,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, se
 
       <div className="p-[20px] flex flex-col flex-1">
         <div className="flex items-center justify-between mb-[8px]">
-          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2 py-0.5 rounded-[4px]">
+          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-wider bg-[#FDBF84]/20 border border-[#FDBF84]/40 px-2 py-0.5 rounded-[4px]">
             {course.departments?.name || "Course"}
           </span>
           <span className="text-[10px] font-semibold text-black/50">
@@ -655,7 +537,7 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, se
               <span className="text-[#8B5A2B]">{progressPercent}%</span>
             </div>
             <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-black/5">
-              <div className="h-full bg-black" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full bg-[#8B5A2B]" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         ) : (
@@ -667,11 +549,11 @@ function CourseCard({ course, enrolled, progress, lessons, profile, onEnroll, se
         <div className="space-y-[12px] mt-auto">
           <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
             <Button 
-              className="w-full rounded-[8px] h-9 font-bold bg-black text-white hover:bg-neutral-900 shadow-none text-xs flex items-center justify-center gap-1.5" 
-              onClick={() => window.location.href = `/dashboard/courses/${course.id}`}
+              className="w-full rounded-[8px] h-9 font-extrabold bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] shadow-none text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-[#FDBF84]/25" 
+              onClick={() => router.push(`/dashboard/courses/${course.id}`)}
             >
               {isEnrolled ? (
-                <>Resume Learning <ArrowRight size={12} className="text-[#8B5A2B]" /></>
+                <>Resume Learning <ArrowRight size={12} className="text-neutral-900" /></>
               ) : (
                 <>Enroll in Course</>
               )}

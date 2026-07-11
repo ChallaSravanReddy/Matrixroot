@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useSidebarContext } from "@/components/SidebarContext";
 import { useRouter } from "next/navigation";
 import {
   TrendingUp, LayoutDashboard, BookOpen, User, LogOut,
@@ -20,7 +21,7 @@ export default function PerformanceReportCardPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { setIsSidebarOpen } = useSidebarContext();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [userProgress, setUserProgress] = useState<any[]>([]);
   const [allLessons, setAllLessons] = useState<any[]>([]);
@@ -73,8 +74,8 @@ export default function PerformanceReportCardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center font-sans">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full" />
+      <div className="flex min-h-screen bg-[#FAF6F0] items-center justify-center font-sans">
+        <div className="animate-spin h-8 w-8 border-4 border-[#FDBF84] border-t-[#8B5A2B] rounded-full" />
       </div>
     );
   }
@@ -118,69 +119,7 @@ export default function PerformanceReportCardPage() {
   const activeCompletedIds = new Set((activeStat?.completed || []).map((p: any) => p.lesson_id));
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden font-sans">
-
-      {/* Desktop Sidebar */}
-      <aside className="w-64 hidden lg:flex flex-col border-r border-black/10 bg-white shrink-0">
-        <div className="p-6 flex items-center gap-3 border-b border-black/10">
-          <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-            <GraduationCap size={20} className="text-[#8B5A2B]" />
-          </div>
-          <span className="font-bold text-base text-black">Matrix Root Studio</span>
-        </div>
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => router.push('/dashboard/courses')} />
-          <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => router.push('/workspace')} />
-          <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-          <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
-          <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => router.push('/dashboard/support')} />
-          <div className="pt-6">
-            <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-            <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-          </div>
-        </nav>
-      </aside>
-
-      {/* Mobile Sidebar */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setIsSidebarOpen(false)}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <motion.aside
-            initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 left-0 bottom-0 w-72 bg-white flex flex-col border-r border-black/10"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="p-6 flex items-center justify-between border-b border-black/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-black/5 flex items-center justify-center text-[#8B5A2B]">
-                  <GraduationCap size={20} className="text-[#8B5A2B]" />
-                </div>
-                <span className="font-bold text-base text-black">Matrix Root</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-black/40 hover:text-black">
-                <X size={20} className="text-[#8B5A2B]" />
-              </button>
-            </div>
-            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-              <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard Hub" onClick={() => router.push('/dashboard')} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Courses" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/courses'); }} />
-              <SidebarItem icon={<Layers size={18} />} label="Workspace Hub" onClick={() => { setIsSidebarOpen(false); router.push('/workspace'); }} />
-              <SidebarItem icon={<BookOpen size={18} />} label="Subscribed Tracks" onClick={() => router.push('/dashboard/internships')} />
-              <SidebarItem icon={<TrendingUp size={18} />} label="Progress & Grades" active />
-              <SidebarItem icon={<Sparkles size={18} />} label="Live Support" onClick={() => { setIsSidebarOpen(false); router.push('/dashboard/support'); }} />
-              <div className="pt-6">
-                <SidebarItem icon={<User size={18} />} label="Profile Setup" onClick={() => router.push('/profile')} />
-                <SidebarItem icon={<LogOut size={18} />} label="Sign Out" onClick={handleSignOut} />
-              </div>
-            </nav>
-          </motion.aside>
-        </div>
-      )}
-
-      {/* Main */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#FAF6F0]">
         <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-black hover:bg-black/5 rounded-[8px]">
@@ -196,20 +135,20 @@ export default function PerformanceReportCardPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#8B5A2B]/10 text-[10px] font-medium text-[#8B5A2B] border border-[#8B5A2B]/20">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[#FDBF84]/25 text-[10px] font-medium text-[#8B5A2B] border border-[#FDBF84]/40">
               <Award size={12} className="text-[#8B5A2B]" />
               <span>Live Student Data</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pb-20 max-w-[1400px] w-full mx-auto bg-white">
+        <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 pb-20 max-w-[1400px] w-full mx-auto bg-[#FAF6F0]">
 
           {/* Student Info Banner */}
           <motion.div variants={cardVariants} initial="hidden" animate="visible"
             className="bg-white border border-black/10 rounded-[12px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center text-black text-lg font-bold shrink-0">
+              <div className="w-12 h-12 rounded-full bg-[#FDBF84]/20 border border-[#FDBF84]/35 flex items-center justify-center text-black text-lg font-bold shrink-0">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || "S"}
               </div>
               <div>
@@ -228,10 +167,10 @@ export default function PerformanceReportCardPage() {
 
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            <StatCard label="Overall Progress" value={`${overallProgress}%`} sub="Lessons completed" bar={overallProgress} barColor="#000000" delay={0} />
-            <StatCard label="Lessons Completed" value={`${totalLessonsCompleted}`} sub={`of ${totalLessonsAcrossEnrolled} total`} bar={totalLessonsAcrossEnrolled > 0 ? (totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100 : 0} barColor="#000000" delay={0.1} />
-            <StatCard label="Assignments Submitted" value={`${assignmentsSubmitted}`} sub="Task submissions" bar={totalLessonsCompleted > 0 ? (assignmentsSubmitted / totalLessonsCompleted) * 100 : 0} barColor="#000000" delay={0.2} />
-            <StatCard label="Courses Enrolled" value={`${totalEnrolled}`} sub="Active tracks" bar={Math.min(totalEnrolled * 25, 100)} barColor="#000000" delay={0.3} />
+            <StatCard label="Overall Progress" value={`${overallProgress}%`} sub="Lessons completed" bar={overallProgress} barColor="#8B5A2B" delay={0} />
+            <StatCard label="Lessons Completed" value={`${totalLessonsCompleted}`} sub={`of ${totalLessonsAcrossEnrolled} total`} bar={totalLessonsAcrossEnrolled > 0 ? (totalLessonsCompleted / totalLessonsAcrossEnrolled) * 100 : 0} barColor="#8B5A2B" delay={0.1} />
+            <StatCard label="Assignments Submitted" value={`${assignmentsSubmitted}`} sub="Task submissions" bar={totalLessonsCompleted > 0 ? (assignmentsSubmitted / totalLessonsCompleted) * 100 : 0} barColor="#8B5A2B" delay={0.2} />
+            <StatCard label="Courses Enrolled" value={`${totalEnrolled}`} sub="Active tracks" bar={Math.min(totalEnrolled * 25, 100)} barColor="#8B5A2B" delay={0.3} />
           </div>
 
           {/* No enrollments state */}
@@ -242,7 +181,7 @@ export default function PerformanceReportCardPage() {
               <h3 className="text-base font-medium text-black">No Courses Enrolled Yet</h3>
               <p className="text-xs text-black/60">Enroll in a course to start tracking your performance here.</p>
               <button onClick={() => router.push('/dashboard/courses')}
-                className="mt-2 px-5 py-2 bg-black text-white text-xs font-semibold rounded-[10px] hover:bg-neutral-900 transition-colors">
+                className="mt-2 px-5 py-2 bg-[#FDBF84] text-neutral-900 text-xs font-extrabold rounded-[10px] hover:bg-[#FCAE68] border border-[#FDBF84]/25 transition-colors cursor-pointer">
                 Browse Courses
               </button>
             </motion.div>
@@ -270,12 +209,12 @@ export default function PerformanceReportCardPage() {
                     >
                       <BookOpen size={12} className={isActive ? "text-[#8B5A2B]" : "text-[#8B5A2B]/60"} />
                       <span className="max-w-[160px] truncate">{stat.course?.title || `Course ${i + 1}`}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-[8px] border ${isActive ? "bg-black text-white border-black" : "bg-white text-black/60 border-black/10"}`}>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-[8px] border ${isActive ? "bg-[#FDBF84] text-neutral-900 border-[#FDBF84]/25 font-extrabold" : "bg-white text-black/60 border-black/10"}`}>
                         {stat.pct}%
                       </span>
                       {isActive && (
                         <motion.div layoutId="activeTabUnderline"
-                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-black"
+                          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#FDBF84]"
                           transition={{ type: "spring", stiffness: 400, damping: 25 }} />
                       )}
                     </motion.button>
@@ -289,7 +228,7 @@ export default function PerformanceReportCardPage() {
                   className="bg-white border border-black/10 rounded-[12px] overflow-hidden shadow-none">
 
                   {/* Course Header */}
-                  <div className="p-6 md:p-8 border-b border-black/10 bg-neutral-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="p-6 md:p-8 border-b border-black/10 bg-neutral-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h3 className="text-base font-semibold text-black">{activeStat.course?.title}</h3>
                       <p className="text-xs text-black/60 mt-1">
@@ -301,11 +240,11 @@ export default function PerformanceReportCardPage() {
                       {/* Progress ring */}
                       <div className="relative w-14 h-14">
                         <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                          <circle cx="28" cy="28" r="22" fill="none" stroke="#f3f4f6" strokeWidth="5" />
-                          <circle cx="28" cy="28" r="22" fill="none" stroke="#000000" strokeWidth="5"
-                            strokeDasharray={`${2 * Math.PI * 22}`}
-                            strokeDashoffset={`${2 * Math.PI * 22 * (1 - activeStat.pct / 100)}`}
-                            strokeLinecap="round" />
+                           <circle cx="28" cy="28" r="22" fill="none" stroke="#f3f4f6" strokeWidth="5" />
+                           <circle cx="28" cy="28" r="22" fill="none" stroke="#8B5A2B" strokeWidth="5"
+                             strokeDasharray={`${2 * Math.PI * 22}`}
+                             strokeDashoffset={`${2 * Math.PI * 22 * (1 - activeStat.pct / 100)}`}
+                             strokeLinecap="round" />
                         </svg>
                         <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-black">
                           {activeStat.pct}%
@@ -345,7 +284,7 @@ export default function PerformanceReportCardPage() {
                               <td className="p-4 text-center">
                                 {lesson.has_assignment ? (
                                   progressEntry?.assignment_url ? (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-black bg-black/5 px-2 py-0.5 rounded border border-black/10">
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-neutral-900 bg-[#FDBF84]/20 px-2 py-0.5 rounded border border-[#FDBF84]/35">
                                       <CheckCircle2 size={10} className="text-[#8B5A2B]" /> Submitted
                                     </span>
                                   ) : (
@@ -363,7 +302,7 @@ export default function PerformanceReportCardPage() {
                               <td className="p-4 pr-6 text-right">
                                 {isDone ? (
                                   <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-[12px] border border-emerald-250">
-                                    <CheckCircle2 size={10} className="text-[#8B5A2B]" /> Done
+                                    <CheckCircle2 size={10} className="text-emerald-800" /> Done
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 text-[10px] font-medium text-black/50 bg-neutral-50 px-2 py-0.5 rounded-[12px] border border-black/10">
@@ -399,8 +338,7 @@ export default function PerformanceReportCardPage() {
           )}
 
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 
@@ -426,20 +364,4 @@ function StatCard({ label, value, sub, bar, barColor, delay }: {
   );
 }
 
-function SidebarItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 min-h-[40px] rounded-[12px] text-xs font-medium transition-colors ${
-        active 
-        ? "bg-black text-white" 
-        : "text-black/70 hover:bg-black/5 hover:text-black"
-      }`}
-    >
-      <span className="text-[#8B5A2B] shrink-0">{icon}</span>
-      {label}
-    </motion.button>
-  );
-}
+

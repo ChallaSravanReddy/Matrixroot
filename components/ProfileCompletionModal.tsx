@@ -140,7 +140,7 @@ export function ProfileCompletionModal({
           </div>
 
           {error && (
-            <div className="p-3 text-xs font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 rounded-[12px]">
+            <div className="p-3 text-xs font-bold text-[#8B5A2B] bg-[#FDBF84]/25 border border-[#FDBF84]/40 rounded-[12px]">
               {error}
             </div>
           )}
@@ -148,12 +148,12 @@ export function ProfileCompletionModal({
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-[12px] bg-black text-white hover:bg-neutral-900 shadow-none font-bold mt-[12px] border-0"
+            className="w-full h-11 rounded-[12px] bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] shadow-none font-extrabold mt-[12px] border border-[#FDBF84]/25 cursor-pointer"
           >
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-[#8B5A2B]" />
+              <Loader2 className="h-5 w-5 animate-spin text-neutral-900" />
             ) : (
-              <>Save Profile <ArrowRight className="ml-2 h-4 w-4 text-[#8B5A2B]" /></>
+              <>Save Profile <ArrowRight className="ml-2 h-4 w-4 text-neutral-900" /></>
             )}
           </Button>
         </form>

@@ -305,7 +305,7 @@ export default function CourseDetailPage() {
         </div>
         {!isEnrolled && (
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-            <Button size="sm" onClick={() => setShowPayment(true)} className="bg-black hover:bg-neutral-900 text-white text-xs font-bold rounded-[8px] h-8 shadow-none border-0">
+            <Button size="sm" onClick={() => setShowPayment(true)} className="bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 text-xs font-extrabold rounded-[8px] h-8 shadow-none border border-[#FDBF84]/25 cursor-pointer">
               Enroll in Course
             </Button>
           </motion.div>
@@ -322,11 +322,11 @@ export default function CourseDetailPage() {
               {/* Module Collapsible Header Title */}
               <button
                 onClick={() => toggleModule(mod.id)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-neutral-50 hover:bg-black/5 text-black rounded-[8px] border border-black/10 transition-colors text-left group"
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-white hover:bg-[#FDBF84]/10 text-black rounded-[8px] border border-black/10 transition-colors text-left group"
               >
                 <div className="flex items-center gap-2 min-w-0 pr-2">
                   <span className="text-xs font-bold text-black truncate">{mod.title}</span>
-                  {mod.has_assessment && <span className="text-[9px] font-bold text-[#8B5A2B] bg-[#8B5A2B]/10 px-2 py-0.2 rounded-[4px] border border-[#8B5A2B]/20 shrink-0">Assignment</span>}
+                  {mod.has_assessment && <span className="text-[9px] font-bold text-[#8B5A2B] bg-[#FDBF84]/25 px-2 py-0.5 rounded-[4px] border border-[#FDBF84]/40 shrink-0">Assignment</span>}
                 </div>
                 <div className="shrink-0 transition-transform duration-200 text-[#8B5A2B]" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
                   <ChevronRight size={14} className="text-[#8B5A2B]" />
@@ -353,7 +353,7 @@ export default function CourseDetailPage() {
                             }
                           }}
                           className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
-                              ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20 active-sidebar-lesson"
+                              ? "bg-[#FDBF84]/25 text-neutral-900 font-extrabold border border-[#FDBF84]/45 active-sidebar-lesson"
                               : isLocked
                                 ? "opacity-40 cursor-not-allowed text-black/50"
                                 : "hover:bg-black/5 text-black/80 font-medium"
@@ -403,7 +403,7 @@ export default function CourseDetailPage() {
             <div className="space-y-[8px] pt-2 border-t border-black/10">
               <button
                 onClick={() => toggleModule("general")}
-                className="w-full flex items-center justify-between px-3 py-2 bg-neutral-50/50 hover:bg-black/5 text-black font-bold rounded-[8px] border border-black/10 transition-colors text-left"
+                className="w-full flex items-center justify-between px-3 py-2 bg-white hover:bg-[#FDBF84]/10 text-black font-bold rounded-[8px] border border-black/10 transition-colors text-left"
               >
                 <span className="text-[10px] uppercase tracking-wider">General Course Classes</span>
                 <div className="shrink-0 transition-transform duration-200 text-[#8B5A2B]" style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
@@ -427,7 +427,7 @@ export default function CourseDetailPage() {
                           }
                         }}
                         className={`w-full flex items-center gap-2.5 p-2 rounded-[6px] text-left transition-colors group ${isActive
-                            ? "bg-[#8B5A2B]/10 text-[#8B5A2B] font-bold border border-[#8B5A2B]/20 active-sidebar-lesson"
+                            ? "bg-[#FDBF84]/25 text-neutral-900 font-extrabold border border-[#FDBF84]/45 active-sidebar-lesson"
                             : isLocked
                               ? "opacity-40 cursor-not-allowed text-black/50"
                               : "hover:bg-black/5 text-black/80 font-medium"
@@ -490,7 +490,7 @@ export default function CourseDetailPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-[8px]">
-          {currentLesson?.notes && <span className="text-[10px] font-bold bg-[#8B5A2B]/10 text-[#8B5A2B] px-2.5 py-0.5 rounded-[6px] border border-[#8B5A2B]/20 flex items-center gap-1"><FileText size={10} className="text-[#8B5A2B]" /> Notes Available</span>}
+          {currentLesson?.notes && <span className="text-[10px] font-bold bg-[#FDBF84]/20 text-[#8B5A2B] px-2.5 py-0.5 rounded-[6px] border border-[#FDBF84]/40 flex items-center gap-1"><FileText size={10} className="text-[#8B5A2B]" /> Notes Available</span>}
           {requiresAssessment && <span className="text-[10px] font-bold bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded-[6px] border border-amber-250 flex items-center gap-1">⚠️ Required Project Assignment</span>}
         </div>
       </div>
@@ -528,7 +528,7 @@ export default function CourseDetailPage() {
                 value={assignmentUrl}
                 onChange={(e) => setAssignmentUrl(e.target.value)}
                 placeholder="Paste your active solution link (GitHub repo, live deployed site, or code sandbox)..."
-                className="w-full bg-neutral-50 border border-black/15 focus:border-black rounded-[8px] p-3 text-black text-xs transition-all min-h-[80px] resize-y outline-none font-medium"
+                className="w-full bg-[#FAF6F0] border border-black/15 focus:border-black rounded-[8px] p-3 text-black text-xs transition-all min-h-[80px] resize-y outline-none font-medium"
               />
             </div>
 
@@ -541,7 +541,7 @@ export default function CourseDetailPage() {
                 <Button
                   onClick={() => handleCompleteLesson()}
                   disabled={submitting || !assignmentUrl.trim()}
-                  className="px-5 h-10 rounded-[8px] font-bold text-xs bg-black text-white hover:bg-neutral-900 shadow-none border-0"
+                  className="px-5 h-10 rounded-[8px] font-extrabold text-xs bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] shadow-none border border-[#FDBF84]/25 cursor-pointer"
                 >
                   {submitting ? (
                     <span>Saving progress...</span>
@@ -563,7 +563,7 @@ export default function CourseDetailPage() {
   const isLocked = !isEnrolled && !currentLesson?.is_preview;
 
   return (
-    <div className="flex flex-col h-screen bg-white text-black font-sans overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#FAF6F0] text-black font-sans overflow-hidden">
 
       {/* Top Navigation Bar */}
       <header className="flex-shrink-0 h-16 border-b border-black/10 bg-white flex items-center px-6 justify-between z-10 shadow-none">
@@ -580,14 +580,14 @@ export default function CourseDetailPage() {
           {parentModule && (
             <>
               <div className="hidden sm:block h-3 w-px bg-black/10 mx-1" />
-              <span className="hidden md:inline-flex text-[10px] font-bold bg-[#8B5A2B]/10 text-[#8B5A2B] px-2.5 py-0.5 rounded-[6px] border border-[#8B5A2B]/20 truncate max-w-xs">
+              <span className="hidden md:inline-flex text-[10px] font-bold bg-[#FDBF84]/25 text-[#8B5A2B] px-2.5 py-0.5 rounded-[6px] border border-[#FDBF84]/40 truncate max-w-xs">
                 {parentModule.title}
               </span>
             </>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8B5A2B] bg-[#8B5A2B]/10 border border-[#8B5A2B]/20 px-2.5 py-0.5 rounded-[6px]">
+          <div className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8B5A2B] bg-[#FDBF84]/25 border border-[#FDBF84]/40 px-2.5 py-0.5 rounded-[6px]">
             <ShieldCheck size={12} className="text-[#8B5A2B]" />
             Official Course
           </div>
@@ -595,7 +595,7 @@ export default function CourseDetailPage() {
       </header>
 
       {/* Main Studio Area */}
-      <div className="flex-1 flex overflow-hidden w-full">
+      <div className="flex-1 flex overflow-hidden w-full bg-[#FAF6F0]">
         {!currentLesson ? (
           <div className="flex-1 py-20 text-center text-xs text-black/60 font-bold">Resolving active syllabus coordinates...</div>
         ) : (
@@ -608,7 +608,7 @@ export default function CourseDetailPage() {
             </aside>
 
             {/* Right Side: Content Player Area */}
-            <main id="main-content-area" className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 bg-white scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
+            <main id="main-content-area" className="flex-1 overflow-y-auto p-6 md:p-10 pb-24 bg-[#FAF6F0] scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
               <div className="max-w-4xl mx-auto">
                 {isLocked ? (
                   <div className="bg-white border border-black/10 rounded-[12px] p-[32px] md:p-[48px] text-center space-y-[16px] shadow-none">
@@ -627,7 +627,7 @@ export default function CourseDetailPage() {
                               const formUrl = process.env.NEXT_PUBLIC_PAYMENT_FORM_URL || "https://forms.gle/fbn69wav5MiwwSdD8";
                               window.open(formUrl, "_blank", "noopener,noreferrer");
                             }} 
-                            className="bg-black hover:bg-neutral-900 text-white font-bold text-xs rounded-[8px] h-10 px-6 shadow-none"
+                            className="bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold text-xs rounded-[8px] h-10 px-6 shadow-none border border-[#FDBF84]/25 cursor-pointer"
                           >
                             Open Payment Google Form
                           </Button>
@@ -639,7 +639,7 @@ export default function CourseDetailPage() {
                           This module provides video streaming, summaries, and assignment verifications.
                         </p>
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="pt-2">
-                          <Button onClick={() => setShowPayment(true)} className="bg-black hover:bg-neutral-900 text-white font-bold text-xs rounded-[8px] h-10 px-6 shadow-none">
+                          <Button onClick={() => setShowPayment(true)} className="bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold text-xs rounded-[8px] h-10 px-6 shadow-none border border-[#FDBF84]/25 cursor-pointer">
                             Unlock Full Access Now
                           </Button>
                         </motion.div>
@@ -687,7 +687,7 @@ export default function CourseDetailPage() {
 
       {/* Sticky Bottom Control Bar */}
       {currentLesson && (
-        <div className="flex-shrink-0 h-20 border-t border-black/10 bg-white flex items-center justify-between px-6 md:px-12 z-20 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
+        <div className="flex-shrink-0 h-20 border-t border-black/10 bg-[#FAF6F0] flex items-center justify-between px-6 md:px-12 z-20 shadow-[0_-4px_24px_rgba(0,0,0,0.04)]">
           <div className="hidden md:flex flex-col justify-center">
             <h4 className="text-xs font-bold text-black mt-0.5 line-clamp-1 max-w-sm">
               {currentLesson.title}
@@ -702,7 +702,7 @@ export default function CourseDetailPage() {
                   onClick={() => {
                     setCurrentLesson(prevLesson);
                   }}
-                  className="px-4 h-10 border-black/15 font-bold text-xs rounded-[8px] shadow-none text-black/80"
+                  className="px-4 h-10 border-black/15 bg-white font-bold text-xs rounded-[8px] shadow-none text-black/80 hover:bg-[#FDBF84]/15 transition-colors"
                 >
                   <ArrowLeft size={12} className="mr-2 text-[#8B5A2B]" />
                   <span>Previous</span>
@@ -719,10 +719,10 @@ export default function CourseDetailPage() {
                     }
                     setCurrentLesson(nextLesson);
                   }}
-                  className="px-6 h-10 bg-black hover:bg-neutral-900 text-white font-bold text-xs rounded-[8px] shadow-none flex items-center gap-1.5"
+                  className="px-6 h-10 bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold text-xs rounded-[8px] shadow-none flex items-center gap-1.5 border border-[#FDBF84]/25 cursor-pointer"
                 >
                   <span>Next Lesson</span>
-                  <Play size={10} className="fill-current text-[#8B5A2B]" />
+                  <Play size={10} className="fill-current text-neutral-900" />
                 </Button>
               </motion.div>
             ) : (
@@ -734,9 +734,9 @@ export default function CourseDetailPage() {
                     }
                     window.location.href = `/workspace/${courseId}`;
                   }}
-                  className="px-6 h-10 bg-black/5 hover:bg-black/10 text-black font-bold text-xs rounded-[8px] shadow-none border border-black/15 flex items-center gap-1.5"
+                  className="px-6 h-10 bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 font-extrabold text-xs rounded-[8px] shadow-none border border-[#FDBF84]/25 flex items-center gap-1.5 cursor-pointer"
                 >
-                  <CheckCircle2 size={12} className="text-[#8B5A2B]" />
+                  <CheckCircle2 size={12} className="text-neutral-900" />
                   <span>Start Internship</span>
                 </Button>
               </motion.div>

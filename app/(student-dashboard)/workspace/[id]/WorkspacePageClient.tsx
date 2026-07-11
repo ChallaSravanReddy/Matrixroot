@@ -362,8 +362,8 @@ export default function WorkspacePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-white items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-[#8B5A2B] border-t-transparent rounded-full"></div>
+      <div className="flex min-h-screen bg-[#FAF6F0] items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#FDBF84] border-t-[#8B5A2B] rounded-full"></div>
       </div>
     );
   }
@@ -371,7 +371,7 @@ export default function WorkspacePage() {
   const isLocked = !isEnrolled && currentLesson && !currentLesson.is_preview;
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans flex flex-col">
+    <div className="min-h-screen bg-[#FAF6F0] text-black font-sans flex flex-col">
 
       {/* Top Workspace Header */}
       <header className="h-16 border-b border-black/10 bg-white flex items-center justify-between px-6 shrink-0 sticky top-0 z-40">
@@ -396,21 +396,21 @@ export default function WorkspacePage() {
         </div>
 
         <div className="hidden sm:flex items-center gap-2">
-          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest bg-black/5 px-2.5 py-1 rounded-[6px] border border-black/10">
+          <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest bg-[#FDBF84]/20 border border-[#FDBF84]/35 px-2.5 py-1 rounded-[6px]">
             {course?.departments?.name || "Matrix Root"}
           </span>
         </div>
       </header>
 
       {/* Main Workspace Frame */}
-      <main className="flex-1 flex overflow-hidden relative bg-white">
+      <main className="flex-1 flex overflow-hidden relative bg-[#FAF6F0]">
         
         {/* Scenario: Locked Screen Overlay */}
         {isLocked && (
-          <div className="absolute inset-0 bg-white/90 backdrop-blur-md z-30 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-[#FAF6F0]/90 backdrop-blur-md z-30 flex items-center justify-center p-6">
             <div className="max-w-md w-full bg-white border border-black/10 rounded-[16px] p-8 text-center space-y-6 shadow-none">
-              <div className="w-14 h-14 bg-black/5 border border-black/10 rounded-full flex items-center justify-center mx-auto text-black">
-                <ShieldCheck size={28} />
+              <div className="w-14 h-14 bg-[#FDBF84]/20 border border-[#FDBF84]/35 rounded-full flex items-center justify-center mx-auto text-black">
+                <ShieldCheck size={28} className="text-[#8B5A2B]" />
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-bold text-black">Unlock Training Workspace</h3>
@@ -421,7 +421,7 @@ export default function WorkspacePage() {
               <div className="pt-2">
                 <Button 
                   onClick={() => setShowPayment(true)} 
-                  className="w-full bg-black hover:bg-neutral-900 text-white font-bold text-xs h-11 rounded-[10px] transition-all"
+                  className="w-full bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 border border-[#FDBF84]/25 font-extrabold text-xs h-11 rounded-[10px] transition-all cursor-pointer"
                 >
                   Start Course & Enroll Now (₹{course?.price ?? 500})
                 </Button>
@@ -431,10 +431,10 @@ export default function WorkspacePage() {
         )}
 
         {/* Production Internship Workspace */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full bg-white">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden w-full bg-[#FAF6F0]">
             
             {/* Left/Top Panel: Project Blueprint Display & Active Goal */}
-            <div className="w-full lg:w-[420px] xl:w-[460px] shrink-0 border-r border-black/10 bg-neutral-50 p-4 flex flex-col overflow-y-auto space-y-4">
+            <div className="w-full lg:w-[420px] xl:w-[460px] shrink-0 border-r border-black/10 bg-[#FAF6F0] p-4 flex flex-col overflow-y-auto space-y-4">
               
               <div className="border-b border-black/10 pb-3">
                 <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest">PRODUCTION ALIGNMENT</span>
@@ -448,14 +448,14 @@ export default function WorkspacePage() {
                       <CheckCircle2 size={16} className="text-[#8B5A2B]" />
                       <span className="text-xs font-bold uppercase tracking-wider">Active Workspace Goal</span>
                     </div>
-                    <div className="bg-neutral-50 border border-black/10 rounded-[8px] p-3 text-xs leading-relaxed text-black whitespace-pre-wrap font-mono">
+                    <div className="bg-[#FAF6F0] border border-black/10 rounded-[8px] p-3 text-xs leading-relaxed text-black whitespace-pre-wrap font-mono">
                       {enrollment.selected_problem_statement}
                     </div>
                     <button
                       onClick={() => setShowDocModal(true)}
-                      className="flex items-center justify-center gap-2 text-xs text-white bg-black hover:bg-neutral-900 font-bold p-2.5 rounded-[8px] mt-2 transition-colors w-full"
+                      className="flex items-center justify-center gap-2 text-xs text-neutral-900 bg-[#FDBF84] hover:bg-[#FCAE68] border border-[#FDBF84]/25 font-extrabold p-2.5 rounded-[8px] mt-2 transition-colors w-full cursor-pointer"
                     >
-                      <FileText size={14} className="text-[#8B5A2B]" /> View Official Project Document
+                      <FileText size={14} className="text-neutral-900" /> View Official Project Document
                     </button>
                   </div>
                   
@@ -481,9 +481,9 @@ export default function WorkspacePage() {
                     </div>
                     <button
                       onClick={() => setShowDocModal(true)}
-                      className="text-[10px] font-bold text-white bg-black hover:bg-neutral-900 px-3 py-1.5 rounded-[8px] flex items-center gap-1 transition-colors"
+                      className="text-[10px] font-extrabold text-neutral-900 bg-[#FDBF84] hover:bg-[#FCAE68] border border-[#FDBF84]/25 px-3 py-1.5 rounded-[8px] flex items-center gap-1 transition-colors cursor-pointer"
                     >
-                      <FileText size={12} className="text-[#8B5A2B]" /> View
+                      <FileText size={12} className="text-neutral-900" /> View
                     </button>
                   </div>
 
@@ -497,13 +497,13 @@ export default function WorkspacePage() {
                           </div>
                           <Button
                             onClick={() => handleSelectBlueprint(statement)}
-                            className="bg-black hover:bg-neutral-900 text-white font-bold text-[10px] px-3.5 h-8 rounded-[8px] transition-all self-end"
+                            className="bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 border border-[#FDBF84]/25 font-extrabold text-[10px] px-3.5 h-8 rounded-[8px] transition-all self-end cursor-pointer"
                           >
                             Activate Blueprint
                           </Button>
                         </div>
                       ))
-                    ) : (
+                     ) : (
                       <div className="text-xs text-black/60 italic p-6 bg-white rounded-[12px] border border-black/10 text-center">
                         No internship blueprints have been deployed for this course track yet.
                       </div>
@@ -530,7 +530,7 @@ export default function WorkspacePage() {
                     </div>
                     <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-black rounded-full transition-all duration-500"
+                        className="h-full bg-[#8B5A2B] rounded-full transition-all duration-500"
                         style={{
                           width: `${Math.round((completedTasks.filter((t: string) => course.project_tasks.includes(t)).length / course.project_tasks.length) * 100)}%`
                         }}
@@ -560,7 +560,7 @@ export default function WorkspacePage() {
                           }`}
                         >
                           <span className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                            isDone ? "bg-emerald-600 border-emerald-600" : "border-black/40 group-hover:border-black"
+                            isDone ? "bg-emerald-600 border-emerald-600" : "border-black/45 group-hover:border-black"
                           }`}>
                             {isDone && <CheckCircle2 size={10} className="text-white" />}
                           </span>
@@ -578,7 +578,7 @@ export default function WorkspacePage() {
             </div>
 
             {/* Right/Bottom Panel: Project Submission */}
-            <div className="flex-1 bg-white p-6 overflow-y-auto flex flex-col space-y-6">
+            <div className="flex-1 bg-[#FAF6F0] p-6 overflow-y-auto flex flex-col space-y-6">
               
               <div className="border-b border-black/10 pb-4 flex items-center justify-between">
                 <div>
@@ -598,9 +598,9 @@ export default function WorkspacePage() {
               ) : (
                 <div className="space-y-6">
                   {/* Guidelines Document Card */}
-                  <div className="bg-neutral-50 border border-black/10 rounded-[12px] p-4 flex items-center justify-between">
+                  <div className="bg-white border border-black/10 rounded-[12px] p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-black/5 rounded-[8px] text-[#8B5A2B]">
+                      <div className="p-2 bg-[#FDBF84]/20 border border-[#FDBF84]/35 rounded-[8px] text-[#8B5A2B]">
                         <FileText size={18} className="text-[#8B5A2B]" />
                       </div>
                       <div>
@@ -610,9 +610,9 @@ export default function WorkspacePage() {
                     </div>
                     <button
                       onClick={() => setShowDocModal(true)}
-                      className="px-3 py-1.5 text-[10px] font-bold bg-black text-white rounded-[6px] hover:bg-neutral-900 transition-all flex items-center gap-1"
+                      className="px-3 py-1.5 text-[10px] font-extrabold bg-[#FDBF84] text-neutral-900 hover:bg-[#FCAE68] border border-[#FDBF84]/25 rounded-[6px] transition-all flex items-center gap-1 cursor-pointer"
                     >
-                      <FileText size={11} className="text-[#8B5A2B]" /> Open
+                      <FileText size={11} className="text-neutral-900" /> Open
                     </button>
                   </div>
 
@@ -652,7 +652,7 @@ export default function WorkspacePage() {
                           </div>
 
                           {/* Task Description Prompt */}
-                          <div className="bg-neutral-50 border border-black/10 rounded-[10px] p-3 text-xs">
+                          <div className="bg-[#FAF6F0] border border-black/10 rounded-[10px] p-3 text-xs">
                             <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block mb-1">Task prompt</span>
                             <p className="text-black font-medium leading-relaxed">{taskPrompt}</p>
                           </div>
@@ -660,9 +660,9 @@ export default function WorkspacePage() {
                           {/* Feedback display (if exists) */}
                           {sub?.feedback && (
                             <div className={`p-3.5 rounded-[10px] border text-xs leading-relaxed space-y-1 ${
-                              sub.status === "rejected"
-                                ? "bg-rose-50 border-rose-100 text-rose-800"
-                                : "bg-amber-50 border-amber-100 text-amber-900"
+                                sub.status === "rejected"
+                                  ? "bg-rose-50 border-rose-100 text-rose-800"
+                                  : "bg-amber-50 border-amber-100 text-amber-900"
                             }`}>
                               <span className="font-extrabold text-[9px] uppercase tracking-wider block">
                                 {sub.status === "rejected" ? "Revision Notes from Mentor" : "Mentor Feedback"}
@@ -692,7 +692,7 @@ export default function WorkspacePage() {
                                   Proof Screenshot
                                 </label>
                                 <div className="flex flex-wrap items-center gap-4">
-                                  <label className="flex flex-col items-center justify-center w-28 h-20 bg-black/5 border border-black/10 border-dashed hover:border-black/20 rounded-[8px] cursor-pointer transition-all">
+                                  <label className="flex flex-col items-center justify-center w-28 h-20 bg-[#FDBF84]/20 border border-[#FDBF84]/35 border-dashed hover:border-black/20 rounded-[8px] cursor-pointer transition-all">
                                     <div className="text-center p-2">
                                       <Upload size={16} className="mx-auto text-[#8B5A2B]" />
                                       <span className="text-[8px] font-bold text-black/60 uppercase block mt-1">Upload file</span>
@@ -733,7 +733,7 @@ export default function WorkspacePage() {
                                 <Button
                                   type="submit"
                                   disabled={projectSubmitting}
-                                  className="bg-black hover:bg-neutral-900 text-white font-bold text-[11px] px-4 h-8 rounded-[6px] transition-all shadow-none"
+                                  className="bg-[#FDBF84] hover:bg-[#FCAE68] text-neutral-900 border border-[#FDBF84]/25 font-extrabold text-[11px] px-4 h-8 rounded-[6px] transition-all shadow-none cursor-pointer"
                                 >
                                   {projectSubmitting ? "Submitting..." : sub ? "Resubmit Week Proof" : "Submit Week Proof"}
                                 </Button>
@@ -745,7 +745,7 @@ export default function WorkspacePage() {
                               {sub.improvement_text && (
                                 <div className="space-y-1">
                                   <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Submitted implementation notes</span>
-                                  <div className="bg-neutral-50 border border-black/10 p-3 rounded-[8px] text-xs text-black leading-relaxed whitespace-pre-wrap font-medium">
+                                  <div className="bg-[#FAF6F0] border border-black/10 p-3 rounded-[8px] text-xs text-black leading-relaxed whitespace-pre-wrap font-medium">
                                     {sub.improvement_text}
                                   </div>
                                 </div>
@@ -754,7 +754,7 @@ export default function WorkspacePage() {
                               {sub.screenshot_url && (
                                 <div className="space-y-1">
                                   <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Submitted Proof of Work Screenshot</span>
-                                  <div className="relative aspect-video max-w-sm w-full bg-neutral-50 rounded-[8px] overflow-hidden border border-black/10">
+                                  <div className="relative aspect-video max-w-sm w-full bg-[#FAF6F0] rounded-[8px] overflow-hidden border border-black/10">
                                     <img 
                                       src={sub.screenshot_url} 
                                       alt="Submitted proof screenshot" 
@@ -800,9 +800,9 @@ export default function WorkspacePage() {
             className="w-full max-w-2xl max-h-[88vh] bg-white rounded-[20px] shadow-none flex flex-col overflow-hidden border border-black/10"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 shrink-0 bg-neutral-50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 shrink-0 bg-[#FAF6F0]">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-black/5 rounded-[10px]">
+                <div className="p-2 bg-[#FDBF84]/20 border border-[#FDBF84]/35 rounded-[10px]">
                   <FileText size={18} className="text-[#8B5A2B]" />
                 </div>
                 <div>
@@ -816,14 +816,14 @@ export default function WorkspacePage() {
                     href={course.problem_statement_file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[10px] font-bold text-[#8B5A2B] border border-black/10 px-3 py-1.5 rounded-[8px] hover:bg-black/5 transition-all"
+                    className="flex items-center gap-1.5 text-[10px] font-extrabold text-neutral-900 bg-[#FDBF84] border border-[#FDBF84]/25 px-3 py-1.5 rounded-[8px] hover:bg-[#FCAE68] transition-all cursor-pointer"
                   >
-                    <ExternalLink size={12} className="text-[#8B5A2B]" /> Download PDF
+                    <ExternalLink size={12} className="text-neutral-900" /> Download PDF
                   </a>
                 )}
                 <button
                   onClick={() => setShowDocModal(false)}
-                  className="p-1.5 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all"
+                  className="p-1.5 text-black/40 hover:text-black hover:bg-black/5 rounded-[8px] transition-all cursor-pointer"
                 >
                   <X size={18} className="text-[#8B5A2B]" />
                 </button>
@@ -850,7 +850,7 @@ export default function WorkspacePage() {
               {course?.description && (
                 <section className="space-y-2">
                   <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Course Overview</span>
-                  <div className="bg-neutral-50 border border-black/10 rounded-[10px] p-4 text-xs leading-relaxed text-black/80 font-medium">
+                  <div className="bg-[#FAF6F0] border border-black/10 rounded-[10px] p-4 text-xs leading-relaxed text-black/80 font-medium">
                     {course.description}
                   </div>
                 </section>
@@ -877,8 +877,8 @@ export default function WorkspacePage() {
                   <span className="text-[9px] font-bold text-[#8B5A2B] uppercase tracking-widest block">Weekly Execution Plan</span>
                   <div className="space-y-2">
                     {course.weekly_tasks.map((task: string, i: number) => (
-                      <div key={i} className="flex gap-3 items-start bg-neutral-50 border border-black/10 rounded-[8px] p-3">
-                        <span className="shrink-0 w-6 h-6 bg-black/5 rounded-full flex items-center justify-center text-[9px] font-bold text-black">
+                      <div key={i} className="flex gap-3 items-start bg-[#FAF6F0] border border-black/10 rounded-[8px] p-3">
+                        <span className="shrink-0 w-6 h-6 bg-[#FDBF84]/20 border border-[#FDBF84]/35 rounded-full flex items-center justify-center text-[9px] font-extrabold text-[#8B5A2B]">
                           {i + 1}
                         </span>
                         <div>
@@ -915,13 +915,13 @@ export default function WorkspacePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="shrink-0 border-t border-black/10 px-6 py-4 bg-neutral-50 flex items-center justify-between">
+            <div className="shrink-0 border-t border-black/10 px-6 py-4 bg-[#FAF6F0] flex items-center justify-between">
               <p className="text-[9px] text-black/40 font-medium">
                 {course?.departments?.name || "Matrix Root Academy"} · Official Program Document
               </p>
               <button
                 onClick={() => setShowDocModal(false)}
-                className="text-xs font-bold text-black/60 hover:text-black px-4 py-1.5 rounded-[8px] hover:bg-black/5 transition-all"
+                className="text-xs font-extrabold text-black/60 hover:text-black px-4 py-1.5 rounded-[8px] hover:bg-black/5 transition-all cursor-pointer"
               >
                 Close
               </button>
